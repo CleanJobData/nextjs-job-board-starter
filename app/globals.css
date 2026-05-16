@@ -1,26 +1,121 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Use `html` / `html.dark` so variables always override predictably (no :root tie-break). */
+html {
+  --background: #fafafa;
+  --foreground: #0a0a0a;
+  --card: #ffffff;
+  --card-foreground: #0a0a0a;
+  --muted: #f4f4f5;
+  --muted-foreground: #71717a;
+  --border: #d4d4d8;
+  --input: #d4d4d8;
+  --input-background: #ffffff;
+  --ring: #10b981;
+  --primary: #059669;
+  --primary-foreground: #ffffff;
+  --secondary: #f4f4f5;
+  --secondary-foreground: #18181b;
+  --destructive: #dc2626;
+  --destructive-foreground: #ffffff;
+  --accent: #ecfdf5;
+  --accent-foreground: #065f46;
+  /* High-contrast control on primary-colored sections */
+  --on-primary: #ffffff;
+  --on-primary-hover: #f4f4f5;
+  --on-primary-foreground: #047857;
+  /* “Inverse” / elevated surface for buttons on top of primary */
+  --inverse-background: #ffffff;
+  --inverse-background-hover: #f4f4f5;
+  --inverse-foreground: #047857;
+  /* Toggle track / thumb */
+  --switch-thumb: #fafafa;
+  --switch-thumb-border: #d4d4d8;
+}
+
+html.dark {
+  --background: #09090b;
+  --foreground: #fafafa;
+  --card: #18181b;
+  --card-foreground: #fafafa;
+  --muted: #27272a;
+  --muted-foreground: #a1a1aa;
+  --border: #27272a;
+  --input: #3f3f46;
+  --input-background: #09090b;
+  --ring: #34d399;
+  --primary: #059669;
+  --primary-foreground: #ffffff;
+  --secondary: #27272a;
+  --secondary-foreground: #fafafa;
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
+  --accent: #064e3b;
+  --accent-foreground: #6ee7b7;
+  --on-primary: #ffffff;
+  --on-primary-hover: #e4e4e7;
+  --on-primary-foreground: #065f46;
+  --inverse-background: #f4f4f5;
+  --inverse-background-hover: #e4e4e7;
+  --inverse-foreground: #047857;
+  --switch-thumb: #fafafa;
+  --switch-thumb-border: #52525b;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-input-background: var(--input-background);
+  --color-ring: var(--ring);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-on-primary: var(--on-primary);
+  --color-on-primary-hover: var(--on-primary-hover);
+  --color-on-primary-foreground: var(--on-primary-foreground);
+  --color-inverse-background: var(--inverse-background);
+  --color-inverse-background-hover: var(--inverse-background-hover);
+  --color-inverse-foreground: var(--inverse-foreground);
+  --color-switch-thumb: var(--switch-thumb);
+  --color-switch-thumb-border: var(--switch-thumb-border);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans), system-ui, sans-serif;
+}
+
+@utility scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+@utility scrollbar-thin {
+  scrollbar-width: thin;
+}
+
+@utility scrollbar-thumb-muted {
+  &::-webkit-scrollbar-thumb {
+    background-color: var(--border);
+    border-radius: 9999px;
+  }
 }
