@@ -12,7 +12,7 @@ import {
   X,
 } from "lucide-react";
 import { Input } from "@/components/ui/Input";
-import { Combobox, ComboboxOption } from "@/components/ui/Combobox";
+import { Combobox, ComboboxOptionType } from "@/components/ui/Combobox";
 import { Listbox, ListboxOption } from "@/components/ui/Listbox";
 import { Switch } from "@/components/ui/Switch";
 import { Button } from "@/components/ui/Button";
@@ -44,7 +44,7 @@ const sortOptions: ListboxOption[] = [
   { value: "relevance", label: "Relevance" },
 ];
 
-const countryOptions: ComboboxOption[] = countriesData.map((c: any) => ({
+const countryOptions: ComboboxOptionType[] = countriesData.map((c: any) => ({
   value: c.code,
   label: c.name,
 }));
@@ -52,7 +52,8 @@ const countryOptions: ComboboxOption[] = countriesData.map((c: any) => ({
 interface FilterContentProps {
   title: string;
   onTitleChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  onGeoSelect: (result: GeoSuggestResult) => void;
+  selectedLocations: GeoSuggestResult[];
+  onGeoChange: (locations: GeoSuggestResult[]) => void;
   selectedCountries: string[];
   onCountryChange: (vals: string[]) => void;
   seniority: string[];
@@ -73,7 +74,8 @@ interface FilterContentProps {
 function FilterContent({
   title,
   onTitleChange,
-  onGeoSelect,
+  selectedLocations,
+  onGeoChange,
   selectedCountries,
   onCountryChange,
   seniority,
@@ -110,7 +112,7 @@ function FilterContent({
         <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground px-1">
           Location
         </label>
-        <GeoSuggest onSelect={onGeoSelect} />
+        <GeoSuggest selectedLocations={selectedLocations} onChange={onGeoChange} />
       </div>
 
       {/* Country Selector */}
@@ -170,7 +172,10 @@ function FilterContent({
       </div>
 
       {/* Remote Toggle */}
-      <div className="flex items-center justify-between px-1 py-2 rounded-lg border border-transparent hover:bg-muted/30 transition-colors">
+      <div
+        className="flex items-center justify-between px-1 py-2 rounded-lg border border-transparent hover:bg-muted/30 transition-colors cursor-pointer"
+        onClick={() => onRemoteChange(!isRemote)}
+      >
         <div className="flex items-center gap-2">
           <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-primary">
             <MapPin className="h-4 w-4" />
@@ -222,6 +227,9 @@ export function JobFilters() {
 
   // Local state for immediate UI feedback
   const [title, setTitle] = React.useState(searchParams.get("title") || "");
+  const [selectedLocations, setSelectedLocations] = React.useState<
+    GeoSuggestResult[]
+  >([]);
   const [selectedCountries, setSelectedCountries] = React.useState<string[]>(
     searchParams.get("location")?.split(",") || [],
   );
@@ -246,6 +254,21 @@ export function JobFilters() {
     setSalary(searchParams.get("salary") || "");
     setMaxAge(searchParams.get("max_age") || "");
     setSortBy(searchParams.get("sort_by") || "published");
+
+    // Sync selectedLocations by filtering out any that are no longer in the URL
+    const cityIds = searchParams.get("city_id")?.split(",") || [];
+    const stateIds = searchParams.get("state_id")?.split(",") || [];
+    const countryIds = searchParams.get("country_id")?.split(",") || [];
+
+    setSelectedLocations((prev) =>
+      prev.filter((loc) => {
+        if (loc.kind === "city") return cityIds.includes(String(loc.city_id));
+        if (loc.kind === "state") return stateIds.includes(String(loc.state_id));
+        if (loc.kind === "country")
+          return countryIds.includes(String(loc.country_id));
+        return false;
+      }),
+    );
   }, [searchParams]);
 
   // Update URL function
@@ -325,18 +348,29 @@ export function JobFilters() {
     updateUrl({ sort_by: val });
   };
 
-  const handleGeoSelect = (result: GeoSuggestResult) => {
-    if (result.kind === "city") {
-      updateUrl({ city_id: String(result.city_id) });
-    } else if (result.kind === "state") {
-      updateUrl({ state_id: String(result.state_id) });
-    } else if (result.kind === "country") {
-      updateUrl({ country_id: String(result.country_id) });
-    }
+  const handleGeoChange = (locations: GeoSuggestResult[]) => {
+    setSelectedLocations(locations);
+
+    const cityIds = locations
+      .filter((l) => l.kind === "city")
+      .map((l) => l.city_id);
+    const stateIds = locations
+      .filter((l) => l.kind === "state")
+      .map((l) => l.state_id);
+    const countryIds = locations
+      .filter((l) => l.kind === "country")
+      .map((l) => l.country_id);
+
+    updateUrl({
+      city_id: cityIds.map(String),
+      state_id: stateIds.map(String),
+      country_id: countryIds.map(String),
+    });
   };
 
   const clearAll = () => {
     setTitle("");
+    setSelectedLocations([]);
     setSelectedCountries([]);
     setIsRemote(false);
     setSeniority([]);
@@ -348,6 +382,7 @@ export function JobFilters() {
 
   const hasFilters = !!(
     title ||
+    selectedLocations.length > 0 ||
     selectedCountries.length > 0 ||
     isRemote ||
     seniority.length > 0 ||
@@ -359,7 +394,8 @@ export function JobFilters() {
   const filterProps = {
     title,
     onTitleChange: handleTitleChange,
-    onGeoSelect: handleGeoSelect,
+    selectedLocations,
+    onGeoChange: handleGeoChange,
     selectedCountries,
     onCountryChange: handleCountryChange,
     seniority,

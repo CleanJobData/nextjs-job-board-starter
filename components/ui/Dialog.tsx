@@ -1,7 +1,13 @@
 "use client";
 
 import * as React from "react";
-import { Dialog as HeadlessDialog, Transition } from "@headlessui/react";
+import {
+  Dialog as HeadlessDialog,
+  DialogPanel,
+  DialogTitle,
+  Transition,
+  TransitionChild,
+} from "@headlessui/react";
 import { X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -22,12 +28,8 @@ export function Dialog({
 }: DialogProps) {
   return (
     <Transition show={isOpen} as={React.Fragment}>
-      <HeadlessDialog
-        as="div"
-        className="relative z-50"
-        onClose={onClose}
-      >
-        <Transition.Child
+      <HeadlessDialog as="div" className="relative z-50" onClose={onClose}>
+        <TransitionChild
           as={React.Fragment}
           enter="ease-out duration-300"
           enterFrom="opacity-0"
@@ -37,11 +39,11 @@ export function Dialog({
           leaveTo="opacity-0"
         >
           <div className="fixed inset-0 bg-black/40 backdrop-blur-sm" />
-        </Transition.Child>
+        </TransitionChild>
 
         <div className="fixed inset-0 overflow-y-auto">
           <div className="flex min-h-full items-center justify-center p-4 text-center">
-            <Transition.Child
+            <TransitionChild
               as={React.Fragment}
               enter="ease-out duration-300"
               enterFrom="opacity-0 scale-95"
@@ -50,20 +52,20 @@ export function Dialog({
               leaveFrom="opacity-100 scale-100"
               leaveTo="opacity-0 scale-95"
             >
-              <HeadlessDialog.Panel
+              <DialogPanel
                 className={cn(
                   "w-full max-w-md transform overflow-hidden rounded-lg bg-card p-card text-left align-middle shadow-xl transition-all border border-border",
-                  className
+                  className,
                 )}
               >
                 <div className="flex items-center justify-between mb-4">
                   {title && (
-                    <HeadlessDialog.Title
+                    <DialogTitle
                       as="h3"
                       className="text-lg font-bold leading-6 text-foreground"
                     >
                       {title}
-                    </HeadlessDialog.Title>
+                    </DialogTitle>
                   )}
                   <button
                     type="button"
@@ -74,8 +76,8 @@ export function Dialog({
                   </button>
                 </div>
                 {children}
-              </HeadlessDialog.Panel>
-            </Transition.Child>
+              </DialogPanel>
+            </TransitionChild>
           </div>
         </div>
       </HeadlessDialog>

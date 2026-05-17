@@ -1,7 +1,13 @@
 "use client";
 
 import * as React from "react";
-import { Listbox as HeadlessListbox, Transition } from "@headlessui/react";
+import {
+  Listbox as HeadlessListbox,
+  ListboxButton,
+  ListboxOption as HeadlessListboxOption,
+  ListboxOptions,
+  Transition,
+} from "@headlessui/react";
 import { Check, ChevronDown, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Badge } from "./Badge";
@@ -51,16 +57,25 @@ export function Listbox({
 
   return (
     <div className={cn("relative w-full", className)}>
-      <HeadlessListbox value={currentValue} onChange={onChange} multiple={multiple as any}>
+      <HeadlessListbox
+        value={currentValue}
+        onChange={onChange}
+        multiple={multiple as any}
+      >
         <div className="relative mt-1">
-          <HeadlessListbox.Button className="relative w-full h-11 cursor-default rounded-lg border border-input bg-input-background pl-3 pr-10 text-left text-sm shadow-sm transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-ring/50">
+          <ListboxButton className="relative w-full h-11 cursor-default rounded-lg border border-input bg-input-background pl-3 pr-10 text-left text-sm shadow-sm transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-ring/50">
             <div className="flex items-center gap-2">
               {leftIcon && (
                 <span className="text-muted-foreground [&_svg]:h-4 [&_svg]:w-4">
                   {leftIcon}
                 </span>
               )}
-              <span className={cn("block truncate", !currentValue && "text-muted-foreground")}>
+              <span
+                className={cn(
+                  "block truncate",
+                  !currentValue && "text-muted-foreground",
+                )}
+              >
                 {getLabel()}
               </span>
             </div>
@@ -70,26 +85,26 @@ export function Listbox({
                 aria-hidden="true"
               />
             </span>
-          </HeadlessListbox.Button>
+          </ListboxButton>
           <Transition
             as={React.Fragment}
             leave="transition ease-in duration-100"
             leaveFrom="opacity-100"
             leaveTo="opacity-0"
           >
-            <HeadlessListbox.Options className="absolute z-50 mt-1 max-h-60 w-full overflow-auto rounded-md border border-border bg-card py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm">
+            <ListboxOptions className="absolute z-50 mt-1 max-h-60 min-h-[50px] w-full overflow-auto rounded-md border border-border bg-card py-1 text-base shadow-lg focus:outline-none sm:text-sm">
               {options.map((option) => {
                 const isSelected = multiple
                   ? selectedValues?.includes(option.value)
                   : value === option.value;
 
                 return (
-                  <HeadlessListbox.Option
+                  <HeadlessListboxOption
                     key={option.value}
                     className={({ active }) =>
                       cn(
-                        "relative cursor-default select-none py-2 pl-10 pr-4 transition-colors",
-                        active ? "bg-muted text-foreground" : "text-foreground"
+                        "relative cursor-default select-none py-2.5 pl-10 pr-4 transition-colors",
+                        active ? "bg-muted text-foreground" : "text-foreground",
                       )
                     }
                     value={option.value}
@@ -98,7 +113,7 @@ export function Listbox({
                       <span
                         className={cn(
                           "block truncate",
-                          isSelected ? "font-semibold" : "font-normal"
+                          isSelected ? "font-semibold" : "font-normal",
                         )}
                       >
                         {option.label}
@@ -109,10 +124,10 @@ export function Listbox({
                         </span>
                       ) : null}
                     </>
-                  </HeadlessListbox.Option>
+                  </HeadlessListboxOption>
                 );
               })}
-            </HeadlessListbox.Options>
+            </ListboxOptions>
           </Transition>
         </div>
       </HeadlessListbox>

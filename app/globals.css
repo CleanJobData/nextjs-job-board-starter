@@ -107,6 +107,25 @@ html.dark {
   --spacing-card: var(--spacing-card);
 }
 
+@keyframes loading-bar {
+  0% {
+    transform: scaleX(0);
+    transform-origin: left;
+  }
+  50% {
+    transform: scaleX(1);
+    transform-origin: left;
+  }
+  50.1% {
+    transform: scaleX(1);
+    transform-origin: right;
+  }
+  100% {
+    transform: scaleX(0);
+    transform-origin: right;
+  }
+}
+
 body {
   background: var(--background);
   color: var(--foreground);

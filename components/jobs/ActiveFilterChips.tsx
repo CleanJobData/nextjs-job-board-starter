@@ -17,14 +17,15 @@ export function ActiveFilterChips({ filtersApplied }: ActiveFilterChipsProps) {
 
   const removeFilter = (filter: FilterApplied) => {
     const newParams = new URLSearchParams(searchParams.toString());
-    
+
     const key = filter.key;
     let valueToRemove: string | undefined;
 
-    if (key === "city_id") valueToRemove = String((filter as any).city_id);
-    else if (key === "state_id") valueToRemove = String((filter as any).state_id);
-    else if (key === "country_id") valueToRemove = String((filter as any).country_id);
-    else if (key === "salary") valueToRemove = searchParams.get("salary") || undefined;
+    if (key === "city_id") valueToRemove = String(filter.city_id);
+    else if (key === "state_id") valueToRemove = String(filter.state_id);
+    else if (key === "country_id") valueToRemove = String(filter.country_id);
+    else if (key === "salary")
+      valueToRemove = searchParams.get("salary") || undefined;
     else if (key === "remote_only") {
       newParams.delete("remote");
     } else if (key === "max_age") {
@@ -35,10 +36,17 @@ export function ActiveFilterChips({ filtersApplied }: ActiveFilterChipsProps) {
 
     if (valueToRemove) {
       // For multi-value filters like location (country codes) or experience_level
-      const paramKey = key === "location" ? "location" : key === "experience_level" ? "experience_level" : key;
+      const paramKey =
+        key === "location"
+          ? "location"
+          : key === "experience_level"
+            ? "experience_level"
+            : key;
       const currentValues = newParams.get(paramKey)?.split(",") || [];
-      const updatedValues = currentValues.filter((v) => v !== String(valueToRemove));
-      
+      const updatedValues = currentValues.filter(
+        (v) => v !== String(valueToRemove),
+      );
+
       if (updatedValues.length > 0) {
         newParams.set(paramKey, updatedValues.join(","));
       } else {
