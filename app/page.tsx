@@ -1,9 +1,9 @@
 import * as React from "react";
 import { normalizeSearchParams, mapSearchParamsToQuery } from "@/lib/jobs/query-mapper";
 import { listJobs } from "@/lib/api/jobs";
-import { JobList } from "@/app/components/JobList";
+import { JobList } from "@/components/jobs/JobList";
 import { Typography } from "@/components/ui/Typography";
-import { RetryButton } from "@/app/components/RetryButton";
+import { RetryButton } from "@/components/jobs/RetryButton";
 import { JobBoardSearchParams } from "@/lib/jobs/query-types";
 import { ApiError } from "@/lib/api/client";
 
