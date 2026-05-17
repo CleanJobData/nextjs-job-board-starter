@@ -42,19 +42,19 @@ export function Dialog({
         </TransitionChild>
 
         <div className="fixed inset-0 overflow-y-auto">
-          <div className="flex min-h-full items-center justify-center p-4 text-center">
+          <div className="flex min-h-full items-end sm:items-center justify-center p-0 sm:p-4 text-center">
             <TransitionChild
               as={React.Fragment}
               enter="ease-out duration-300"
-              enterFrom="opacity-0 scale-95"
-              enterTo="opacity-100 scale-100"
+              enterFrom="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+              enterTo="opacity-100 translate-y-0 sm:scale-100"
               leave="ease-in duration-200"
-              leaveFrom="opacity-100 scale-100"
-              leaveTo="opacity-0 scale-95"
+              leaveFrom="opacity-100 translate-y-0 sm:scale-100"
+              leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
             >
               <DialogPanel
                 className={cn(
-                  "w-full max-w-md transform overflow-hidden rounded-lg bg-card p-card text-left align-middle shadow-xl transition-all border border-border",
+                  "w-full max-w-md transform overflow-hidden rounded-t-2xl sm:rounded-lg bg-card p-card text-left align-middle shadow-xl transition-all border border-border",
                   className,
                 )}
               >

@@ -19,8 +19,19 @@ export async function generateMetadata({
   try {
     const job = await getJobById(id);
     return {
-      title: `${job.title} at ${job.company?.name || "Unknown Company"} | CleanJobData`,
-      description: job.company?.description || `Apply for ${job.title} position.`,
+      title: `${job.title} at ${job.company?.name || "Unknown Company"}`,
+      description: job.company?.description || `Apply for ${job.title} position at ${job.company?.name}.`,
+      openGraph: {
+        title: `${job.title} at ${job.company?.name || "Unknown Company"}`,
+        description: job.company?.description || `Apply for ${job.title} position at ${job.company?.name}.`,
+        images: [`/jobs/${id}/opengraph-image`],
+      },
+      twitter: {
+        card: "summary_large_image",
+        title: `${job.title} at ${job.company?.name || "Unknown Company"}`,
+        description: job.company?.description || `Apply for ${job.title} position at ${job.company?.name}.`,
+        images: [`/jobs/${id}/opengraph-image`],
+      },
     };
   } catch {
     return {
@@ -35,8 +46,47 @@ export default async function JobPage({ params }: JobPageProps) {
   try {
     const job = await getJobById(id);
 
+    const jsonLd = {
+      "@context": "https://schema.org",
+      "@type": "JobPosting",
+      title: job.title,
+      description: job.description,
+      datePosted: job.published,
+      validThrough: job.expired_at,
+      employmentType: job.employment_type,
+      hiringOrganization: {
+        "@type": "Organization",
+        name: job.company?.name,
+        sameAs: job.company?.website_url,
+        logo: job.company?.logo,
+      },
+      jobLocation: {
+        "@type": "Place",
+        address: {
+          "@type": "PostalAddress",
+          addressLocality: job.location,
+        },
+      },
+      baseSalary: job.salary_min
+        ? {
+            "@type": "MonetaryAmount",
+            currency: job.salary_currency || "USD",
+            value: {
+              "@type": "QuantitativeValue",
+              minValue: job.salary_min,
+              maxValue: job.salary_max,
+              unitText: "YEAR",
+            },
+          }
+        : undefined,
+    };
+
     return (
       <div className="container mx-auto py-12 px-10">
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
         <div className="mb-8">
           <Button variant="ghost" size="sm" asChild className="-ml-2 text-muted-foreground">
             <Link href="/">

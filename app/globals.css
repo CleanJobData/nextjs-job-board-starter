@@ -35,7 +35,13 @@ html {
   --switch-thumb-border: #f0ede8;
 
   --radius: 0.75rem;
-  --spacing-card: 2rem;
+  --spacing-card: 1.25rem;
+}
+
+@media (min-width: 640px) {
+  html {
+    --spacing-card: 2rem;
+  }
 }
 
 html.dark {
@@ -67,7 +73,13 @@ html.dark {
   --switch-thumb-border: #333333;
 
   --radius: 0.75rem;
-  --spacing-card: 2rem;
+  --spacing-card: 1.25rem;
+}
+
+@media (min-width: 640px) {
+  html.dark {
+    --spacing-card: 2rem;
+  }
 }
 
 @theme inline {

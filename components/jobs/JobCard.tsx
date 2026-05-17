@@ -29,32 +29,34 @@ export function JobCard({ job }: JobCardProps) {
   }, [job.salary_text, job.salary_min, job.salary_max, job.salary_currency]);
 
   return (
-    <Link href={`/jobs/${job.id}`} scroll={false} className="block group">
-      <Card className="hover:border-primary/50 transition-colors">
-        <CardContent className="p-5 space-y-4">
+    <Link href={`/jobs/${job.id}`} scroll={false} className="block group h-full">
+      <Card className="hover:border-primary/50 transition-all duration-300 hover:shadow-md h-full flex flex-col">
+        <CardContent className="p-4 sm:p-6 space-y-5 flex flex-col flex-1">
           <div className="flex items-start justify-between gap-4">
             <div className="flex items-center gap-4">
               {job.company?.logo ? (
-                <img
-                  src={job.company.logo}
-                  alt={`${job.company.name} logo`}
-                  className="h-12 w-12 rounded-md object-contain bg-muted p-1"
-                />
+                <div className="h-12 w-12 sm:h-14 sm:w-14 rounded-2xl bg-muted p-1 flex items-center justify-center border border-border/50 group-hover:border-primary/20 transition-colors shrink-0">
+                  <img
+                    src={job.company.logo}
+                    alt={`${job.company.name} logo`}
+                    className="h-full w-full object-contain rounded-lg"
+                  />
+                </div>
               ) : (
-                <div className="h-12 w-12 rounded-md bg-muted flex items-center justify-center">
-                  <FaBriefcase className="h-6 w-6 text-muted-foreground" />
+                <div className="h-12 w-12 sm:h-14 sm:w-14 rounded-2xl bg-muted flex items-center justify-center border border-border/50 shrink-0">
+                  <FaBriefcase className="h-6 w-6 sm:h-7 sm:w-7 text-muted-foreground/50" />
                 </div>
               )}
-              <div>
+              <div className="space-y-1 min-w-0">
                 <Typography
                   variant="small"
-                  className="text-muted-foreground font-medium"
+                  className="text-muted-foreground font-semibold uppercase tracking-wider text-[10px]"
                 >
                   {job.company?.name || "Unknown Company"}
                 </Typography>
                 <Typography
                   variant="h4"
-                  className="line-clamp-1 group-hover:text-primary transition-colors"
+                  className="line-clamp-2 group-hover:text-primary transition-colors text-base sm:text-lg font-bold leading-tight"
                 >
                   {job.title}
                 </Typography>
@@ -62,37 +64,48 @@ export function JobCard({ job }: JobCardProps) {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-2 gap-x-4 text-sm text-muted-foreground">
-            <div className="flex items-center gap-2">
-              <FaLocationDot className="h-4 w-4 shrink-0" />
-              <span className="line-clamp-1">{locationLabel}</span>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-3 gap-x-6 text-sm">
+            <div className="flex gap-2.5 text-muted-foreground">
+              <div className="flex shrink-0 pt-1">
+                <FaLocationDot className="h-3 w-3" />
+              </div>
+              <span className="line-clamp-1 font-medium">{locationLabel}</span>
             </div>
+            
             {salaryDisplay && (
-              <div className="flex items-center gap-2 text-foreground font-medium">
-                <FaDollarSign className="h-4 w-4 shrink-0 text-muted-foreground" />
-                <span className="line-clamp-1">{salaryDisplay}</span>
+              <div className="flex gap-2.5 text-foreground">
+                <div className="flex shrink-0 pt-1.5 text-primary">
+                  <FaDollarSign className="h-3 w-3" />
+                </div>
+                <span className="line-clamp-1 font-bold">{salaryDisplay}</span>
               </div>
             )}
-            <div className="flex items-center gap-2">
-              <FaClock className="h-4 w-4 shrink-0" />
-              <span>{addedAgo}</span>
+
+            <div className="flex gap-2.5 text-muted-foreground">
+              <div className="flex shrink-0 pt-1.5">
+                <FaClock className="h-2.5 w-2.5" />
+              </div>
+              <span className="font-medium">{addedAgo}</span>
             </div>
+
             {job.has_remote && (
-              <div className="flex items-center gap-2 text-accent font-medium">
-                <FaGlobe className="h-4 w-4 shrink-0" />
-                <span>Remote</span>
+              <div className="flex gap-2.5 text-emerald-600 dark:text-emerald-400">
+                <div className="flex shrink-0 pt-1.5">
+                  <FaGlobe className="h-2.5 w-2.5" />
+                </div>
+                <span className="font-bold">Remote</span>
               </div>
             )}
           </div>
 
-          <div className="flex flex-wrap gap-2 pt-2">
+          <div className="flex flex-wrap gap-2 pt-1 mt-auto">
             {job.experience_level && (
-              <Badge variant="secondary" className="capitalize">
+              <Badge variant="secondary" className="capitalize px-2.5 py-0.5 text-[11px] font-bold tracking-wide bg-muted/50 border-transparent">
                 {job.experience_level.toLowerCase()}
               </Badge>
             )}
             {job.employment_type && (
-              <Badge variant="outline" className="capitalize">
+              <Badge variant="outline" className="capitalize px-2.5 py-0.5 text-[11px] font-bold tracking-wide border-border/60">
                 {job.employment_type.replace("_", " ")}
               </Badge>
             )}

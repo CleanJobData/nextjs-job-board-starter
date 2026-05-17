@@ -36,11 +36,12 @@ export default async function HomePage({ searchParams }: HomePageProps) {
     <div className="container mx-auto py-12 px-4">
       {/* Hero Section */}
       <div className="space-y-4 max-w-3xl mb-16">
-        <Typography variant="h1" className="text-4xl md:text-5xl font-extrabold tracking-tight">
-          Find your next data role
+        <Typography variant="h1" className="text-4xl md:text-6xl font-extrabold tracking-tight">
+          Find your next <span className="text-primary">dream job.</span>
         </Typography>
-        <Typography variant="lead" className="text-xl text-muted-foreground">
-          The most comprehensive list of data engineering, science, and analytics jobs from across the web.
+        <Typography variant="lead" className="text-xl text-muted-foreground max-w-2xl">
+          Discover curated opportunities for data professionals, engineers, and designers. 
+          Structured job data for the modern workforce.
         </Typography>
       </div>
 
