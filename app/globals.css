@@ -4,64 +4,70 @@
 
 /* Use `html` / `html.dark` so variables always override predictably (no :root tie-break). */
 html {
-  --background: #fafafa;
-  --foreground: #0a0a0a;
+  --background: #faf7f2;
+  --foreground: #1a1a17;
   --card: #ffffff;
-  --card-foreground: #0a0a0a;
-  --muted: #f4f4f5;
-  --muted-foreground: #71717a;
-  --border: #d4d4d8;
-  --input: #d4d4d8;
+  --card-foreground: #1a1a17;
+  --muted: #f4f1ec;
+  --muted-foreground: #78716c;
+  --border: #f0ede8;
+  --input: #f0ede8;
   --input-background: #ffffff;
   --ring: #10b981;
-  --primary: #059669;
+  --primary: #10b981;
   --primary-foreground: #ffffff;
-  --secondary: #f4f4f5;
-  --secondary-foreground: #18181b;
-  --destructive: #dc2626;
+  --secondary: #f4f1ec;
+  --secondary-foreground: #1c1917;
+  --destructive: #ef4444;
   --destructive-foreground: #ffffff;
-  --accent: #ecfdf5;
-  --accent-foreground: #065f46;
+  --accent: #f0fdf4;
+  --accent-foreground: #166534;
   /* High-contrast control on primary-colored sections */
   --on-primary: #ffffff;
-  --on-primary-hover: #f4f4f5;
-  --on-primary-foreground: #047857;
+  --on-primary-hover: #f4f1ec;
+  --on-primary-foreground: #10b981;
   /* “Inverse” / elevated surface for buttons on top of primary */
   --inverse-background: #ffffff;
-  --inverse-background-hover: #f4f4f5;
-  --inverse-foreground: #047857;
+  --inverse-background-hover: #f4f1ec;
+  --inverse-foreground: #10b981;
   /* Toggle track / thumb */
-  --switch-thumb: #fafafa;
-  --switch-thumb-border: #d4d4d8;
+  --switch-thumb: #ffffff;
+  --switch-thumb-border: #f0ede8;
+
+  --radius: 0.75rem;
+  --spacing-card: 2rem;
 }
 
 html.dark {
-  --background: #09090b;
-  --foreground: #fafafa;
-  --card: #18181b;
-  --card-foreground: #fafafa;
-  --muted: #27272a;
-  --muted-foreground: #a1a1aa;
-  --border: #27272a;
-  --input: #3f3f46;
-  --input-background: #09090b;
-  --ring: #34d399;
-  --primary: #059669;
-  --primary-foreground: #ffffff;
-  --secondary: #27272a;
-  --secondary-foreground: #fafafa;
+  --background: #1a1a1a;
+  --foreground: #f5f5f5;
+  --card: #242424;
+  --card-foreground: #f5f5f5;
+  --muted: #2d2d2d;
+  --muted-foreground: #a3a3a3;
+  --border: #333333;
+  --input: #333333;
+  --input-background: #1a1a1a;
+  --ring: #10b981;
+  --primary: #10b981;
+  --primary-foreground: #1a1a1a;
+  --secondary: #2d2d2d;
+  --secondary-foreground: #f5f5f5;
   --destructive: #ef4444;
-  --destructive-foreground: #ffffff;
+  --destructive-foreground: #fafafa;
   --accent: #064e3b;
-  --accent-foreground: #6ee7b7;
+  --accent-foreground: #10b981;
   --on-primary: #ffffff;
-  --on-primary-hover: #e4e4e7;
-  --on-primary-foreground: #065f46;
-  --inverse-background: #f4f4f5;
-  --inverse-background-hover: #e4e4e7;
-  --inverse-foreground: #047857;
+  --on-primary-hover: #2d2d2d;
+  --on-primary-foreground: #064e3b;
+  --inverse-background: #fafafa;
+  --inverse-background-hover: #e5e5e5;
+  --inverse-foreground: #1a1a1a;
   --switch-thumb: #fafafa;
-  --switch-thumb-border: #52525b;
+  --switch-thumb-border: #333333;
+
+  --radius: 0.75rem;
+  --spacing-card: 2rem;
 }
 
 @theme inline {
@@ -93,6 +99,12 @@ html.dark {
   --color-switch-thumb-border: var(--switch-thumb-border);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+
+  --radius-lg: var(--radius);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-sm: calc(var(--radius) - 4px);
+  
+  --spacing-card: var(--spacing-card);
 }
 
 body {
