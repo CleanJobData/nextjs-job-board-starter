@@ -24,13 +24,11 @@ export async function generateMetadata({
       openGraph: {
         title: `${job.title} at ${job.company?.name || "Unknown Company"}`,
         description: job.company?.description || `Apply for ${job.title} position at ${job.company?.name}.`,
-        images: [`/jobs/${id}/opengraph-image`],
       },
       twitter: {
         card: "summary_large_image",
         title: `${job.title} at ${job.company?.name || "Unknown Company"}`,
         description: job.company?.description || `Apply for ${job.title} position at ${job.company?.name}.`,
-        images: [`/jobs/${id}/opengraph-image`],
       },
     };
   } catch {

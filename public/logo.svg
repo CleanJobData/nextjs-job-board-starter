@@ -1,6 +1,5 @@
-<svg width="120" height="40" viewBox="0 0 120 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <rect x="0" y="8" width="24" height="24" rx="6" fill="#059669" />
-  <path d="M17 16V14C17 13.4477 16.5523 13 16 13H8C7.44772 13 7 13.4477 7 14V16" stroke="white" stroke-width="1.5" />
-  <rect x="5" y="16" width="14" height="10" rx="1" stroke="white" stroke-width="1.5" />
-  <text x="32" y="26" fill="currentColor" style="font-family: sans-serif; font-weight: 700; font-size: 18px;">JobBoard</text>
+<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect x="0" y="0" width="24" height="24" rx="6" fill="#059669" />
+  <path d="M17 8V6C17 5.44772 16.5523 5 16 5H8C7.44772 5 7 5.44772 7 6V8" stroke="white" stroke-width="1.5" />
+  <rect x="5" y="8" width="14" height="10" rx="1" stroke="white" stroke-width="1.5" />
 </svg>

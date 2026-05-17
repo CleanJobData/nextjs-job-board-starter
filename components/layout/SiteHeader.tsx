@@ -10,11 +10,14 @@ export function SiteHeader() {
         <Link href="/" className="flex items-center gap-2">
           <Image
             src="/logo.svg"
-            alt="CleanJobData Logo"
-            width={120}
-            height={40}
-            className="h-8 w-auto dark:invert-0"
+            alt="JobBoard Logo"
+            width={32}
+            height={32}
+            className="h-8 w-8"
           />
+          <span className="text-xl font-bold tracking-tight text-foreground">
+            JobBoard
+          </span>
         </Link>
 
         <nav className="flex items-center gap-4">

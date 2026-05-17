@@ -15,34 +15,38 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const siteName = process.env.NEXT_PUBLIC_SITE_NAME || "CleanJobData";
+const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+
 export const metadata: Metadata = {
+  metadataBase: new URL(appUrl),
   title: {
-    default: "CleanJobData — Find Your Next Dream Job",
-    template: "%s | CleanJobData",
+    default: `${siteName} — Find Your Next Dream Job`,
+    template: `%s | ${siteName}`,
   },
   description: "Discover curated job opportunities for data professionals, engineers, and designers. Structured job data for the modern workforce.",
   keywords: ["job board", "data jobs", "engineering jobs", "remote jobs", "tech careers"],
-  authors: [{ name: "CleanJobData" }],
-  creator: "CleanJobData",
+  authors: [{ name: siteName }],
+  creator: siteName,
   openGraph: {
     type: "website",
     locale: "en_US",
-    url: `${process.env.NEXT_PUBLIC_APP_URL}`,
-    siteName: "CleanJobData",
-    title: "CleanJobData — Find Your Next Dream Job",
+    url: "/",
+    siteName: siteName,
+    title: `${siteName} — Find Your Next Dream Job`,
     description: "Discover curated job opportunities for data professionals, engineers, and designers. Structured job data for the modern workforce.",
     images: [
       {
         url: "/opengraph-image",
         width: 1200,
         height: 630,
-        alt: "CleanJobData",
+        alt: siteName,
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "CleanJobData — Find Your Next Dream Job",
+    title: `${siteName} — Find Your Next Dream Job`,
     description: "Discover curated job opportunities for data professionals, engineers, and designers.",
     images: ["/opengraph-image"],
   },

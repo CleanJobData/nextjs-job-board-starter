@@ -269,7 +269,7 @@ export default function UIKitchenSink() {
       >
         <div className="space-y-4">
           <Typography variant="p">
-            This template is built with Next.js 15, Tailwind CSS v4, and Headless UI.
+            This template is built with Next.js 16, Tailwind CSS v4, and Headless UI.
           </Typography>
           <Typography variant="p">
             It uses a strict TypeScript configuration and a custom theme system that supports light and dark modes.

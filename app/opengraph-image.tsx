@@ -18,54 +18,81 @@ export default async function Image() {
           position: "relative",
           fontFamily: "sans-serif",
           overflow: "hidden",
+          border: "1px solid rgba(5,150,105,0.2)",
         }}
       >
-        {/* Glow effect */}
+        {/* Subtle Grid Pattern */}
         <div
           style={{
             position: "absolute",
-            top: "-80px",
-            right: "100px",
-            width: "700px",
-            height: "600px",
-            background:
-              "radial-gradient(circle, rgba(5,150,105,0.15) 0%, transparent 65%)",
+            inset: 0,
+            backgroundImage: "linear-gradient(rgba(5,150,105,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(5,150,105,0.05) 1px, transparent 1px)",
+            backgroundSize: "40px 40px",
             display: "flex",
           }}
         />
 
-        {/* Content */}
+        {/* Layered Glow effects */}
+        <div
+          style={{
+            position: "absolute",
+            top: "-150px",
+            right: "-50px",
+            width: "800px",
+            height: "800px",
+            background: "radial-gradient(circle, rgba(5,150,105,0.12) 0%, transparent 70%)",
+            display: "flex",
+          }}
+        />
+        <div
+          style={{
+            position: "absolute",
+            bottom: "-200px",
+            left: "-100px",
+            width: "600px",
+            height: "600px",
+            background: "radial-gradient(circle, rgba(5,150,105,0.08) 0%, transparent 60%)",
+            display: "flex",
+          }}
+        />
+
+        {/* Content Container */}
         <div
           style={{
             display: "flex",
             flexDirection: "column",
             justifyContent: "center",
-            padding: "0 80px",
+            padding: "0 100px",
             width: "100%",
+            height: "100%",
+            position: "relative",
+            zIndex: 10,
           }}
         >
+          {/* Header: Site Info */}
           <div
             style={{
               display: "flex",
               alignItems: "center",
-              gap: "16px",
-              marginBottom: "40px",
+              gap: "20px",
+              marginBottom: "48px",
             }}
           >
             <div
               style={{
-                width: "64px",
-                height: "64px",
-                background: "#059669",
-                borderRadius: "16px",
+                width: "80px",
+                height: "80px",
+                background: "linear-gradient(135deg, #059669 0%, #047857 100%)",
+                borderRadius: "20px",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
+                boxShadow: "0 10px 30px rgba(5,150,105,0.2)",
               }}
             >
               <svg
-                width="40"
-                height="40"
+                width="48"
+                height="48"
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="white"
@@ -79,43 +106,60 @@ export default async function Image() {
             </div>
             <div
               style={{
-                fontSize: "32px",
+                fontSize: "36px",
                 fontWeight: 700,
                 color: "white",
+                letterSpacing: "-0.02em",
               }}
             >
               {siteName}
             </div>
           </div>
 
+          {/* Hero Text */}
           <div
             style={{
-              fontSize: "84px",
+              fontSize: "96px",
               fontWeight: 800,
-              lineHeight: 1.1,
+              lineHeight: 1.05,
               color: "white",
-              letterSpacing: "-0.04em",
-              marginBottom: "24px",
+              letterSpacing: "-0.05em",
+              marginBottom: "32px",
               display: "flex",
               flexDirection: "column",
             }}
           >
             <span>Find your next</span>
-            <span style={{ color: "#059669" }}>dream job.</span>
+            <span style={{ color: "#10b981" }}>dream job.</span>
           </div>
 
+          {/* Subtext */}
           <div
             style={{
-              fontSize: "28px",
-              color: "rgba(255,255,255,0.5)",
-              maxWidth: "600px",
+              fontSize: "32px",
+              color: "rgba(255,255,255,0.6)",
+              maxWidth: "700px",
               lineHeight: 1.4,
+              fontWeight: 500,
             }}
           >
             Discover thousands of curated opportunities for data professionals and
             engineers.
           </div>
         </div>
+
+        {/* Footer Accent */}
+        <div
+          style={{
+            position: "absolute",
+            bottom: "0",
+            left: "0",
+            right: "0",
+            height: "8px",
+            background: "linear-gradient(90deg, #059669 0%, #10b981 100%)",
+            display: "flex",
+          }}
+        />
       </div>
     ),
     { ...size }

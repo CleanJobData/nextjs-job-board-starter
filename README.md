@@ -1,12 +1,27 @@
 # CleanJobData Next.js Job Board Starter
 
-A production-ready, high-performance job board template built with **Next.js 15**, **Tailwind CSS v4**, and the **CleanJobData API**.
+A production-ready, high-performance job board template built with **Next.js 16**, **Tailwind CSS v4**, and the **CleanJobData API**.
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/cleanjobdata/cleanjobdata-nextjs-job-board&env=CLEANJOBDATA_API_URL,CLEANJOBDATA_API_KEY,NEXT_PUBLIC_SITE_NAME&envDescription=CLEANJOBDATA_API_URL&envDescription=CLEANJOBDATA_API_KEY&envDescription=NEXT_PUBLIC_SITE_NAME&project-name=cleanjobdata-job-board)
+## 🚀 Quick Start
+
+The fastest way to get your job board live is to **Fork this repository** and deploy it.
+
+1. **Fork this repo** to your own GitHub account.
+2. **Deploy** using one of the platforms below.
+3. **Configure** your API key from the [CleanJobData Dashboard](https://cleanjobdata.com/dashboard).
+
+For detailed step-by-step setup instructions, visit our [Build a Job Board Guide](https://cleanjobdata.com/docs/guides/job-board).
+
+## 🛠 Deployment
+
+Deploy your forked repository in seconds:
+
+- **Vercel**: The recommended platform for Next.js. [Deploy Now](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fcleanjobdata%2Fcleanjobdata-nextjs-job-board&repository-name=cleanjobdata-nextjs-job-board&project-name=cleanjobdata-job-board&env=CLEANJOBDATA_API_URL,CLEANJOBDATA_API_KEY,NEXT_PUBLIC_SITE_NAME&envDescription=API_URL,API_KEY,SITE_NAME)
+- **Netlify**: Great for static and serverless sites. [Deploy Now](https://app.netlify.com/start/deploy?repository=https://github.com/cleanjobdata/cleanjobdata-nextjs-job-board)
 
 ## Features
 
-- **Modern Stack**: Next.js 15 (App Router), React 19, Tailwind CSS v4.
+- **Modern Stack**: Next.js 16 (App Router), React 19, Tailwind CSS v4.
 - **Fast & Scannable**: Optimized job grid with server-side rendering and cursor-based pagination.
 - **Advanced Filtering**: Search by title, location (with geo-suggestions), remote, seniority, salary, and more.
 - **URL Synchronization**: All filter states are synced to the URL for easy bookmarking and sharing.
@@ -15,7 +30,7 @@ A production-ready, high-performance job board template built with **Next.js 15*
 - **Theme Support**: Built-in light and dark mode with zero flash on load.
 - **Type Safe**: Strict TypeScript implementation for all API responses and application state.
 
-## Getting Started
+## Local Development
 
 ### 1. Clone the repository
 
@@ -50,19 +65,6 @@ npm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) to see your job board in action.
-
-## Deployment
-
-### Deploy to Vercel
-
-The easiest way to deploy is using the Vercel button at the top of this README. During the import process, Vercel will prompt you to enter the required environment variables.
-
-### Manual Deployment
-
-1. Push your code to a GitHub/GitLab/Bitbucket repository.
-2. Import the project into Vercel or your preferred hosting provider.
-3. Add the environment variables listed in `.env.example`.
-4. Deploy!
 
 ## API Reference
 
