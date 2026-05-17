@@ -9,7 +9,7 @@ import {
  * Normalizes raw URL search parameters into a structured object.
  */
 export function normalizeSearchParams(
-  params: Record<string, string | string[] | undefined>
+  params: any
 ): JobBoardSearchParams {
   const getSingle = (key: string) => {
     const val = params[key];

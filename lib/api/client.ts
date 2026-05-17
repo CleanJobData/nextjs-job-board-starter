@@ -4,12 +4,14 @@ import { ApiErrorBody } from "./types";
 export class ApiError extends Error {
   status: number;
   code?: string;
+  url?: string;
 
-  constructor(body: ApiErrorBody) {
+  constructor(body: ApiErrorBody, url?: string) {
     super(body.message);
     this.name = "ApiError";
     this.status = body.status;
     this.code = body.code;
+    this.url = url;
   }
 }
 
@@ -21,7 +23,6 @@ export async function apiFetch<T>(
   options: RequestInit = {}
 ): Promise<T> {
   const { baseUrl, apiKey } = getApiConfig();
-
   const path = endpoint.startsWith("/") ? endpoint : `/${endpoint}`;
   const url = `${baseUrl}${path}`;
 
@@ -35,16 +36,21 @@ export async function apiFetch<T>(
   });
 
   if (!response.ok) {
-    let errorBody: ApiErrorBody;
+    let errorBody: any;
     try {
       errorBody = await response.json();
     } catch {
-      errorBody = {
-        status: response.status,
-        message: response.statusText || `Request failed with status ${response.status}`,
-      };
+      errorBody = {};
     }
-    throw new ApiError(errorBody);
+
+    // Ensure we always have a status and a message
+    const finalError: ApiErrorBody = {
+      status: errorBody.status || response.status,
+      message: errorBody.message || errorBody.error || response.statusText || "Unknown API Error",
+      code: errorBody.code,
+    };
+
+    throw new ApiError(finalError, url);
   }
 
   return response.json() as Promise<T>;
