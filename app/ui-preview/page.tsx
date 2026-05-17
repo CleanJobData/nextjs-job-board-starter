@@ -1,7 +1,17 @@
 "use client";
 
 import * as React from "react";
-import { Search, MapPin, Briefcase, Globe, Bell, ChevronRight, Info, Layout, MousePointer2 } from "lucide-react";
+import {
+  FaMagnifyingGlass,
+  FaLocationDot,
+  FaBriefcase,
+  FaGlobe,
+  FaBell,
+  FaChevronRight,
+  FaCircleInfo,
+  FaTableCellsLarge,
+  FaArrowPointer,
+} from "react-icons/fa6";
 import { Typography } from "@/components/ui/Typography";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -50,7 +60,7 @@ export default function UIKitchenSink() {
         <div className="flex items-center gap-4">
           <ThemeToggle />
           <Button variant="outline" size="sm" onClick={() => setIsDialogOpen(true)}>
-            <Info className="h-4 w-4 mr-2" />
+            <FaCircleInfo className="h-4 w-4 mr-2" />
             Test Dialog
           </Button>
         </div>
@@ -64,11 +74,11 @@ export default function UIKitchenSink() {
             <Tabs>
               <TabsList className="mb-2">
                 <TabsTrigger value="preview" activeValue={activeTab} onValueChange={setActiveTab}>
-                  <Layout className="h-4 w-4 mr-2" />
+                  <FaTableCellsLarge className="h-4 w-4 mr-2" />
                   UI Preview
                 </TabsTrigger>
                 <TabsTrigger value="code" activeValue={activeTab} onValueChange={setActiveTab}>
-                  <MousePointer2 className="h-4 w-4 mr-2" />
+                  <FaArrowPointer className="h-4 w-4 mr-2" />
                   Usage
                 </TabsTrigger>
               </TabsList>
@@ -173,15 +183,15 @@ export default function UIKitchenSink() {
           </CardContent>
           <CardContent className="flex flex-wrap gap-4 items-center pt-0">
             <Button variant="default">
-              <Bell className="h-4 w-4 mr-2" />
+              <FaBell className="h-4 w-4 mr-2" />
               With Left Icon
             </Button>
             <Button variant="secondary">
               With Right Icon
-              <ChevronRight className="h-4 w-4 ml-2" />
+              <FaChevronRight className="h-4 w-4 ml-2" />
             </Button>
             <Button variant="outline" size="icon">
-              <Search className="h-4 w-4" />
+              <FaMagnifyingGlass className="h-4 w-4" />
             </Button>
           </CardContent>
           <CardContent className="flex flex-wrap gap-4 items-end pt-0">
@@ -200,9 +210,9 @@ export default function UIKitchenSink() {
           <CardContent className="grid md:grid-cols-2 gap-8">
             <div className="space-y-4">
               <Typography variant="h4">Inputs</Typography>
-              <Input placeholder="Search jobs..." leftIcon={<Search />} />
-              <Input placeholder="Location..." leftIcon={<MapPin />} />
-              <Input placeholder="With right icon" rightIcon={<ChevronRight />} />
+              <Input placeholder="Search jobs..." leftIcon={<FaMagnifyingGlass />} />
+              <Input placeholder="Location..." leftIcon={<FaLocationDot />} />
+              <Input placeholder="With right icon" rightIcon={<FaChevronRight />} />
             </div>
             <div className="space-y-4">
               <Typography variant="h4">Selects & Toggles</Typography>
@@ -212,14 +222,14 @@ export default function UIKitchenSink() {
                 value={seniority}
                 onChange={setSeniority}
                 placeholder="Select Seniority"
-                leftIcon={<Briefcase />}
+                leftIcon={<FaBriefcase />}
               />
               <Combobox
                 options={locationOptions}
                 selectedValues={locations}
                 onChange={setLocations}
                 placeholder="Filter by Countries"
-                leftIcon={<Globe />}
+                leftIcon={<FaGlobe />}
               />
             </div>
           </CardContent>

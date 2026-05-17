@@ -8,7 +8,7 @@ import {
   ListboxOptions,
   Transition,
 } from "@headlessui/react";
-import { Check, ChevronDown, X } from "lucide-react";
+import { FaCheck, FaAngleDown, FaXmark } from "react-icons/fa6";
 import { cn } from "@/lib/utils";
 import { Badge } from "./Badge";
 
@@ -79,8 +79,8 @@ export function Listbox({
                 {getLabel()}
               </span>
             </div>
-            <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
-              <ChevronDown
+            <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+              <FaAngleDown
                 className="h-4 w-4 text-muted-foreground"
                 aria-hidden="true"
               />
@@ -120,7 +120,7 @@ export function Listbox({
                       </span>
                       {isSelected ? (
                         <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-primary">
-                          <Check className="h-4 w-4" aria-hidden="true" />
+                          <FaCheck className="h-4 w-4" aria-hidden="true" />
                         </span>
                       ) : null}
                     </>
@@ -148,7 +148,7 @@ export function Listbox({
                   onClick={() => handleRemove(val)}
                   className="hover:text-accent-foreground/80 transition-colors"
                 >
-                  <X className="h-3 w-3" />
+                  <FaXmark className="h-3 w-3" />
                 </button>
               </Badge>
             );

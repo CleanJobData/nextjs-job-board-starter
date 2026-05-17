@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { MapPin, X } from "lucide-react";
+import { FaLocationDot, FaXmark } from "react-icons/fa6";
 import { cn, debounce } from "@/lib/utils";
 import { GeoSuggestResult } from "@/lib/api/types";
 import { getGeoSuggestions } from "@/app/actions/geo";
@@ -76,7 +76,7 @@ export function GeoSuggest({
       >
         <div className="relative">
           <ComboboxInput
-            leftIcon={<MapPin className="mr-2 h-4 w-4 text-muted-foreground" />}
+            leftIcon={<FaLocationDot className="mr-2 h-4 w-4 text-muted-foreground" />}
             onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
               setQuery(event.target.value)
             }
@@ -120,7 +120,7 @@ export function GeoSuggest({
                 onClick={() => handleRemove(loc)}
                 className="hover:text-accent-foreground/80 transition-colors"
               >
-                <X className="h-3 w-3" />
+                <FaXmark className="h-3 w-3" />
               </button>
             </Badge>
           ))}

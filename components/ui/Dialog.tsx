@@ -8,7 +8,7 @@ import {
   Transition,
   TransitionChild,
 } from "@headlessui/react";
-import { X } from "lucide-react";
+import { FaXmark } from "react-icons/fa6";
 import { cn } from "@/lib/utils";
 
 interface DialogProps {
@@ -72,7 +72,7 @@ export function Dialog({
                     className="rounded-full p-1 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
                     onClick={onClose}
                   >
-                    <X className="h-5 w-5" />
+                    <FaXmark className="h-5 w-5" />
                   </button>
                 </div>
                 {children}

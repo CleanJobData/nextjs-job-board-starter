@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
-import { X } from "lucide-react";
+import { FaXmark } from "react-icons/fa6";
 import { Badge } from "@/components/ui/Badge";
 import { FilterApplied } from "@/lib/api/types";
 
@@ -74,7 +74,7 @@ export function ActiveFilterChips({ filtersApplied }: ActiveFilterChipsProps) {
             className="p-0.5 hover:bg-foreground/10 rounded-full transition-colors"
             aria-label={`Remove ${filter.display_label} filter`}
           >
-            <X className="h-3 w-3" />
+            <FaXmark className="h-3 w-3" />
           </button>
         </Badge>
       ))}

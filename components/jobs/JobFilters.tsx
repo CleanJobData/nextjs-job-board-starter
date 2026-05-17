@@ -3,14 +3,14 @@
 import * as React from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import {
-  Search,
-  MapPin,
-  Briefcase,
-  DollarSign,
-  Clock,
-  SlidersHorizontal,
-  X,
-} from "lucide-react";
+  FaMagnifyingGlass,
+  FaLocationDot,
+  FaBriefcase,
+  FaDollarSign,
+  FaClock,
+  FaSliders,
+  FaXmark,
+} from "react-icons/fa6";
 import { Input } from "@/components/ui/Input";
 import { Combobox, ComboboxOptionType } from "@/components/ui/Combobox";
 import { Listbox, ListboxOption } from "@/components/ui/Listbox";
@@ -103,7 +103,7 @@ function FilterContent({
           placeholder="Job title, keywords..."
           value={title}
           onChange={onTitleChange}
-          leftIcon={<Search className="h-4 w-4" />}
+          leftIcon={<FaMagnifyingGlass className="h-4 w-4" />}
         />
       </div>
 
@@ -125,7 +125,7 @@ function FilterContent({
           selectedValues={selectedCountries}
           onChange={onCountryChange}
           placeholder="Select countries..."
-          leftIcon={<MapPin className="h-4 w-4" />}
+          leftIcon={<FaLocationDot className="h-4 w-4" />}
         />
       </div>
 
@@ -140,7 +140,7 @@ function FilterContent({
           onChange={onSeniorityChange}
           placeholder="All Levels"
           multiple
-          leftIcon={<Briefcase className="h-4 w-4" />}
+          leftIcon={<FaBriefcase className="h-4 w-4" />}
         />
       </div>
 
@@ -153,7 +153,7 @@ function FilterContent({
           placeholder="e.g. 80,000"
           value={formatNumber(salary)}
           onChange={onSalaryChange}
-          leftIcon={<DollarSign className="h-4 w-4" />}
+          leftIcon={<FaDollarSign className="h-4 w-4" />}
         />
       </div>
 
@@ -167,7 +167,7 @@ function FilterContent({
           value={maxAge}
           onChange={onMaxAgeChange}
           placeholder="Anytime"
-          leftIcon={<Clock className="h-4 w-4" />}
+          leftIcon={<FaClock className="h-4 w-4" />}
         />
       </div>
 
@@ -178,7 +178,7 @@ function FilterContent({
       >
         <div className="flex items-center gap-2">
           <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-primary">
-            <MapPin className="h-4 w-4" />
+            <FaLocationDot className="h-4 w-4" />
           </div>
           <div>
             <p className="text-sm font-semibold">Remote Only</p>
@@ -199,7 +199,7 @@ function FilterContent({
           options={sortOptions}
           value={sortBy}
           onChange={onSortChange}
-          leftIcon={<SlidersHorizontal className="h-4 w-4" />}
+          leftIcon={<FaSliders className="h-4 w-4" />}
         />
       </div>
 
@@ -210,7 +210,7 @@ function FilterContent({
           onClick={onClearAll}
           className="w-full text-muted-foreground hover:text-foreground"
         >
-          <X className="mr-2 h-4 w-4" />
+          <FaXmark className="mr-2 h-4 w-4" />
           Clear All Filters
         </Button>
       )}
@@ -433,7 +433,7 @@ export function JobFilters() {
           onClick={() => setIsMobileFiltersOpen(true)}
           className="rounded-full shadow-2xl shadow-primary/20 px-6 py-6 h-auto gap-2"
         >
-          <SlidersHorizontal className="h-5 w-5" />
+          <FaSliders className="h-5 w-5" />
           Filters
           {hasFilters && (
             <Badge

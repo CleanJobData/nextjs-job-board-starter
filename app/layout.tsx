@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme/ThemeProvider";
-import { ThemeScript } from "@/components/theme/ThemeScript";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { SiteFooter } from "@/components/layout/SiteFooter";
 
@@ -23,8 +22,10 @@ export const metadata: Metadata = {
 
 export default function RootLayout({
   children,
+  modal,
 }: Readonly<{
   children: React.ReactNode;
+  modal: React.ReactNode;
 }>) {
   return (
     <html
@@ -33,12 +34,30 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <head>
-        <ThemeScript />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){
+  try {
+    var k = 'cleanjobdata-theme';
+    var t = localStorage.getItem(k);
+    var d = document.documentElement;
+    var dark = false;
+    if (t === 'dark') dark = true;
+    else if (t === 'light') dark = false;
+    else if (window.matchMedia('(prefers-color-scheme: dark)').matches) dark = true;
+    if (dark) d.classList.add('dark'); else d.classList.remove('dark');
+  } catch (e) {}
+})();`,
+          }}
+        />
       </head>
       <body className="min-h-full flex flex-col bg-background text-foreground">
         <ThemeProvider>
           <SiteHeader />
-          <main className="flex-1">{children}</main>
+          <main className="flex-1">
+            {children}
+            {modal}
+          </main>
           <SiteFooter />
         </ThemeProvider>
       </body>

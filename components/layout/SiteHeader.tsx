@@ -1,6 +1,6 @@
 import * as React from "react";
 import Link from "next/link";
-import { Briefcase } from "lucide-react";
+import { FaBriefcase } from "react-icons/fa6";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { Typography } from "@/components/ui/Typography";
 
@@ -12,7 +12,7 @@ export function SiteHeader() {
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-2">
           <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
-            <Briefcase className="h-5 w-5 text-primary-foreground" />
+            <FaBriefcase className="h-5 w-5 text-primary-foreground" />
           </div>
           <Typography variant="h4" className="font-bold tracking-tight">
             {siteName}

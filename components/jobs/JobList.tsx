@@ -6,7 +6,7 @@ import { ListQuery } from "@/lib/jobs/query-types";
 import { JobGrid } from "./JobGrid";
 import { Button } from "@/components/ui/Button";
 import { getJobsAction } from "@/app/actions/jobs";
-import { Loader2 } from "lucide-react";
+import { FaSpinner } from "react-icons/fa6";
 
 interface JobListProps {
   initialData: ListResponse<Job>;
@@ -68,7 +68,7 @@ export function JobList({ initialData, query }: JobListProps) {
           >
             {isLoadingMore ? (
               <>
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                <FaSpinner className="h-4 w-4 mr-2 animate-spin" />
                 Loading...
               </>
             ) : (
