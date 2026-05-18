@@ -332,7 +332,7 @@ export function JobDetailView({ job }: JobDetailViewProps) {
             Job Description
           </Typography>
           <div
-            className="prose prose-sm dark:prose-invert max-w-none text-muted-foreground leading-relaxed"
+            className="job-description prose prose-sm max-w-none prose-neutral dark:prose-invert prose-headings:text-foreground prose-p:text-muted-foreground prose-li:text-muted-foreground prose-strong:text-foreground prose-a:text-primary"
             dangerouslySetInnerHTML={{ __html: job.description || "" }}
           />
         </div>
