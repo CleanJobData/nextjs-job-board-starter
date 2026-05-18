@@ -19,8 +19,8 @@ The fastest way to get started is using our one-click deploy buttons on the [Tem
 ### Manual Setup (Local Development)
 1. **Clone the repo**:
    ```bash
-   git clone https://github.com/cleanjobdata/cleanjobdata-nextjs-job-board.git
-   cd cleanjobdata-nextjs-job-board
+   git clone https://github.com/CleanJobData/nextjs-job-board-starter.git
+   cd nextjs-job-board-starter
    ```
 2. **Install dependencies**:
    ```bash

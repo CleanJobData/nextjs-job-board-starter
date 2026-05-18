@@ -16,8 +16,8 @@ For detailed step-by-step setup instructions, visit our [Build a Job Board Guide
 
 Deploy your forked repository in seconds:
 
-- **Vercel**: The recommended platform for Next.js. [Deploy Now](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fcleanjobdata%2Fcleanjobdata-nextjs-job-board&repository-name=cleanjobdata-nextjs-job-board&project-name=cleanjobdata-job-board&env=CLEANJOBDATA_API_URL,CLEANJOBDATA_API_KEY,NEXT_PUBLIC_SITE_NAME&envDescription=API_URL,API_KEY,SITE_NAME)
-- **Netlify**: Great for static and serverless sites. [Deploy Now](https://app.netlify.com/start/deploy?repository=https://github.com/cleanjobdata/cleanjobdata-nextjs-job-board)
+- **Vercel**: The recommended platform for Next.js. [Deploy Now](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FCleanJobData%2Fnextjs-job-board-starter&repository-name=nextjs-job-board-starter&project-name=cleanjobdata-job-board&env=CLEANJOBDATA_API_URL,CLEANJOBDATA_API_KEY,NEXT_PUBLIC_SITE_NAME&envDescription=API_URL,API_KEY,SITE_NAME)
+- **Netlify**: Great for static and serverless sites. [Deploy Now](https://app.netlify.com/start/deploy?repository=https://github.com/CleanJobData/nextjs-job-board-starter)
 
 ## Features
 
@@ -35,8 +35,8 @@ Deploy your forked repository in seconds:
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/cleanjobdata/cleanjobdata-nextjs-job-board.git
-cd cleanjobdata-nextjs-job-board
+git clone https://github.com/CleanJobData/nextjs-job-board-starter.git
+cd nextjs-job-board-starter
 ```
 
 ### 2. Configure environment variables
