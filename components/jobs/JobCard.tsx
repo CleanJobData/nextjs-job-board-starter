@@ -1,6 +1,7 @@
 import * as React from "react";
 import Link from "next/link";
-import { FaLocationDot, FaGlobe, FaBriefcase, FaDollarSign, FaClock } from "react-icons/fa6";
+import { FaLocationDot, FaGlobe, FaDollarSign, FaClock } from "react-icons/fa6";
+import { CompanyLogo } from "@/components/jobs/CompanyLogo";
 import { Job } from "@/lib/api/types";
 import { Card, CardContent } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
@@ -34,19 +35,13 @@ export function JobCard({ job }: JobCardProps) {
         <CardContent className="p-4 sm:p-6 space-y-5 flex flex-col flex-1">
           <div className="flex items-start justify-between gap-4">
             <div className="flex items-center gap-4">
-              {job.company?.logo ? (
-                <div className="h-12 w-12 sm:h-14 sm:w-14 rounded-2xl bg-muted p-1 flex items-center justify-center border border-border/50 group-hover:border-primary/20 transition-colors shrink-0">
-                  <img
-                    src={job.company.logo}
-                    alt={`${job.company.name} logo`}
-                    className="h-full w-full object-contain rounded-lg"
-                  />
-                </div>
-              ) : (
-                <div className="h-12 w-12 sm:h-14 sm:w-14 rounded-2xl bg-muted flex items-center justify-center border border-border/50 shrink-0">
-                  <FaBriefcase className="h-6 w-6 sm:h-7 sm:w-7 text-muted-foreground/50" />
-                </div>
-              )}
+              <CompanyLogo
+                src={job.company?.logo}
+                fallbackIcon="briefcase"
+                className="h-12 w-12 sm:h-14 sm:w-14 rounded-2xl bg-muted p-1 border border-border/50 group-hover:border-primary/20 transition-colors"
+                imageClassName="rounded-lg"
+                iconClassName="h-6 w-6 sm:h-7 sm:w-7 text-muted-foreground/50"
+              />
               <div className="space-y-1 min-w-0">
                 <Typography
                   variant="small"

@@ -26,6 +26,7 @@ import { Button } from "@/components/ui/Button";
 import { Typography } from "@/components/ui/Typography";
 import { formatAddedAgo } from "@/lib/formatAddedAgo";
 import { cn, formatNumber } from "@/lib/utils";
+import { CompanyLogo } from "@/components/jobs/CompanyLogo";
 
 interface JobDetailViewProps {
   job: JobDetail;
@@ -53,31 +54,21 @@ export function JobDetailView({ job }: JobDetailViewProps) {
         <div className="flex flex-col md:flex-row md:items-start gap-4 md:gap-6">
           {/* Desktop Logo */}
           <div className="hidden md:block">
-            {job.company?.logo ? (
-              <img
-                src={job.company.logo}
-                alt={`${job.company.name} logo`}
-                className="h-16 w-16 rounded-xl object-contain bg-muted p-2 shrink-0"
-              />
-            ) : (
-              <div className="h-16 w-16 rounded-xl bg-muted flex items-center justify-center shrink-0">
-                <FaBuilding className="h-8 w-8 text-muted-foreground" />
-              </div>
-            )}
+            <CompanyLogo
+              src={job.company?.logo}
+              className="h-16 w-16 rounded-xl bg-muted p-2"
+              iconClassName="h-8 w-8"
+            />
           </div>
 
           <div className="space-y-3 min-w-0">
             {/* Minimized Company Info on Mobile */}
             <div className="flex items-center gap-2 md:hidden">
-              {job.company?.logo ? (
-                <img
-                  src={job.company.logo}
-                  alt={`${job.company.name} logo`}
-                  className="h-6 w-6 rounded-md object-contain bg-muted p-1 shrink-0"
-                />
-              ) : (
-                <FaBuilding className="h-4 w-4 text-muted-foreground" />
-              )}
+              <CompanyLogo
+                src={job.company?.logo}
+                className="h-6 w-6 rounded-md bg-muted p-1"
+                iconClassName="h-3.5 w-3.5"
+              />
               <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
                 {job.company?.name}
               </span>
