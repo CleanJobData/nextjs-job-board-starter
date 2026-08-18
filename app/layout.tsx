@@ -5,6 +5,7 @@ import { ThemeProvider } from "@/components/theme/ThemeProvider";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { SiteFooter } from "@/components/layout/SiteFooter";
 import themeConfig from "@/theme.config";
+import { activeProviders } from "@/features/registry";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -107,14 +108,24 @@ export default function RootLayout({
       </head>
       <body className="min-h-full flex flex-col bg-background text-foreground">
         <ThemeProvider>
-          <SiteHeader />
-          <main className="flex-1">
-            {children}
-            {modal}
-          </main>
-          <SiteFooter />
+          <FeatureProviders>
+            <SiteHeader />
+            <main className="flex-1">
+              {children}
+              {modal}
+            </main>
+            <SiteFooter />
+          </FeatureProviders>
         </ThemeProvider>
       </body>
     </html>
+  );
+}
+
+/** Folds every active feature's provider (e.g. an auth session provider) around children, in registration order. */
+function FeatureProviders({ children }: { children: React.ReactNode }) {
+  return activeProviders.reduceRight(
+    (acc, Provider) => <Provider>{acc}</Provider>,
+    children
   );
 }

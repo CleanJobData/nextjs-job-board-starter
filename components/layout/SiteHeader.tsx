@@ -2,6 +2,7 @@ import * as React from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
+import { activeNavItems } from "@/features/registry";
 
 export function SiteHeader() {
   return (
@@ -21,6 +22,15 @@ export function SiteHeader() {
         </Link>
 
         <nav className="flex items-center gap-4">
+          {activeNavItems.map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              className="text-sm font-medium text-muted-foreground hover:text-foreground"
+            >
+              {item.label}
+            </Link>
+          ))}
           <ThemeToggle />
         </nav>
       </div>
