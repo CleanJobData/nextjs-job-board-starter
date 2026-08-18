@@ -450,7 +450,7 @@ export function JobFilters() {
           {hasFilters && (
             <Badge
               variant="accent"
-              className="ml-1 px-1.5 min-w-[20px] h-5 flex items-center justify-center rounded-full bg-white text-primary"
+              className="ml-1 px-1.5 min-w-[20px] h-5 flex items-center justify-center rounded-full bg-on-primary text-primary"
             >
               !
             </Badge>

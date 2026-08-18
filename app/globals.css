@@ -30,6 +30,9 @@ html {
   --destructive-foreground: #ffffff;
   --accent: #f0fdf4;
   --accent-foreground: #166534;
+  /* Warning/caution state (env-var setup checks, non-destructive alerts) */
+  --warning: #f59e0b;
+  --warning-foreground: #78350f;
   /* High-contrast control on primary-colored sections */
   --on-primary: #ffffff;
   --on-primary-hover: #f4f1ec;
@@ -41,6 +44,8 @@ html {
   /* Toggle track / thumb */
   --switch-thumb: #ffffff;
   --switch-thumb-border: #f0ede8;
+  /* Modal/sheet backdrop scrim — intentionally theme-invariant (same in light/dark) */
+  --overlay: rgb(0 0 0 / 0.4);
 
   --radius: 0.75rem;
   --spacing-card: 1.25rem;
@@ -71,6 +76,8 @@ html.dark {
   --destructive-foreground: #fafafa;
   --accent: #064e3b;
   --accent-foreground: #10b981;
+  --warning: #f59e0b;
+  --warning-foreground: #fde68a;
   --on-primary: #ffffff;
   --on-primary-hover: #2d2d2d;
   --on-primary-foreground: #064e3b;
@@ -79,6 +86,7 @@ html.dark {
   --inverse-foreground: #1a1a1a;
   --switch-thumb: #fafafa;
   --switch-thumb-border: #333333;
+  --overlay: rgb(0 0 0 / 0.4);
 
   --radius: 0.75rem;
   --spacing-card: 1.25rem;
@@ -109,6 +117,9 @@ html.dark {
   --color-destructive-foreground: var(--destructive-foreground);
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-overlay: var(--overlay);
   --color-on-primary: var(--on-primary);
   --color-on-primary-hover: var(--on-primary-hover);
   --color-on-primary-foreground: var(--on-primary-foreground);

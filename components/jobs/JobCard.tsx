@@ -84,7 +84,7 @@ export function JobCard({ job }: JobCardProps) {
             </div>
 
             {job.has_remote && (
-              <div className="flex gap-2.5 text-emerald-600 dark:text-emerald-400">
+              <div className="flex gap-2.5 text-primary">
                 <div className="flex shrink-0 pt-1.5">
                   <FaGlobe className="h-2.5 w-2.5" />
                 </div>

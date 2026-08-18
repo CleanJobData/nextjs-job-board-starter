@@ -47,12 +47,12 @@ export default function SetupPage() {
       </div>
 
       <div className="grid gap-6">
-        <Card className={allRequiredPresent ? "border-green-500/50 bg-green-500/5" : "border-red-500/50 bg-red-500/5"}>
+        <Card className={allRequiredPresent ? "border-primary/50 bg-primary/5" : "border-destructive/50 bg-destructive/5"}>
           <CardHeader className="flex flex-row items-center gap-4">
             {allRequiredPresent ? (
-              <FaCircleCheck className="h-8 w-8 text-green-500" />
+              <FaCircleCheck className="h-8 w-8 text-primary" />
             ) : (
-              <FaCircleXmark className="h-8 w-8 text-red-500" />
+              <FaCircleXmark className="h-8 w-8 text-destructive" />
             )}
             <div>
               <CardTitle>
@@ -85,14 +85,14 @@ export default function SetupPage() {
                   </Typography>
                   <div className="flex items-center gap-2">
                     {v.value ? (
-                      <div className="flex items-center gap-1.5 text-green-500 text-sm font-medium">
+                      <div className="flex items-center gap-1.5 text-primary text-sm font-medium">
                         <FaCircleCheck className="h-4 w-4" />
                         <span>
                           {v.isSecret ? "••••••••••••" : v.value}
                         </span>
                       </div>
                     ) : (
-                      <div className="flex items-center gap-1.5 text-red-500 text-sm font-medium">
+                      <div className="flex items-center gap-1.5 text-destructive text-sm font-medium">
                         <FaCircleXmark className="h-4 w-4" />
                         <span>Missing</span>
                       </div>
@@ -105,10 +105,10 @@ export default function SetupPage() {
         </div>
 
         {!allRequiredPresent && (
-          <div className="bg-amber-500/10 border border-amber-500/20 rounded-lg p-4 flex gap-3">
-            <FaCircleInfo className="h-5 w-5 text-amber-500 shrink-0" />
-            <div className="text-sm text-amber-200/80">
-              <p className="font-bold text-amber-500 mb-1">Action Required</p>
+          <div className="bg-warning/10 border border-warning/20 rounded-lg p-4 flex gap-3">
+            <FaCircleInfo className="h-5 w-5 text-warning shrink-0" />
+            <div className="text-sm text-warning-foreground">
+              <p className="font-bold text-warning mb-1">Action Required</p>
               <p>
                 Please add the missing environment variables to your hosting provider's dashboard or your local <code>.env.local</code> file and restart the server.
               </p>

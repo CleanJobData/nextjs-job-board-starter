@@ -30,7 +30,7 @@ export function Sheet({ isOpen, onClose, children, className }: SheetProps) {
           leaveFrom="opacity-100"
           leaveTo="opacity-0"
         >
-          <div className="fixed inset-0 bg-black/40 backdrop-blur-sm" />
+          <div className="fixed inset-0 bg-overlay backdrop-blur-sm" />
         </TransitionChild>
 
         <div className="fixed inset-0 overflow-hidden">
