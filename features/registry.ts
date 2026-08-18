@@ -1,6 +1,7 @@
 import type { ComponentType, ReactNode } from "react";
 import config from "@/features.config";
 import type { FeatureKey } from "@/features.schema";
+import { authFeature } from "./auth/feature";
 
 export type NavItem = {
   label: string;
@@ -22,11 +23,12 @@ export interface FeaturePlugin {
 
 /**
  * Every feature module registers itself here once it exists under
- * features/<name>/. Empty for now — no feature folders have been built
- * yet, so there is nothing to compose. This file's job is just to prove
- * the wiring: features.config.ts -> registry -> SiteHeader/layout.tsx.
+ * features/<name>/. Only auth is built so far; the rest register here
+ * as they're built (job-sync, resume, applications, job-posting).
  */
-const allFeaturePlugins: Partial<Record<FeatureKey, FeaturePlugin>> = {};
+const allFeaturePlugins: Partial<Record<FeatureKey, FeaturePlugin>> = {
+  auth: authFeature,
+};
 
 /** Plugins for every feature that is both registered above AND enabled in features.config.ts. */
 export const activeFeatures: FeaturePlugin[] = Object.values(allFeaturePlugins).filter(
