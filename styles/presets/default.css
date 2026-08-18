@@ -1,0 +1,6 @@
+/**
+ * Default preset — no overrides. The values in app/globals.css `html` /
+ * `html.dark` blocks ARE the default preset; this file exists so
+ * `preset: "default"` has an explicit, importable target like every
+ * other preset, and so a future preset can be diffed against it.
+ */

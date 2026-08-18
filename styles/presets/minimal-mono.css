@@ -1,0 +1,24 @@
+/**
+ * "minimal-mono" preset — near-grayscale primary, sharper corners.
+ * Overrides layer on top of app/globals.css defaults via the
+ * [data-preset="minimal-mono"] attribute set in app/layout.tsx.
+ */
+html[data-preset="minimal-mono"] {
+  --primary: #18181b;
+  --ring: #18181b;
+  --accent: #f4f4f5;
+  --accent-foreground: #18181b;
+  --on-primary-foreground: #18181b;
+  --inverse-foreground: #18181b;
+  --radius: 0.25rem;
+}
+
+html.dark[data-preset="minimal-mono"] {
+  --primary: #e4e4e7;
+  --ring: #e4e4e7;
+  --accent: #27272a;
+  --accent-foreground: #e4e4e7;
+  --on-primary-foreground: #18181b;
+  --inverse-foreground: #e4e4e7;
+  --radius: 0.25rem;
+}

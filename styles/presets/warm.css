@@ -1,0 +1,22 @@
+/**
+ * "warm" preset — amber/orange primary instead of the default green,
+ * warmer neutral surfaces. Overrides layer on top of app/globals.css
+ * defaults via the [data-preset="warm"] attribute set in app/layout.tsx.
+ */
+html[data-preset="warm"] {
+  --primary: #d97706;
+  --ring: #d97706;
+  --accent: #fffbeb;
+  --accent-foreground: #92400e;
+  --on-primary-foreground: #d97706;
+  --inverse-foreground: #d97706;
+}
+
+html.dark[data-preset="warm"] {
+  --primary: #f59e0b;
+  --ring: #f59e0b;
+  --accent: #451a03;
+  --accent-foreground: #f59e0b;
+  --on-primary-foreground: #451a03;
+  --inverse-foreground: #1a1a1a;
+}

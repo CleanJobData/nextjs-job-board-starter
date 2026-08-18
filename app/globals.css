@@ -1,4 +1,11 @@
 @import "tailwindcss";
+/* Central design-token presets — selected via theme.config.ts, applied as
+   the html[data-preset] attribute in app/layout.tsx. Their attribute
+   selectors are more specific than the base `html`/`html.dark` blocks
+   below, so they win regardless of import order. */
+@import "../styles/presets/default.css";
+@import "../styles/presets/warm.css";
+@import "../styles/presets/minimal-mono.css";
 @plugin "@tailwindcss/typography";
 
 @custom-variant dark (&:where(.dark, .dark *));

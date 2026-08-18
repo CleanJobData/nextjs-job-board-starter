@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Inter } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme/ThemeProvider";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { SiteFooter } from "@/components/layout/SiteFooter";
+import themeConfig from "@/theme.config";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -14,6 +15,17 @@ const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
 });
+
+const inter = Inter({
+  variable: "--font-inter",
+  subsets: ["latin"],
+});
+
+/** Maps theme.config.ts's `font` choice to the next/font variable it should resolve to as --font-sans. */
+const fontVariableByChoice: Record<typeof themeConfig.font, string> = {
+  geist: geistSans.variable,
+  inter: inter.variable,
+};
 
 const siteName = process.env.NEXT_PUBLIC_SITE_NAME || "CleanJobData";
 const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
@@ -62,7 +74,17 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} ${inter.variable} h-full antialiased`}
+      data-preset={themeConfig.preset}
+      style={
+        {
+          "--font-sans": `var(${fontVariableByChoice[themeConfig.font]})`,
+          // Only override radius when no preset is picking its own (e.g. minimal-mono's
+          // sharper corners) — inline styles beat stylesheet rules regardless of specificity.
+          ...(themeConfig.preset === "custom" ? { "--radius": `${themeConfig.radius}rem` } : {}),
+          ...(themeConfig.density === "compact" ? { "--spacing-card": "1rem" } : {}),
+        } as React.CSSProperties
+      }
       suppressHydrationWarning
     >
       <head>
