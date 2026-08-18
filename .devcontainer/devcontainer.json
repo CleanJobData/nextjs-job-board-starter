@@ -1,0 +1,22 @@
+{
+  "name": "nextjs-job-board-starter",
+  "dockerComposeFile": "docker-compose.yml",
+  "service": "app",
+  "workspaceFolder": "/workspace",
+  "postCreateCommand": "npm install && npm run db:migrate",
+  "forwardPorts": [3000, 5432],
+  "portsAttributes": {
+    "3000": { "label": "App" },
+    "5432": { "label": "Postgres" }
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "dbaeumer.vscode-eslint",
+        "bradlc.vscode-tailwindcss",
+        "eamodio.gitlens"
+      ]
+    }
+  },
+  "remoteUser": "node"
+}
