@@ -11,16 +11,26 @@ const initialState: RegisterState = {};
 export function SignUpForm() {
   const [state, formAction, pending] = useActionState(registerUser, initialState);
 
+  if (state.success) {
+    return (
+      <div className="flex flex-col gap-2">
+        <Typography className="font-medium text-foreground">
+          {state.needsVerification ? "Check your inbox" : "Account created"}
+        </Typography>
+        <Typography variant="small" className="text-muted-foreground">
+          {state.needsVerification
+            ? "We sent a verification link to your email. Click it to activate your account, then sign in."
+            : "You can now sign in."}
+        </Typography>
+      </div>
+    );
+  }
+
   return (
     <form action={formAction} className="flex flex-col gap-4">
       {state.error && (
         <Typography variant="small" className="text-destructive">
           {state.error}
-        </Typography>
-      )}
-      {state.success && (
-        <Typography variant="small" className="text-primary">
-          Account created — you can now sign in.
         </Typography>
       )}
       <div className="flex flex-col gap-1.5">

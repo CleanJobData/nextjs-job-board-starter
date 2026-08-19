@@ -4,7 +4,9 @@ import { z } from "zod";
 import bcrypt from "bcryptjs";
 import { eq } from "drizzle-orm";
 import { requireDb } from "@/lib/db/client";
+import authConfig from "@/features.config";
 import { users } from "../db/schema";
+import { sendVerificationEmail } from "../lib/verification";
 
 const registerSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -16,6 +18,8 @@ type RegisterFieldErrors = Partial<Record<"name" | "email" | "password", string>
 
 export type RegisterState = {
   success?: boolean;
+  /** True when emailVerification is on - UI should show "check your inbox" instead of "you're signed up, go sign in". */
+  needsVerification?: boolean;
   error?: string;
   fieldErrors?: RegisterFieldErrors;
 };
@@ -49,6 +53,11 @@ export async function registerUser(
 
   const passwordHash = await bcrypt.hash(password, 12);
   await db.insert(users).values({ name, email, passwordHash });
+
+  if (authConfig.auth.emailVerification) {
+    await sendVerificationEmail(email);
+    return { success: true, needsVerification: true };
+  }
 
   return { success: true };
 }

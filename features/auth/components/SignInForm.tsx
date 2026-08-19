@@ -23,7 +23,11 @@ export function SignInForm() {
     });
     setPending(false);
     if (result?.error) {
-      setError("Invalid email or password");
+      setError(
+        result.code === "email-not-verified"
+          ? "Please verify your email before signing in - check your inbox for the verification link."
+          : "Invalid email or password"
+      );
       return;
     }
     window.location.assign("/");

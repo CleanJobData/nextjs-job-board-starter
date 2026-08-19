@@ -1,5 +1,6 @@
 import NextAuth from "next-auth";
 import type { Provider } from "next-auth/providers";
+import { CredentialsSignin } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import Google from "next-auth/providers/google";
 import LinkedIn from "next-auth/providers/linkedin";
@@ -10,6 +11,11 @@ import { requireDb } from "@/lib/db/client";
 import { users } from "../db/schema";
 import * as schema from "@/lib/db/schema";
 import authConfig from "@/features.config";
+
+/** Thrown by authorize() when emailVerification is on and the account hasn't verified yet - surfaces as result.code === "email-not-verified" from next-auth/react's signIn(). */
+class EmailNotVerifiedError extends CredentialsSignin {
+  code = "email-not-verified";
+}
 
 /**
  * Auth.js (NextAuth v5) config. No hosted UI - sign-in/sign-up pages under
@@ -42,6 +48,10 @@ if (authConfig.auth.credentials) {
 
         const valid = await bcrypt.compare(password, user.passwordHash);
         if (!valid) return null;
+
+        if (authConfig.auth.emailVerification && !user.emailVerified) {
+          throw new EmailNotVerifiedError();
+        }
 
         return { id: user.id, name: user.name, email: user.email, image: user.image };
       },
