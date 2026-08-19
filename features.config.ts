@@ -10,7 +10,7 @@ import { featuresSchema, type FeaturesConfig } from "./features.schema";
  * feature module has been built and registered in features/registry.ts.
  */
 const config: FeaturesConfig = {
-  auth: { enabled: false, provider: "credentials" },
+  auth: { enabled: true, credentials: true, oauthProviders: [], emailVerification: false },
   jobSync: { enabled: false, guestAccess: true, cron: false, ttlHours: 72 },
   resume: { enabled: false, guestAccess: false, parsing: true, aiParsing: false },
   applications: { enabled: false, guestAccess: false },

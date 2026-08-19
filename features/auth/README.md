@@ -5,12 +5,26 @@ a Drizzle Postgres adapter. Sign-in/sign-up UI is fully custom (see
 `components/SignInForm.tsx` / `SignUpForm.tsx`) - Auth.js is used purely
 as the session/credentials engine, not for its hosted pages.
 
+## Config (`features.config.ts` -> `auth`)
+
+- `enabled` - turn the whole feature on/off.
+- `credentials` - email/password sign-in (default `true`).
+- `oauthProviders` - array of `"google" | "linkedin"` to wire up. Each needs
+  its own env vars (Auth.js v5 infers them by name, nothing to pass in code):
+  - Google: `AUTH_GOOGLE_ID`, `AUTH_GOOGLE_SECRET`
+  - LinkedIn: `AUTH_LINKEDIN_ID`, `AUTH_LINKEDIN_SECRET`
+- `emailVerification` - **not fully wired up yet**. Turning this on updates
+  the config, but sign-up/sign-in don't yet send/check verification emails -
+  that needs a mailer and its own UI (a "check your inbox" screen, a
+  `/verify-email?token=` route). Treat this flag as reserved until that's built.
+
 ## Enable it
 
-1. Set `auth.enabled: true` in `features.config.ts`.
+1. Set `auth.enabled: true` in `features.config.ts` (and `credentials`/`oauthProviders` as desired).
 2. Set `DATABASE_URL` (see `.env.example` / `.devcontainer/`).
 3. Set `AUTH_SECRET` (generate with `npx auth secret`).
-4. Run `npm run db:generate && npm run db:migrate`.
+4. If using OAuth, set that provider's env vars (see above).
+5. Run `npm run db:generate && npm run db:migrate`.
 
 ## Routes
 

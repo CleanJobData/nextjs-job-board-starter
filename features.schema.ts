@@ -12,7 +12,12 @@ import { z } from "zod";
 export const featuresSchema = z.object({
   auth: z.object({
     enabled: z.boolean().default(false),
-    provider: z.enum(["credentials", "oauth"]).default("credentials"),
+    /** Email/password sign-in. Independent of oauthProviders so both can be on at once. */
+    credentials: z.boolean().default(true),
+    /** Which OAuth providers to wire up - each needs its own AUTH_<PROVIDER>_ID/SECRET env vars, see features/auth/README.md. */
+    oauthProviders: z.array(z.enum(["google", "linkedin"])).default([]),
+    /** Requires an email-sending setup - see features/auth/README.md before enabling. */
+    emailVerification: z.boolean().default(false),
   }),
   jobSync: z.object({
     enabled: z.boolean().default(false),

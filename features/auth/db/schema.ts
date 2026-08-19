@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, primaryKey, integer } from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, primaryKey, integer, index } from "drizzle-orm/pg-core";
 import type { AdapterAccountType } from "next-auth/adapters";
 
 /**
@@ -36,16 +36,26 @@ export const accounts = pgTable(
   },
   (account) => [
     primaryKey({ columns: [account.provider, account.providerAccountId] }),
+    // Postgres doesn't auto-index FK columns - the adapter looks up accounts by userId
+    // (e.g. "list this user's linked providers"), so this would otherwise be a table scan.
+    index("accounts_user_id_idx").on(account.userId),
   ]
 );
 
-export const sessions = pgTable("sessions", {
-  sessionToken: text("sessionToken").primaryKey(),
-  userId: text("userId")
-    .notNull()
-    .references(() => users.id, { onDelete: "cascade" }),
-  expires: timestamp("expires", { mode: "date" }).notNull(),
-});
+export const sessions = pgTable(
+  "sessions",
+  {
+    sessionToken: text("sessionToken").primaryKey(),
+    userId: text("userId")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    expires: timestamp("expires", { mode: "date" }).notNull(),
+  },
+  (session) => [
+    // Same reasoning as accounts_user_id_idx - the adapter deletes/looks up sessions by userId on sign-out.
+    index("sessions_user_id_idx").on(session.userId),
+  ]
+);
 
 export const verificationTokens = pgTable(
   "verificationTokens",
