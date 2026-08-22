@@ -43,6 +43,13 @@
       "when": 1787416708482,
       "tag": "0005_amused_serpent_society",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1787417747457,
+      "tag": "0006_clear_viper",
+      "breakpoints": true
     }
   ]
 }

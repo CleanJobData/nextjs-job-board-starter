@@ -14,6 +14,8 @@ export type JobPostingRow = {
   companyName: string | null;
   status: "pending" | "approved" | "rejected";
   published: string;
+  /** Set by the admin dashboard's reject action (features/admin/actions/postings.ts) - surfaced here so a rejection isn't a silent dead end for the poster. */
+  rejectionReason?: string | null;
 };
 
 const STATUS_VARIANT: Record<JobPostingRow["status"], "secondary" | "accent" | "destructive"> = {
@@ -71,6 +73,17 @@ export function JobPostingsList({ postings }: { postings: JobPostingRow[] }) {
           </div>
         </div>
       ))}
+      {postings.some((p) => p.status === "rejected" && p.rejectionReason) && (
+        <div className="space-y-2">
+          {postings
+            .filter((p) => p.status === "rejected" && p.rejectionReason)
+            .map((p) => (
+              <Typography key={p.id} variant="small" className="text-muted-foreground">
+                &quot;{p.title}&quot; was rejected: {p.rejectionReason}
+              </Typography>
+            ))}
+        </div>
+      )}
     </div>
   );
 }

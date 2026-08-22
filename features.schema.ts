@@ -40,6 +40,18 @@ export const featuresSchema = z.object({
     /** When true (default), a new posting starts status="pending" and stays invisible - even at its own direct /jobs/[id] link - until an admin approves it. When false, postings auto-publish as status="approved" immediately, for deployments that don't want a moderation step at all. */
     requireVerification: z.boolean().default(true),
   }),
+  admin: z.object({
+    enabled: z.boolean().default(false),
+    /**
+     * No `guestAccess` here, unlike every other feature above - admin access
+     * isn't a per-visitor guest/auth split, it's a per-user `role` check
+     * (features/authGuard.ts's requireAdmin(), which queries users.role
+     * straight from the DB). `enabled` still works as a real off-switch:
+     * false hides the whole /admin route group behind notFound() even for
+     * an actual admin, same as every other feature's shim pattern - it just
+     * doesn't compose with guestAccess the way the others do.
+     */
+  }),
 });
 
 export type FeaturesConfig = z.infer<typeof featuresSchema>;

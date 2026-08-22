@@ -221,6 +221,17 @@ export const jobs = pgTable(
     expiresAt: timestamp("expiresAt", { mode: "date", withTimezone: true }).notNull(),
     status: text("status").$type<"pending" | "approved" | "rejected">().notNull().default("approved"),
     requiresVerification: boolean("requiresVerification").notNull().default(false),
+    /**
+     * Optional admin-supplied reason for a "rejected" posting - shown back to
+     * the poster on their "My postings" dashboard so a rejection isn't a
+     * silent dead end. Nullable/free-text rather than an enum of reasons:
+     * phase 3's admin dashboard is a v1 moderation queue, not a full
+     * moderation-notes-history system - one column, optional at reject time,
+     * is enough signal without over-building. Never set for "approved"/
+     * "pending" rows; a re-reject overwrites the previous reason outright
+     * (no history kept).
+     */
+    rejectionReason: text("rejectionReason"),
   },
   (t) => [
     // Default sort order for listJobsFromCache() and its keyset pagination cursor.

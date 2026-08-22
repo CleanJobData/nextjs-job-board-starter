@@ -15,6 +15,7 @@ export default async function JobPostingsPage() {
     companyName: company.name,
     status: job.status,
     published: job.published.toISOString(),
+    rejectionReason: job.rejectionReason,
   }));
 
   return (

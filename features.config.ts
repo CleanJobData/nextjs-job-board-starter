@@ -15,6 +15,7 @@ const config: FeaturesConfig = {
   resume: { enabled: false, guestAccess: false, parsing: true, aiParsing: false },
   applications: { enabled: true, guestAccess: false },
   jobPosting: { enabled: true, guestAccess: false, requireVerification: true },
+  admin: { enabled: true },
 };
 
 export default featuresSchema.parse(config);
