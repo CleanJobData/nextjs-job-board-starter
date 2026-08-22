@@ -66,6 +66,23 @@ Any feature needing "is someone signed in" should call
 `auth()` directly - it also handles the `guestAccess` flag and the case
 where `auth.enabled` is false entirely (everything becomes guest-accessible).
 
+Anything needing "is this an admin" should call that same file's
+`requireAdmin()`.
+
+## Admin role
+
+`users.role` (`"user" | "admin"`, default `"user"`) backs
+`features/authGuard.ts`'s `requireAdmin()`, for the phase 3 admin
+dashboard to gate its routes/actions with. There's no UI to promote a user
+yet - to bootstrap the first admin for local dev/testing, sign up normally
+then run:
+
+```
+npm run promote-admin -- you@example.com
+```
+
+(`scripts/promote-admin.ts` - a dev convenience, not a real feature.)
+
 ## Deleting this feature
 
 Remove `app/(auth)/`, `app/api/auth/`, this folder, the `auth` entry from

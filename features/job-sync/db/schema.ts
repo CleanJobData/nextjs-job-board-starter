@@ -153,6 +153,25 @@ export const companies = pgTable(
  *    the row's last successful sync. Deletes rows regardless of isActive,
  *    in case the expired-poll itself has been failing/skipped for a long
  *    time - belt-and-suspenders, not the primary expiration mechanism.
+ *
+ * `status` is moderation state for job-posting's admin-review flow (job
+ * v1 is external-URL-only - no on-site apply/candidate review - but a
+ * "posted" job still needs an admin to sign off before it's publicly
+ * visible). Defaults to "approved", NOT "pending": every existing row and
+ * every future source="cleanjobdata" sync is trusted content that has
+ * never needed moderation, and this column didn't exist before this
+ * migration - a default of "pending" would retroactively hide every
+ * already-synced job the moment the column appeared. job-posting's own
+ * insert path is what actually sets "pending" for source="posted" rows;
+ * the column default just has to not break existing semantics, not encode
+ * the posted-job default itself. listJobsFromCache() (lib/read.ts) filters
+ * on `status = "approved"` unconditionally so a pending/rejected posted
+ * job never appears in public search.
+ *
+ * `requiresVerification` is a per-job escape hatch for a future
+ * "auto-publish trusted employers" toggle (e.g. a claimed/verified company
+ * skipping the moderation queue) without needing a schema change when that
+ * config actually gets built - unused by any code yet, just the column.
  */
 export const jobs = pgTable(
   "jobs",
@@ -187,6 +206,8 @@ export const jobs = pgTable(
     published: timestamp("published", { mode: "date", withTimezone: true }).notNull(),
     syncedAt: timestamp("syncedAt", { mode: "date", withTimezone: true }).notNull().defaultNow(),
     expiresAt: timestamp("expiresAt", { mode: "date", withTimezone: true }).notNull(),
+    status: text("status").$type<"pending" | "approved" | "rejected">().notNull().default("approved"),
+    requiresVerification: boolean("requiresVerification").notNull().default(false),
   },
   (t) => [
     // Default sort order for listJobsFromCache() and its keyset pagination cursor.
@@ -197,6 +218,9 @@ export const jobs = pgTable(
     index("jobsCompanyNameIdx").on(t.companyName),
     // Postgres doesn't auto-index FK columns - listJobsFromCache()'s join needs this.
     index("jobsCompanyIdIdx").on(t.companyId),
+    // Backs listJobsFromCache()'s unconditional status="approved" filter and
+    // the phase 3 admin moderation queue's status="pending" lookup.
+    index("jobsStatusIdx").on(t.status),
     // GIN for containment queries against the locations array, e.g.
     // locations @> '[{"country_id": 42}]' - stays index-backed without a
     // separate job_locations child table.

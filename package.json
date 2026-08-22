@@ -9,10 +9,13 @@
     "lint": "eslint",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "node scripts/db-migrate-safe.mjs",
-    "db:studio": "drizzle-kit studio"
+    "db:studio": "drizzle-kit studio",
+    "promote-admin": "tsx scripts/promote-admin.ts"
   },
   "dependencies": {
     "@auth/drizzle-adapter": "^1.11.3",
+    "@aws-sdk/client-s3": "^3.1116.0",
+    "@aws-sdk/s3-request-presigner": "^3.1116.0",
     "@headlessui/react": "^2.2.10",
     "@radix-ui/react-slot": "^1.2.4",
     "@react-email/components": "^1.0.12",
@@ -44,6 +47,7 @@
     "eslint": "^9",
     "eslint-config-next": "16.1.6",
     "tailwindcss": "^4",
+    "tsx": "^4.23.12",
     "typescript": "^5.9.3"
   }
 }

@@ -27,3 +27,35 @@ export async function checkAccess(key: FeatureKey): Promise<AccessResult> {
   const session = await auth();
   return session?.user ? { status: "ok" } : { status: "needs-auth" };
 }
+
+/**
+ * Session + `role === "admin"` check for the phase 3 admin dashboard to
+ * gate its routes/actions with. Deliberately not folded into
+ * checkAccess()'s three-way shape - admin-gating isn't a per-feature
+ * enabled/guestAccess toggle, it's "is this specific user an admin",
+ * orthogonal to whether any feature is on.
+ *
+ * Queries `role` straight from the users table rather than trusting a
+ * `role` claim on the JWT session token - the session callback in
+ * features/auth/lib/auth.ts doesn't currently carry `role` at all, and
+ * even if it did, a long-lived JWT session could still reflect a
+ * since-revoked admin grant. This is only used for admin-only pages/
+ * actions, not on every request, so the extra query is cheap where it
+ * matters.
+ *
+ * Just the auth primitive - no routes/UI here, that's phase 3's job.
+ */
+export async function requireAdmin(): Promise<AccessResult> {
+  const { auth } = await import("@/features/auth/lib/auth");
+  const session = await auth();
+  if (!session?.user?.id) return { status: "needs-auth" };
+
+  const { requireDb } = await import("@/lib/db/client");
+  const { users } = await import("@/features/auth/db/schema");
+  const { eq } = await import("drizzle-orm");
+
+  const db = requireDb();
+  const [user] = await db.select({ role: users.role }).from(users).where(eq(users.id, session.user.id)).limit(1);
+
+  return user?.role === "admin" ? { status: "ok" } : { status: "disabled" };
+}

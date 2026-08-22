@@ -19,6 +19,11 @@ export const users = pgTable("users", {
   emailVerified: timestamp("emailVerified", { mode: "date", withTimezone: true }),
   image: text("image"),
   passwordHash: text("passwordHash"),
+  // Defaults to "user" - there's no UI to promote anyone yet (that's the
+  // phase 3 admin dashboard); scripts/promote-admin.ts is the dev-only
+  // bootstrap for the first admin until then. requireAdmin() in
+  // features/authGuard.ts is the only thing that reads this today.
+  role: text("role").$type<"user" | "admin">().notNull().default("user"),
 });
 
 export const accounts = pgTable(

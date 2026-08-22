@@ -38,6 +38,9 @@ yarn-error.log*
 # vercel
 .vercel
 
+# local file uploads (lib/storage's local adapter - see lib/storage/README.md)
+/uploads
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts

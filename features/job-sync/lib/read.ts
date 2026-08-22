@@ -112,6 +112,12 @@ export async function listJobsFromCache(query: ListQuery = {}): Promise<ListResp
     eq(jobs.source, "cleanjobdata" as const),
     eq(jobs.isActive, true),
     gte(jobs.expiresAt, new Date()),
+    // Unconditional, not a query option: a source="posted" job sitting at
+    // status="pending" (awaiting admin moderation) or "rejected" must never
+    // surface here regardless of what the caller asked for. Existing
+    // source="cleanjobdata" rows are always status="approved" (the column
+    // default), so this is a no-op for them.
+    eq(jobs.status, "approved" as const),
   ];
   const filtersApplied: FilterApplied[] = [];
 
