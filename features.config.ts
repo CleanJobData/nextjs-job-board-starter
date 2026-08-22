@@ -13,7 +13,7 @@ const config: FeaturesConfig = {
   auth: { enabled: true, credentials: true, oauthProviders: [], emailVerification: false },
   jobSync: { enabled: true, guestAccess: true },
   resume: { enabled: false, guestAccess: false, parsing: true, aiParsing: false },
-  applications: { enabled: false, guestAccess: false },
+  applications: { enabled: true, guestAccess: false },
   jobPosting: { enabled: false, guestAccess: false },
 };
 
