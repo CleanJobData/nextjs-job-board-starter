@@ -1,7 +1,7 @@
 import { and, desc, eq, gte, ilike, lte, lt, or, sql } from "drizzle-orm";
 import { requireDb } from "@/lib/db/client";
 import type { ListQuery } from "@/jobs/lib/query-types";
-import type { Company, FilterApplied, Job, ListResponse } from "@/lib/api/types";
+import type { Company, FilterApplied, Job, JobDetail, ListResponse } from "@/lib/api/types";
 import { jobs, companies } from "../db/schema";
 
 /**
@@ -30,12 +30,13 @@ type CompanyRow = typeof companies.$inferSelect;
  * columns + the optionally-joined company row. Inverse of sync.ts's
  * toJobRow()/upsertCompany().
  *
- * `id` here is `row.externalId`, NOT `row.id` (our internal UUID) - job
- * detail pages/links round-trip this id straight into a live
- * GET /jobs/:id call (jobs/routes/JobDetailPage.tsx always fetches live,
- * even when serving the list from cache), so it must stay in CleanJobData's
- * id space. Safe to assert non-null: listJobsFromCache() only ever selects
- * source="cleanjobdata" rows, which always have externalId set.
+ * `id` is `row.externalId` for a source="cleanjobdata" row (job detail
+ * pages/links round-trip that id straight into a live GET /jobs/:id call),
+ * falling back to `row.id` (our internal nanoid) for source="posted" rows,
+ * which have no externalId at all. JobDetailPage.tsx's getJobById() routing
+ * is what makes this safe: it checks for a posted job under this id BEFORE
+ * ever treating it as a CleanJobData id, so a posted job's `/jobs/[id]`
+ * link always resolves to our own DB row instead of a live API 404.
  */
 function toJob(row: JobRow, company: CompanyRow | null): Job {
   const companyObj: Company | null = company
@@ -62,7 +63,7 @@ function toJob(row: JobRow, company: CompanyRow | null): Job {
     : null;
 
   return {
-    id: row.externalId!,
+    id: row.externalId ?? row.id,
     title: row.title,
     location: row.locationText,
     locations: row.locations,
@@ -105,11 +106,17 @@ export async function listJobsFromCache(query: ListQuery = {}): Promise<ListResp
   // only the backstop TTL, but we still filter on it here too, not just at
   // prune time - a row can be past its backstop and not yet swept by the
   // next expired_check run, and it shouldn't render as "active" meanwhile.
-  // source="cleanjobdata" excludes locally-posted jobs from this cache-only
-  // path (they have no externalId for toJob() to expose as the Job id, and
-  // this function's whole contract is "reassemble a CleanJobData Job").
+  // Both isActive and expiresAt apply uniformly to source="posted" rows
+  // too: posted jobs default isActive=true and get a 90-day expiresAt at
+  // insert (createJobPosting()), so the same "still live" semantics hold.
+  //
+  // Deliberately NO `eq(jobs.source, "cleanjobdata")` filter here (phase 2
+  // removed it) - this function now serves the UNIFIED public feed: both
+  // source="cleanjobdata" and source="posted" rows, so the homepage/search
+  // results are one combined, correctly-paginated result set instead of two
+  // separate feeds. What actually gates a posted job's visibility is the
+  // status filter below, unconditionally:
   const conditions = [
-    eq(jobs.source, "cleanjobdata" as const),
     eq(jobs.isActive, true),
     gte(jobs.expiresAt, new Date()),
     // Unconditional, not a query option: a source="posted" job sitting at
@@ -215,4 +222,46 @@ export async function listJobsFromCache(query: ListQuery = {}): Promise<ListResp
       filters_applied: filtersApplied,
     },
   };
+}
+
+/**
+ * Job detail's OWN read path for source="posted" jobs - deliberately NOT
+ * routed through getJobById() (jobs/lib/api.ts), which always does a live
+ * GET /jobs/:id round-trip against the CleanJobData API. A posted job has
+ * no CleanJobData identity at all (externalId is null) - its full detail,
+ * including `description`, already lives entirely in our own DB (see
+ * jobs.description's doc comment), so there is nothing to fetch live.
+ *
+ * jobs/routes/JobDetailPage.tsx calls this FIRST for any `/jobs/[id]` hit;
+ * only a miss here falls through to the live/cache CleanJobData path. This
+ * is the "id-routing" piece the phase 2 spec calls out: a posted job's id
+ * (an internal nanoid, from `jobs.id`) is never a valid CleanJobData id, so
+ * checking here first is a pure narrowing that can't shadow real
+ * CleanJobData ids (different id spaces entirely, and even in the unlikely
+ * event of a collision, a nanoid(12) posted-job id matching a real
+ * CleanJobData id string is not a real-world risk to guard against beyond
+ * this comment).
+ *
+ * A pending/rejected posting does NOT resolve here (returns null, same as
+ * a nonexistent id) - a posting isn't real to the outside world until an
+ * admin approves it (or features.config.ts's jobPosting.requireVerification
+ * is false, in which case createJobPosting() inserts it already
+ * status="approved" and it's visible immediately). The poster can still see
+ * their own pending/rejected postings and their status via the
+ * "my postings" dashboard (getMyJobPostings(), a separate query that never
+ * goes through this status-gated path) - only this direct-link/public path
+ * is gated.
+ */
+export async function getPostedJobById(id: string): Promise<JobDetail | null> {
+  const db = requireDb();
+  const [row] = await db
+    .select({ job: jobs, company: companies })
+    .from(jobs)
+    .leftJoin(companies, eq(jobs.companyId, companies.id))
+    .where(and(eq(jobs.id, id), eq(jobs.source, "posted"), eq(jobs.status, "approved")))
+    .limit(1);
+
+  if (!row) return null;
+
+  return { ...toJob(row.job, row.company), description: row.job.description };
 }

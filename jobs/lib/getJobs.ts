@@ -1,6 +1,6 @@
-import { listJobs } from "@/jobs/lib/api";
+import { listJobs, getJobById } from "@/jobs/lib/api";
 import type { ListQuery } from "./query-types";
-import type { Job, ListResponse } from "@/lib/api/types";
+import type { Job, JobDetail, ListResponse } from "@/lib/api/types";
 import config from "@/features.config";
 
 /**
@@ -15,4 +15,28 @@ export async function getJobs(query: ListQuery): Promise<ListResponse<Job>> {
     return listJobsFromCache(query);
   }
   return listJobs(query);
+}
+
+/**
+ * Job detail's own seam, parallel to getJobs() above but with one extra
+ * branch in front: a source="posted" job (job-posting feature) has no
+ * CleanJobData identity to fetch live, so we check our own DB for it FIRST,
+ * regardless of whether job-sync's cache is enabled - a posted job can
+ * exist even in a deployment that has job-sync (and therefore
+ * listJobsFromCache's public feed unification) disabled, since createJobPosting()
+ * writes to the same `jobs` table either way. Only a miss here falls
+ * through to the existing cache-or-live CleanJobData path.
+ */
+export async function getJobDetail(id: string): Promise<JobDetail> {
+  const { getPostedJobById } = await import("@/features/job-sync/lib/read");
+  const posted = await getPostedJobById(id);
+  if (posted) return posted;
+
+  if (config.jobSync.enabled) {
+    // No cache-backed single-job read path exists yet for cleanjobdata rows
+    // (job detail has always fetched live, even when the list is served
+    // from cache - see this repo's existing JobDetailPage.tsx comment) -
+    // unaffected by this phase, unchanged behavior for cleanjobdata jobs.
+  }
+  return getJobById(id);
 }

@@ -187,6 +187,19 @@ export const jobs = pgTable(
     /** CleanJobData's own id for this job, only when source="cleanjobdata" - null for locally-posted jobs. See this table's doc comment for why this isn't `id`. */
     externalId: text("externalId"),
     title: text("title").notNull(),
+    /**
+     * Full job description HTML/text. Only ever populated for source="posted"
+     * rows (job-posting's createJobPosting()) - source="cleanjobdata" rows
+     * deliberately leave this null and keep fetching description live via
+     * getJobById() (see jobs table's doc comment: list items never include
+     * description, only GET /jobs/:id does, and re-syncing every job's full
+     * description into this cache on every incremental sync would be a lot
+     * of write volume for a field only ever read one row at a time on a
+     * detail-page view). Added in this migration specifically so posted
+     * jobs - which have no live API to fall back to - have somewhere to
+     * store it.
+     */
+    description: text("description"),
     companyId: text("companyId").references(() => companies.id, { onDelete: "set null" }),
     companyName: text("companyName"),
     locationText: text("locationText"),

@@ -37,6 +37,8 @@ export const featuresSchema = z.object({
   jobPosting: z.object({
     enabled: z.boolean().default(false),
     guestAccess: z.boolean().default(false),
+    /** When true (default), a new posting starts status="pending" and stays invisible - even at its own direct /jobs/[id] link - until an admin approves it. When false, postings auto-publish as status="approved" immediately, for deployments that don't want a moderation step at all. */
+    requireVerification: z.boolean().default(true),
   }),
 });
 

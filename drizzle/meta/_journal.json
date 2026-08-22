@@ -36,6 +36,13 @@
       "when": 1787416172526,
       "tag": "0004_opposite_nightmare",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1787416708482,
+      "tag": "0005_amused_serpent_society",
+      "breakpoints": true
     }
   ]
 }

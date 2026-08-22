@@ -14,7 +14,7 @@ const config: FeaturesConfig = {
   jobSync: { enabled: true, guestAccess: true },
   resume: { enabled: false, guestAccess: false, parsing: true, aiParsing: false },
   applications: { enabled: true, guestAccess: false },
-  jobPosting: { enabled: false, guestAccess: false },
+  jobPosting: { enabled: true, guestAccess: false, requireVerification: true },
 };
 
 export default featuresSchema.parse(config);
