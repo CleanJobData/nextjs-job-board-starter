@@ -2,10 +2,10 @@
 
 import * as React from "react";
 import { Job, ListResponse } from "@/lib/api/types";
-import { ListQuery } from "@/lib/jobs/query-types";
+import { ListQuery } from "@/jobs/lib/query-types";
 import { JobGrid } from "./JobGrid";
 import { Button } from "@/components/ui/Button";
-import { getJobsAction } from "@/app/actions/jobs";
+import { getJobsAction } from "@/jobs/actions/jobs";
 import { FaSpinner } from "react-icons/fa6";
 
 interface JobListProps {

@@ -2,8 +2,10 @@ import type { ComponentType, ReactNode } from "react";
 import config from "@/features.config";
 import type { FeatureKey } from "@/features.schema";
 import type { CronTask } from "@/lib/cron/types";
+import type { Job } from "@/lib/api/types";
 import { authFeature } from "./auth/feature";
 import { jobSyncFeature } from "./job-sync/feature";
+import { applicationsFeature } from "./applications/feature";
 
 export type NavItem = {
   label: string;
@@ -23,6 +25,14 @@ export interface FeaturePlugin {
   providers?: ComponentType<{ children: ReactNode }>[];
   /** Scheduled tasks this feature needs run periodically - picked up by app/api/cron/route.ts. See features/job-sync/feature.ts for a real example. */
   cronTasks?: () => CronTask[];
+  /**
+   * Extra actions to render on a job's detail view (components/jobs/JobDetailView.tsx),
+   * e.g. applications' "Track this job" button. Keeps core job UI from ever
+   * importing a specific feature's components directly - it only imports
+   * this registry, which always exists regardless of which features are
+   * installed, so deleting a feature never breaks JobDetailView.tsx.
+   */
+  jobDetailActions?: () => ComponentType<{ job: Job }>[];
 }
 
 /**
@@ -33,6 +43,7 @@ export interface FeaturePlugin {
 const allFeaturePlugins: Partial<Record<FeatureKey, FeaturePlugin>> = {
   auth: authFeature,
   jobSync: jobSyncFeature,
+  applications: applicationsFeature,
 };
 
 /** Plugins for every feature that is both registered above AND enabled in features.config.ts. */
@@ -51,3 +62,7 @@ export const activeProviders: ComponentType<{ children: ReactNode }>[] = activeF
 );
 
 export const activeCronTasks: CronTask[] = activeFeatures.flatMap((f) => f.cronTasks?.() ?? []);
+
+export const activeJobDetailActions: ComponentType<{ job: Job }>[] = activeFeatures.flatMap(
+  (f) => f.jobDetailActions?.() ?? []
+);

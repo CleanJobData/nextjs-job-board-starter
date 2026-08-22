@@ -228,7 +228,7 @@ value.
 ## Known limitations
 
 - **`ListQuery.location` means different things depending on the branch.**
-  On the live API (`lib/api/jobs.ts`'s `listJobs()`, including sync-time
+  On the live API (`jobs/lib/api.ts`'s `listJobs()`, including sync-time
   filters), it's strictly 2-letter ISO country codes - see the
   `syncFilters` note above. On the cache branch (`listJobsFromCache()`'s
   end-user filtering), it's a loose free-text `ILIKE` match against
@@ -273,6 +273,6 @@ feature's left to run), the `jobSync` entry from
 `features.schema.ts`/`features.config.ts`, the `jobSyncFeature`
 import/entry in `features/registry.ts`, the
 `export * from "@/features/job-sync/db/schema"` line in `lib/db/schema.ts`,
-the cache-branch import in `lib/jobs/getJobs.ts`, and `getExpiredJobs`/
-`ExpiredJobsResponse`/`ExpiredJobItem` from `lib/api/jobs.ts`/`types.ts` if
+the cache-branch import in `jobs/lib/getJobs.ts`, and `getExpiredJobs`/
+`ExpiredJobsResponse`/`ExpiredJobItem` from `jobs/lib/api.ts`/`types.ts` if
 nothing else uses them.

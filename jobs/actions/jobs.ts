@@ -1,7 +1,7 @@
 "use server";
 
-import { getJobs } from "@/lib/jobs/getJobs";
-import { ListQuery } from "@/lib/jobs/query-types";
+import { getJobs } from "@/jobs/lib/getJobs";
+import { ListQuery } from "@/jobs/lib/query-types";
 import { Job, ListResponse } from "@/lib/api/types";
 import { ApiError } from "@/lib/api/client";
 

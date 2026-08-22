@@ -1,8 +1,8 @@
 import { and, desc, eq } from "drizzle-orm";
-import { listJobs } from "@/lib/api/jobs";
+import { listJobs } from "@/jobs/lib/api";
 import { requireDb } from "@/lib/db/client";
 import type { Job } from "@/lib/api/types";
-import type { ListQuery } from "@/lib/jobs/query-types";
+import type { ListQuery } from "@/jobs/lib/query-types";
 import jobSyncConfig from "../job-sync.config";
 import { cachedJobs, syncRuns } from "../db/schema";
 import { ensureCompaniesFetched, getEmployerId, refreshStaleCompanies } from "./companies";

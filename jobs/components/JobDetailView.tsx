@@ -26,13 +26,24 @@ import { Button } from "@/components/ui/Button";
 import { Typography } from "@/components/ui/Typography";
 import { formatAddedAgo } from "@/lib/formatAddedAgo";
 import { cn, formatNumber } from "@/lib/utils";
-import { CompanyLogo } from "@/components/jobs/CompanyLogo";
+import { CompanyLogo } from "@/jobs/components/CompanyLogo";
 
 interface JobDetailViewProps {
   job: JobDetail;
+  /**
+   * Pre-rendered feature actions (e.g. applications' "Track this job"
+   * button), passed down as already-constructed React nodes from a server
+   * component - see app/jobs/[id]/page.tsx. This component never imports
+   * features/registry.ts directly: that module's job-sync registration
+   * pulls in the `pg` driver, and importing it from this "use client"
+   * component would bundle Postgres's Node-only driver into the browser
+   * bundle (confirmed by a real build failure - "Module not found:
+   * Can't resolve 'util/types'" from pg's browser build attempt).
+   */
+  extraActions?: React.ReactNode;
 }
 
-export function JobDetailView({ job }: JobDetailViewProps) {
+export function JobDetailView({ job, extraActions }: JobDetailViewProps) {
   const [isCompanyExpanded, setIsCompanyExpanded] = React.useState(false);
   const addedAgo = formatAddedAgo(job.published);
 
@@ -121,6 +132,7 @@ export function JobDetailView({ job }: JobDetailViewProps) {
               </a>
             </Button>
           )}
+          {extraActions}
         </div>
       </div>
 

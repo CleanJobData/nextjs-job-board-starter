@@ -1,7 +1,7 @@
-import { apiFetch } from "./client";
-import { ExpiredJobsResponse, Job, JobDetail, ListResponse } from "./types";
-import { ListQuery } from "../jobs/query-types";
-import { buildApiUrlParams } from "../jobs/query-mapper";
+import { apiFetch } from "@/lib/api/client";
+import { ExpiredJobsResponse, Job, JobDetail, ListResponse } from "@/lib/api/types";
+import { ListQuery } from "./query-types";
+import { buildApiUrlParams } from "./query-mapper";
 
 /**
  * Fetches a list of jobs from the CleanJobData API.

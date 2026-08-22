@@ -1,4 +1,4 @@
-import { ExperienceLevelToken } from "../api/types";
+import { ExperienceLevelToken } from "@/lib/api/types";
 import {
   JobBoardSearchParams,
   ListQuery,

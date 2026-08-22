@@ -1,7 +1,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { FaLocationDot, FaGlobe, FaDollarSign, FaClock } from "react-icons/fa6";
-import { CompanyLogo } from "@/components/jobs/CompanyLogo";
+import { CompanyLogo } from "@/jobs/components/CompanyLogo";
 import { Job } from "@/lib/api/types";
 import { Card, CardContent } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";

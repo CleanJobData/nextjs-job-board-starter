@@ -18,7 +18,7 @@ import { Switch } from "@/components/ui/Switch";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { Dialog } from "@/components/ui/Dialog";
-import { GeoSuggest } from "@/components/jobs/GeoSuggest";
+import { GeoSuggest } from "@/jobs/components/GeoSuggest";
 import { cn, formatNumber } from "@/lib/utils";
 import countriesData from "@/data/countries.json";
 import { GeoSuggestResult } from "@/lib/api/types";

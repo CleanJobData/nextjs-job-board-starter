@@ -1,11 +1,11 @@
-import { listJobs } from "@/lib/api/jobs";
+import { listJobs } from "@/jobs/lib/api";
 import type { ListQuery } from "./query-types";
 import type { Job, ListResponse } from "@/lib/api/types";
 import config from "@/features.config";
 
 /**
  * The one seam that decides live-API vs. cached-DB reads. Both
- * app/page.tsx (initial SSR fetch) and app/actions/jobs.ts's
+ * jobs/routes/HomePage.tsx (initial SSR fetch) and jobs/actions/jobs.ts's
  * getJobsAction (client "load more") call this instead of branching
  * on config.jobSync.enabled themselves - keeps the decision in one place.
  */

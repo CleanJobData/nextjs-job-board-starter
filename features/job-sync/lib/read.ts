@@ -1,6 +1,6 @@
 import { and, desc, eq, gte, ilike, lte, lt, or, sql } from "drizzle-orm";
 import { requireDb } from "@/lib/db/client";
-import type { ListQuery } from "@/lib/jobs/query-types";
+import type { ListQuery } from "@/jobs/lib/query-types";
 import type { Company, FilterApplied, Job, ListResponse } from "@/lib/api/types";
 import { cachedJobs, companies } from "../db/schema";
 
@@ -8,7 +8,7 @@ import { cachedJobs, companies } from "../db/schema";
  * Cursor is opaque to callers (same contract as the live API's
  * pagination.next_page) - encodes a keyset position, not tied to the live
  * API's own cursor format. Safe because a deployment only ever exercises
- * one branch (cache or live) per request, per app/actions/jobs.ts.
+ * one branch (cache or live) per request, per jobs/actions/jobs.ts.
  */
 function encodeCursor(published: Date, id: string) {
   return Buffer.from(JSON.stringify({ p: published.toISOString(), id })).toString("base64url");
@@ -79,7 +79,7 @@ function locationContains(key: "city_id" | "state_id" | "country_id", ids: numbe
 
 /**
  * Serves listings from cached_jobs instead of the live CleanJobData API.
- * Used by app/actions/jobs.ts when features.config.ts's jobSync.enabled is
+ * Used by jobs/actions/jobs.ts when features.config.ts's jobSync.enabled is
  * true. Unlike the previous version, city_id/state_id/country_id ARE
  * supported now, via GIN-indexed containment queries against the full
  * `locations` JSONB array (a job can have multiple locations - this

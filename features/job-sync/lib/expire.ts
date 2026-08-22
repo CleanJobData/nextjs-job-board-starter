@@ -1,6 +1,6 @@
 import { inArray, lt } from "drizzle-orm";
 import { requireDb } from "@/lib/db/client";
-import { getExpiredJobs } from "@/lib/api/jobs";
+import { getExpiredJobs } from "@/jobs/lib/api";
 import jobSyncConfig from "../job-sync.config";
 import { cachedJobs } from "../db/schema";
 
