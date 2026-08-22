@@ -72,6 +72,20 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   pages: {
     signIn: "/sign-in",
   },
+  // Auth.js's default cookie names (authjs.*) are shared across every
+  // localhost app regardless of port - cookies are scoped by domain, not
+  // port, so signing into one local NextAuth app can silently clobber
+  // another's session/csrf/callback cookies during local dev. Project-
+  // specific names avoid that collision entirely (not just sessionToken -
+  // csrf-token and callback-url collisions cause their own subtle bugs,
+  // e.g. failed CSRF checks between two apps running at once). Doesn't
+  // matter in production (real deployments don't share a hostname with
+  // other apps), but costs nothing to keep.
+  cookies: {
+    sessionToken: { name: "cleanjobdata-job-board.session-token" },
+    callbackUrl: { name: "cleanjobdata-job-board.callback-url" },
+    csrfToken: { name: "cleanjobdata-job-board.csrf-token" },
+  },
   providers,
   callbacks: {
     async session({ session, token }) {
