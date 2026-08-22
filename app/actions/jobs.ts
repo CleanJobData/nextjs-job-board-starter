@@ -1,6 +1,6 @@
 "use server";
 
-import { listJobs } from "@/lib/api/jobs";
+import { getJobs } from "@/lib/jobs/getJobs";
 import { ListQuery } from "@/lib/jobs/query-types";
 import { Job, ListResponse } from "@/lib/api/types";
 import { ApiError } from "@/lib/api/client";
@@ -13,7 +13,7 @@ export async function getJobsAction(
   query: ListQuery
 ): Promise<ListResponse<Job>> {
   try {
-    return await listJobs(query);
+    return await getJobs(query);
   } catch (error: any) {
     // Detailed server-side logging for developers (only visible in terminal)
     if (error instanceof ApiError) {

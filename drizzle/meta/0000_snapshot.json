@@ -1,5 +1,5 @@
 {
-  "id": "6a708564-724e-486c-ade9-cc2a9dc50005",
+  "id": "bf137d38-c3ec-4d6a-afa8-f2370ec6e74c",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -75,7 +75,23 @@
           "notNull": false
         }
       },
-      "indexes": {},
+      "indexes": {
+        "accountsUserIdIdx": {
+          "name": "accountsUserIdIdx",
+          "columns": [
+            {
+              "expression": "userId",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
       "foreignKeys": {
         "accounts_userId_users_id_fk": {
           "name": "accounts_userId_users_id_fk",
@@ -123,12 +139,28 @@
         },
         "expires": {
           "name": "expires",
-          "type": "timestamp",
+          "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": true
         }
       },
-      "indexes": {},
+      "indexes": {
+        "sessionsUserIdIdx": {
+          "name": "sessionsUserIdIdx",
+          "columns": [
+            {
+              "expression": "userId",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
       "foreignKeys": {
         "sessions_userId_users_id_fk": {
           "name": "sessions_userId_users_id_fk",
@@ -174,7 +206,7 @@
         },
         "emailVerified": {
           "name": "emailVerified",
-          "type": "timestamp",
+          "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": false
         },
@@ -225,7 +257,7 @@
         },
         "expires": {
           "name": "expires",
-          "type": "timestamp",
+          "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": true
         }
@@ -241,6 +273,505 @@
           ]
         }
       },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.cachedJobs": {
+      "name": "cachedJobs",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "title": {
+          "name": "title",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "companyId": {
+          "name": "companyId",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "companyName": {
+          "name": "companyName",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "locationText": {
+          "name": "locationText",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "locations": {
+          "name": "locations",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'[]'::jsonb"
+        },
+        "applicationUrl": {
+          "name": "applicationUrl",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "language": {
+          "name": "language",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "employmentType": {
+          "name": "employmentType",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "hasRemote": {
+          "name": "hasRemote",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "isActive": {
+          "name": "isActive",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": true
+        },
+        "sourceExpiredAt": {
+          "name": "sourceExpiredAt",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "experienceLevel": {
+          "name": "experienceLevel",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "experienceLevels": {
+          "name": "experienceLevels",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'{}'"
+        },
+        "salaryMin": {
+          "name": "salaryMin",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "salaryMax": {
+          "name": "salaryMax",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "salaryCurrency": {
+          "name": "salaryCurrency",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "salaryText": {
+          "name": "salaryText",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "published": {
+          "name": "published",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "syncedAt": {
+          "name": "syncedAt",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "expiresAt": {
+          "name": "expiresAt",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "cachedJobsPublishedIdx": {
+          "name": "cachedJobsPublishedIdx",
+          "columns": [
+            {
+              "expression": "published",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "cachedJobsExpiresAtIdx": {
+          "name": "cachedJobsExpiresAtIdx",
+          "columns": [
+            {
+              "expression": "expiresAt",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "cachedJobsIsActiveIdx": {
+          "name": "cachedJobsIsActiveIdx",
+          "columns": [
+            {
+              "expression": "isActive",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "cachedJobsHasRemoteIdx": {
+          "name": "cachedJobsHasRemoteIdx",
+          "columns": [
+            {
+              "expression": "hasRemote",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "cachedJobsCompanyNameIdx": {
+          "name": "cachedJobsCompanyNameIdx",
+          "columns": [
+            {
+              "expression": "companyName",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "cachedJobsCompanyIdIdx": {
+          "name": "cachedJobsCompanyIdIdx",
+          "columns": [
+            {
+              "expression": "companyId",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "cachedJobsLocationsGinIdx": {
+          "name": "cachedJobsLocationsGinIdx",
+          "columns": [
+            {
+              "expression": "locations",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "gin",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "cachedJobs_companyId_companies_id_fk": {
+          "name": "cachedJobs_companyId_companies_id_fk",
+          "tableFrom": "cachedJobs",
+          "tableTo": "companies",
+          "columnsFrom": [
+            "companyId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.companies": {
+      "name": "companies",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "logo": {
+          "name": "logo",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "websiteUrl": {
+          "name": "websiteUrl",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "linkedinUrl": {
+          "name": "linkedinUrl",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "twitterUrl": {
+          "name": "twitterUrl",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "githubUrl": {
+          "name": "githubUrl",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "youtubeUrl": {
+          "name": "youtubeUrl",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "facebookUrl": {
+          "name": "facebookUrl",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "instagramUrl": {
+          "name": "instagramUrl",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "team": {
+          "name": "team",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'[]'::jsonb"
+        },
+        "employeeCount": {
+          "name": "employeeCount",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "industry": {
+          "name": "industry",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "headquarters": {
+          "name": "headquarters",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "founded": {
+          "name": "founded",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "specialties": {
+          "name": "specialties",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'{}'"
+        },
+        "location": {
+          "name": "location",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "registrableDomain": {
+          "name": "registrableDomain",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "sourceLastScrapedAt": {
+          "name": "sourceLastScrapedAt",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.syncRuns": {
+      "name": "syncRuns",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "kind": {
+          "name": "kind",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "startedAt": {
+          "name": "startedAt",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "finishedAt": {
+          "name": "finishedAt",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'running'"
+        },
+        "watermark": {
+          "name": "watermark",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "jobsUpserted": {
+          "name": "jobsUpserted",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "jobsExpired": {
+          "name": "jobsExpired",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "errorMessage": {
+          "name": "errorMessage",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "syncRunsKindStartedAtIdx": {
+          "name": "syncRunsKindStartedAtIdx",
+          "columns": [
+            {
+              "expression": "kind",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "startedAt",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "policies": {},
       "checkConstraints": {},

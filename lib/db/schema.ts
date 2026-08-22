@@ -4,3 +4,4 @@
  * here when its features/<name>/db/schema.ts is built.
  */
 export * from "@/features/auth/db/schema";
+export * from "@/features/job-sync/db/schema";

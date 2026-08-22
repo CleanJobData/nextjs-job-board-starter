@@ -5,6 +5,10 @@ import type { AdapterAccountType } from "next-auth/adapters";
  * Schema shape required by @auth/drizzle-adapter for a credentials +
  * (future) OAuth setup. `passwordHash` is our own addition for the
  * credentials provider - Auth.js core doesn't manage passwords itself.
+ *
+ * All timestamps use `withTimezone: true` (timestamptz) - see
+ * features/job-sync/db/schema.ts's doc comment for why "timestamp without
+ * time zone" is a real correctness risk, not a style choice.
  */
 export const users = pgTable("users", {
   id: text("id")
@@ -12,7 +16,7 @@ export const users = pgTable("users", {
     .$defaultFn(() => crypto.randomUUID()),
   name: text("name"),
   email: text("email").notNull().unique(),
-  emailVerified: timestamp("emailVerified", { mode: "date" }),
+  emailVerified: timestamp("emailVerified", { mode: "date", withTimezone: true }),
   image: text("image"),
   passwordHash: text("passwordHash"),
 });
@@ -38,7 +42,7 @@ export const accounts = pgTable(
     primaryKey({ columns: [account.provider, account.providerAccountId] }),
     // Postgres doesn't auto-index FK columns - the adapter looks up accounts by userId
     // (e.g. "list this user's linked providers"), so this would otherwise be a table scan.
-    index("accounts_user_id_idx").on(account.userId),
+    index("accountsUserIdIdx").on(account.userId),
   ]
 );
 
@@ -49,11 +53,11 @@ export const sessions = pgTable(
     userId: text("userId")
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
-    expires: timestamp("expires", { mode: "date" }).notNull(),
+    expires: timestamp("expires", { mode: "date", withTimezone: true }).notNull(),
   },
   (session) => [
-    // Same reasoning as accounts_user_id_idx - the adapter deletes/looks up sessions by userId on sign-out.
-    index("sessions_user_id_idx").on(session.userId),
+    // Same reasoning as accountsUserIdIdx - the adapter deletes/looks up sessions by userId on sign-out.
+    index("sessionsUserIdIdx").on(session.userId),
   ]
 );
 
@@ -62,7 +66,7 @@ export const verificationTokens = pgTable(
   {
     identifier: text("identifier").notNull(),
     token: text("token").notNull(),
-    expires: timestamp("expires", { mode: "date" }).notNull(),
+    expires: timestamp("expires", { mode: "date", withTimezone: true }).notNull(),
   },
   (vt) => [primaryKey({ columns: [vt.identifier, vt.token] })]
 );

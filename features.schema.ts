@@ -22,8 +22,7 @@ export const featuresSchema = z.object({
   jobSync: z.object({
     enabled: z.boolean().default(false),
     guestAccess: z.boolean().default(true),
-    cron: z.boolean().default(false),
-    ttlHours: z.number().default(72),
+    /** Sync cadence/page-size/expiry tuning lives in features/job-sync/job-sync.config.ts, not here - implementation detail of one feature, not a cross-cutting flag. */
   }),
   resume: z.object({
     enabled: z.boolean().default(false),

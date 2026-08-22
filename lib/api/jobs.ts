@@ -1,5 +1,5 @@
 import { apiFetch } from "./client";
-import { Job, JobDetail, ListResponse } from "./types";
+import { ExpiredJobsResponse, Job, JobDetail, ListResponse } from "./types";
 import { ListQuery } from "../jobs/query-types";
 import { buildApiUrlParams } from "../jobs/query-mapper";
 
@@ -21,4 +21,21 @@ export async function listJobs(
  */
 export async function getJobById(id: string): Promise<JobDetail> {
   return apiFetch<JobDetail>(`/jobs/${id}`);
+}
+
+/**
+ * Fetches recently-expired job IDs. `maxAge` is a relative duration string
+ * (e.g. "24h", "7d", "1w") - the endpoint has no absolute `since` param.
+ * Shares the same monthly quota as listJobs() on most plan tiers.
+ */
+export async function getExpiredJobs(
+  maxAge: string,
+  cursor?: string,
+  limit?: number
+): Promise<ExpiredJobsResponse> {
+  const params = new URLSearchParams({ max_age: maxAge });
+  if (cursor) params.set("cursor", cursor);
+  if (limit) params.set("limit", String(limit));
+
+  return apiFetch<ExpiredJobsResponse>(`/jobs/expired?${params.toString()}`);
 }

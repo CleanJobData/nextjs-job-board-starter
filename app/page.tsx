@@ -1,6 +1,6 @@
 import * as React from "react";
 import { normalizeSearchParams, mapSearchParamsToQuery } from "@/lib/jobs/query-mapper";
-import { listJobs } from "@/lib/api/jobs";
+import { getJobs } from "@/lib/jobs/getJobs";
 import { JobList } from "@/components/jobs/JobList";
 import { JobFilters } from "@/components/jobs/JobFilters";
 import { ActiveFilterChips } from "@/components/jobs/ActiveFilterChips";
@@ -22,7 +22,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
   let error: string | null = null;
 
   try {
-    initialData = await listJobs(apiQuery);
+    initialData = await getJobs(apiQuery);
   } catch (err: any) {
     if (err instanceof ApiError) {
       console.error(`[API Error] ${err.status} ${err.message} (${err.url})`);

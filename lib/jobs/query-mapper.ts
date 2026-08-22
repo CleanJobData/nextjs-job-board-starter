@@ -126,10 +126,15 @@ export function buildApiUrlParams(query: ListQuery): URLSearchParams {
   if (query.country_id?.length) params.set("country_id", query.country_id.join(","));
   if (query.location?.length) params.set("location", query.location.join(","));
   
-  if (query.remote_only) params.set("workSetting", "remote_only");
-  
+  // Canonical param name, not the "workSetting"/"remote"/"has_remote" aliases the backend also accepts.
+  if (query.remote_only) params.set("remote_only", "true");
+  if (query.remote_type) params.set("remote_type", query.remote_type);
+
   if (query.experience_level?.length) {
     params.set("experience_level", query.experience_level.join(","));
+  }
+  if (query.employment_type?.length) {
+    params.set("employment_type", query.employment_type.join(","));
   }
 
   if (query.min_salary || query.max_salary) {
@@ -137,10 +142,16 @@ export function buildApiUrlParams(query: ListQuery): URLSearchParams {
     const max = query.max_salary || "";
     params.set("salary", `${min},${max}`);
   }
+  if (query.require_salary) params.set("require_salary", "true");
 
   if (query.max_age_hours) params.set("max_age", `${query.max_age_hours}h`);
+  if (query.created_max_age) params.set("created_max_age", query.created_max_age);
   if (query.published_after) params.set("published_after", query.published_after);
   if (query.company_name) params.set("company_name", query.company_name);
+  if (query.company_website_url) params.set("company_website_url", query.company_website_url);
+  if (query.source_domain) params.set("domain", query.source_domain);
+  if (query.employer_id?.length) params.set("employer_id", query.employer_id.join(","));
+  if (query.include_remote_without_country) params.set("includeRemoteWithoutCountry", "true");
   if (query.sort_by) params.set("sort_by", query.sort_by);
   if (query.cursor) params.set("cursor", query.cursor);
   if (query.limit) params.set("limit", query.limit.toString());
