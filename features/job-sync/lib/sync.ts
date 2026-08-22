@@ -120,11 +120,16 @@ async function runIncrementalSync() {
 
       // Fetch any never-seen-before employers for this page's jobs before upserting the jobs themselves,
       // so jobs.companyId's FK always has a real companies row to point at.
+      // ensureCompaniesFetched() returns employer id -> internal companies.id,
+      // since jobs.companyId's FK targets companies.id (a UUID), not the raw
+      // employer id (see companies table's doc comment).
       const employerIds = pageJobs.map(getEmployerId).filter((id): id is string => id !== null);
-      await ensureCompaniesFetched(employerIds);
+      const companyIdByEmployerId = await ensureCompaniesFetched(employerIds);
 
       for (const job of pageJobs) {
-        const row = toJobRow(job, getEmployerId(job), expiresAt);
+        const employerId = getEmployerId(job);
+        const companyId = employerId ? (companyIdByEmployerId.get(employerId) ?? null) : null;
+        const row = toJobRow(job, companyId, expiresAt);
         // Conflict target is the (source, externalId) unique index, not
         // `id` - `id` is now an internal UUID that a re-synced job (same
         // externalId) has no way to already know, so it can't be the

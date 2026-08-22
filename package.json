@@ -21,6 +21,7 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "drizzle-orm": "^0.45.2",
+    "nanoid": "^5.1.16",
     "next": "16.1.6",
     "next-auth": "^5.0.0-beta.32",
     "pg": "^8.23.0",

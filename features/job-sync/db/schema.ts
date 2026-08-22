@@ -1,12 +1,37 @@
 import { pgTable, text, timestamp, boolean, integer, jsonb, index, uniqueIndex } from "drizzle-orm/pg-core";
+import { nanoid } from "nanoid";
+import { users } from "@/features/auth/db/schema";
 import type { CompanyTeamMember, Location } from "@/lib/api/types";
 
 /**
- * One row per employer. `id` is CleanJobData's own stable employer id
- * (the `employer_id` field on a job - see Job.employer_id's doc comment),
- * not a computed/guessed key - GET /companies?employer_id=... and
- * GET /companies/:id both key on this same value, so it's a real, enforced
- * foreign key from jobs.companyId, not a soft reference.
+ * One row per employer, discriminated by `source` just like `jobs`:
+ * - "cleanjobdata": ingested from CleanJobData. `externalId` holds their
+ *   stable employer id (the `employer_id` field on a job - see
+ *   Job.employer_id's doc comment) - GET /companies?employer_id=... and
+ *   GET /companies/:id both key on this same value.
+ * - "posted": a locally-created employer profile (job-posting feature,
+ *   claim-profile model). `externalId` is null.
+ *
+ * `id` is an internally-generated UUID, NOT CleanJobData's employer id -
+ * this used to be the employer id directly (a real, enforced foreign key
+ * from jobs.companyId, not a soft reference), but that reasoning doesn't
+ * survive a table that must also hold locally-created companies with no
+ * CleanJobData id at all - same superseded reasoning as `jobs.id` (see that
+ * table's doc comment). `jobs.companyId` still references this `id`
+ * unchanged; use `externalId` (scoped by `source`), never `id`, whenever
+ * matching against anything from the CleanJobData API.
+ *
+ * `ownerId` is nullable and `onDelete: "set null"`: an ingested company has
+ * no owner until a real employer signs up, gets admin-verified, and claims
+ * it (job-posting's claim-profile model - admin just sets ownerId to their
+ * users.id, no duplicate company row). Losing the owner (user deleted)
+ * shouldn't delete the company or cascade into deleting its jobs, so this
+ * is SET NULL, not CASCADE - the company reverts to unclaimed.
+ *
+ * The unique index on (source, externalId) mirrors jobsSourceExternalIdIdx
+ * - Postgres unique indexes treat NULL as distinct, so unlimited
+ * source="posted" rows (externalId always null) coexist fine, while two
+ * syncs of the same CleanJobData employer correctly upsert the same row.
  *
  * Populated by features/job-sync/lib/companies.ts, NOT from the `company`
  * object embedded in a job response (that embedded object is a partial,
@@ -37,9 +62,22 @@ import type { CompanyTeamMember, Location } from "@/lib/api/types";
  * now(), watermark <= published). timestamptz stores an absolute instant
  * regardless of session timezone, removing the whole class of bug.
  */
-export const companies = pgTable("companies", {
-  id: text("id").primaryKey(),
-  name: text("name").notNull(),
+export const companies = pgTable(
+  "companies",
+  {
+    // nanoid, not crypto.randomUUID() - this id appears in company profile URLs
+    // (and jobs.companyId links to it), so it needs to actually look decent
+    // there. 12 chars is still effectively collision-free at this table's
+    // scale while being far shorter than a UUID.
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => nanoid(12)),
+    source: text("source").$type<"cleanjobdata" | "posted">().notNull().default("cleanjobdata"),
+    /** CleanJobData's own employer id for this company, only when source="cleanjobdata" - null for locally-created companies. See this table's doc comment for why this isn't `id`. */
+    externalId: text("externalId"),
+    /** Set once a real employer is admin-verified and claims this (previously CleanJobData-ingested or newly "posted") company profile. Null means unclaimed. See this table's doc comment. */
+    ownerId: text("ownerId").references(() => users.id, { onDelete: "set null" }),
+    name: text("name").notNull(),
   description: text("description"),
   logo: text("logo"),
   websiteUrl: text("websiteUrl"),
@@ -60,7 +98,15 @@ export const companies = pgTable("companies", {
   /** CleanJobData's own last_scraped_at for this employer - informational only (job-scraping cadence, not a profile-staleness signal - see refreshStaleCompanies()'s doc comment for why it's not used to decide refresh order). */
   sourceLastScrapedAt: timestamp("sourceLastScrapedAt", { mode: "date", withTimezone: true }),
   updatedAt: timestamp("updatedAt", { mode: "date", withTimezone: true }).notNull().defaultNow(),
-});
+  },
+  (t) => [
+    // Sync's upsert target (features/job-sync/lib/companies.ts) - also the
+    // constraint that prevents duplicate syncs of the same CleanJobData
+    // employer. See this table's doc comment for why NULL externalId
+    // ("posted" companies) doesn't collide.
+    uniqueIndex("companiesSourceExternalIdIdx").on(t.source, t.externalId),
+  ]
+);
 
 /**
  * The single core jobs table - one row per job regardless of where it came
@@ -111,9 +157,13 @@ export const companies = pgTable("companies", {
 export const jobs = pgTable(
   "jobs",
   {
+    // nanoid, not crypto.randomUUID() - see companies.id's comment above,
+    // same reasoning: this id shows up in /jobs/[id]-style URLs for
+    // source="posted" jobs (source="cleanjobdata" jobs still route on
+    // externalId, unaffected by this).
     id: text("id")
       .primaryKey()
-      .$defaultFn(() => crypto.randomUUID()),
+      .$defaultFn(() => nanoid(12)),
     source: text("source").$type<"cleanjobdata" | "posted">().notNull().default("cleanjobdata"),
     /** CleanJobData's own id for this job, only when source="cleanjobdata" - null for locally-posted jobs. See this table's doc comment for why this isn't `id`. */
     externalId: text("externalId"),

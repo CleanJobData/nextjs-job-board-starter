@@ -1,4 +1,4 @@
-import { asc, inArray } from "drizzle-orm";
+import { and, asc, eq, inArray, isNotNull } from "drizzle-orm";
 import { getCompanyDetail } from "@/lib/api/companies";
 import { requireDb } from "@/lib/db/client";
 import type { CompanyDetail, Job } from "@/lib/api/types";
@@ -21,7 +21,8 @@ function toCompanyRow(detail: CompanyDetail) {
     : [];
 
   return {
-    id: detail.id,
+    externalId: detail.id,
+    source: "cleanjobdata" as const,
     name: meta?.name || detail.display_name,
     description: meta?.description ?? null,
     logo: meta?.logoUrl ?? detail.logo_url,
@@ -45,10 +46,17 @@ function toCompanyRow(detail: CompanyDetail) {
   };
 }
 
-async function upsertCompanyDetail(db: Db, employerId: string) {
+/** Returns the internal companies.id (UUID) of the upserted row - callers need this to satisfy jobs.companyId's FK, which points at `id`, not `externalId`. */
+async function upsertCompanyDetail(db: Db, employerId: string): Promise<string> {
   const detail = await getCompanyDetail(employerId);
   const row = toCompanyRow(detail);
-  await db.insert(companies).values(row).onConflictDoUpdate({ target: companies.id, set: row });
+  const [upserted] = await db
+    .insert(companies)
+    .values(row)
+    .onConflictDoUpdate({ target: [companies.source, companies.externalId], set: row })
+    .returning({ id: companies.id });
+  if (!upserted) throw new Error(`Failed to upsert company row for employer ${employerId}.`);
+  return upserted.id;
 }
 
 /**
@@ -57,19 +65,35 @@ async function upsertCompanyDetail(db: Db, employerId: string) {
  * /companies/:id) and upserts it. Called from the incremental sync pass -
  * new employers get real data immediately, not just whatever partial
  * snapshot happened to be embedded in one job response.
+ *
+ * Returns a map from CleanJobData employer id -> internal companies.id
+ * (UUID), for every id in `employerIds` (whether already-known or just
+ * fetched) - sync.ts needs the internal id, not the employer id, to
+ * populate jobs.companyId (its FK target is companies.id, which is no
+ * longer the same value as the employer id - see companies table's doc
+ * comment).
  */
-export async function ensureCompaniesFetched(employerIds: string[]) {
+export async function ensureCompaniesFetched(employerIds: string[]): Promise<Map<string, string>> {
   const uniqueIds = [...new Set(employerIds)];
-  if (uniqueIds.length === 0) return;
+  const result = new Map<string, string>();
+  if (uniqueIds.length === 0) return result;
 
   const db = requireDb();
-  const existing = await db.select({ id: companies.id }).from(companies).where(inArray(companies.id, uniqueIds));
-  const existingIds = new Set(existing.map((r) => r.id));
-  const missingIds = uniqueIds.filter((id) => !existingIds.has(id));
-
-  for (const id of missingIds) {
-    await upsertCompanyDetail(db, id);
+  const existing = await db
+    .select({ id: companies.id, externalId: companies.externalId })
+    .from(companies)
+    .where(and(eq(companies.source, "cleanjobdata"), inArray(companies.externalId, uniqueIds)));
+  for (const row of existing) {
+    if (row.externalId) result.set(row.externalId, row.id);
   }
+
+  const missingIds = uniqueIds.filter((id) => !result.has(id));
+  for (const id of missingIds) {
+    const internalId = await upsertCompanyDetail(db, id);
+    result.set(id, internalId);
+  }
+
+  return result;
 }
 
 /**
@@ -90,13 +114,14 @@ export async function ensureCompaniesFetched(employerIds: string[]) {
 export async function refreshStaleCompanies(): Promise<number> {
   const db = requireDb();
   const toRefresh = await db
-    .select({ id: companies.id })
+    .select({ externalId: companies.externalId })
     .from(companies)
+    .where(and(eq(companies.source, "cleanjobdata"), isNotNull(companies.externalId)))
     .orderBy(asc(companies.updatedAt))
     .limit(jobSyncConfig.companyRefreshBatchSize);
 
-  for (const { id } of toRefresh) {
-    await upsertCompanyDetail(db, id);
+  for (const { externalId } of toRefresh) {
+    if (externalId) await upsertCompanyDetail(db, externalId);
   }
 
   return toRefresh.length;
