@@ -25,7 +25,7 @@ const STATUS_OPTIONS: { value: ApplicationStatus; label: string }[] = [
 
 type ApplicationRowData = {
   id: string;
-  jobId: string;
+  jobId: string | null;
   jobTitle: string;
   companyName: string | null;
   jobUrl: string | null;

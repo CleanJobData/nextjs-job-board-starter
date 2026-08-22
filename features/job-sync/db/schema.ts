@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, boolean, integer, jsonb, index } from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, boolean, integer, jsonb, index, uniqueIndex } from "drizzle-orm/pg-core";
 import type { CompanyTeamMember, Location } from "@/lib/api/types";
 
 /**
@@ -6,7 +6,7 @@ import type { CompanyTeamMember, Location } from "@/lib/api/types";
  * (the `employer_id` field on a job - see Job.employer_id's doc comment),
  * not a computed/guessed key - GET /companies?employer_id=... and
  * GET /companies/:id both key on this same value, so it's a real, enforced
- * foreign key from cachedJobs.companyId, not a soft reference.
+ * foreign key from jobs.companyId, not a soft reference.
  *
  * Populated by features/job-sync/lib/companies.ts, NOT from the `company`
  * object embedded in a job response (that embedded object is a partial,
@@ -63,9 +63,32 @@ export const companies = pgTable("companies", {
 });
 
 /**
- * A local mirror of CleanJobData API job LISTINGS (from the /jobs list
- * endpoint - Job, not JobDetail; list items don't include `description`,
- * only GET /jobs/:id does - job detail pages still call getJobById() live).
+ * The single core jobs table - one row per job regardless of where it came
+ * from, discriminated by `source`:
+ * - "cleanjobdata": a local mirror of a CleanJobData API job LISTING (from
+ *   the /jobs list endpoint - Job, not JobDetail; list items don't include
+ *   `description`, only GET /jobs/:id does - job detail pages still call
+ *   getJobById() live). `externalId` holds CleanJobData's own id for the
+ *   row.
+ * - "posted": a locally-posted job (job-posting feature). `externalId` is
+ *   null - these jobs have no CleanJobData identity at all.
+ *
+ * `id` is an internally-generated UUID, NOT CleanJobData's id - decoupling
+ * the two matters because applications.jobId (and any other future FK into
+ * this table) needs one stable id space that's meaningful for both sources,
+ * and because reusing an externally-owned id as our primary key would make
+ * a future id-scheme change on CleanJobData's side (or an id collision
+ * between the two sources) a breaking migration instead of a non-event.
+ * Use `externalId` (scoped by `source`), never `id`, whenever matching
+ * against anything that came back from the CleanJobData API (e.g. GET
+ * /jobs/expired's ids - see lib/expire.ts).
+ *
+ * The unique index on (source, externalId) is what onConflictDoUpdate
+ * targets during sync (features/job-sync/lib/sync.ts) - Postgres unique
+ * indexes treat NULL as distinct from every other NULL, so any number of
+ * source="posted" rows (externalId always null) coexist fine, while two
+ * syncs of the same CleanJobData job (same source + externalId) correctly
+ * upsert the same row instead of duplicating.
  *
  * Every scalar field on Job gets its own real column - nothing hides in an
  * opaque blob, so deleting a field a customer doesn't want is a normal
@@ -76,7 +99,8 @@ export const companies = pgTable("companies", {
  * `company` is a real foreign key into companies (see that table's doc
  * comment for why this is a hard reference, not a soft one).
  *
- * Two-layer expiration (see features/job-sync/README.md):
+ * Two-layer expiration (see features/job-sync/README.md) - applies to
+ * source="cleanjobdata" rows only:
  * 1. isActive - the real signal, flipped by lib/expire.ts's
  *    pollExpiredJobs() when GET /jobs/expired reports a job as gone.
  * 2. expiresAt - a backstop only, staleAfterDays (job-sync.config.ts) after
@@ -84,10 +108,15 @@ export const companies = pgTable("companies", {
  *    in case the expired-poll itself has been failing/skipped for a long
  *    time - belt-and-suspenders, not the primary expiration mechanism.
  */
-export const cachedJobs = pgTable(
-  "cachedJobs",
+export const jobs = pgTable(
+  "jobs",
   {
-    id: text("id").primaryKey(),
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
+    source: text("source").$type<"cleanjobdata" | "posted">().notNull().default("cleanjobdata"),
+    /** CleanJobData's own id for this job, only when source="cleanjobdata" - null for locally-posted jobs. See this table's doc comment for why this isn't `id`. */
+    externalId: text("externalId"),
     title: text("title").notNull(),
     companyId: text("companyId").references(() => companies.id, { onDelete: "set null" }),
     companyName: text("companyName"),
@@ -111,17 +140,22 @@ export const cachedJobs = pgTable(
   },
   (t) => [
     // Default sort order for listJobsFromCache() and its keyset pagination cursor.
-    index("cachedJobsPublishedIdx").on(t.published),
-    index("cachedJobsExpiresAtIdx").on(t.expiresAt),
-    index("cachedJobsIsActiveIdx").on(t.isActive),
-    index("cachedJobsHasRemoteIdx").on(t.hasRemote),
-    index("cachedJobsCompanyNameIdx").on(t.companyName),
+    index("jobsPublishedIdx").on(t.published),
+    index("jobsExpiresAtIdx").on(t.expiresAt),
+    index("jobsIsActiveIdx").on(t.isActive),
+    index("jobsHasRemoteIdx").on(t.hasRemote),
+    index("jobsCompanyNameIdx").on(t.companyName),
     // Postgres doesn't auto-index FK columns - listJobsFromCache()'s join needs this.
-    index("cachedJobsCompanyIdIdx").on(t.companyId),
+    index("jobsCompanyIdIdx").on(t.companyId),
     // GIN for containment queries against the locations array, e.g.
     // locations @> '[{"country_id": 42}]' - stays index-backed without a
     // separate job_locations child table.
-    index("cachedJobsLocationsGinIdx").using("gin", t.locations),
+    index("jobsLocationsGinIdx").using("gin", t.locations),
+    // Sync's upsert target (features/job-sync/lib/sync.ts) - also the
+    // constraint that prevents duplicate syncs of the same CleanJobData
+    // job. See this table's doc comment for why NULL externalId (posted
+    // jobs) doesn't collide.
+    uniqueIndex("jobsSourceExternalIdIdx").on(t.source, t.externalId),
   ]
 );
 

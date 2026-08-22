@@ -1,8 +1,8 @@
-import { inArray, lt } from "drizzle-orm";
+import { and, eq, inArray, lt } from "drizzle-orm";
 import { requireDb } from "@/lib/db/client";
 import { getExpiredJobs } from "@/jobs/lib/api";
 import jobSyncConfig from "../job-sync.config";
-import { cachedJobs } from "../db/schema";
+import { jobs } from "../db/schema";
 
 /**
  * The real expiration signal: pages through GET /jobs/expired for the
@@ -27,11 +27,14 @@ export async function pollExpiredJobs(): Promise<number> {
     ids.forEach((id) => seen.add(id));
 
     if (ids.length > 0) {
+      // These ids come from CleanJobData's own API (GET /jobs/expired), so
+      // they live in externalId's id space, not our internal UUID `id` -
+      // match against externalId (scoped to source="cleanjobdata") instead.
       const result = await db
-        .update(cachedJobs)
+        .update(jobs)
         .set({ isActive: false })
-        .where(inArray(cachedJobs.id, ids))
-        .returning({ id: cachedJobs.id });
+        .where(and(eq(jobs.source, "cleanjobdata"), inArray(jobs.externalId, ids)))
+        .returning({ id: jobs.id });
       flagged += result.length;
     }
 
@@ -41,9 +44,9 @@ export async function pollExpiredJobs(): Promise<number> {
   return flagged;
 }
 
-/** Backstop TTL delete - see the schema.ts doc comment on cachedJobs.expiresAt for why this exists alongside pollExpiredJobs(). */
+/** Backstop TTL delete - see the schema.ts doc comment on jobs.expiresAt for why this exists alongside pollExpiredJobs(). */
 export async function pruneExpiredJobs(): Promise<number> {
   const db = requireDb();
-  const deleted = await db.delete(cachedJobs).where(lt(cachedJobs.expiresAt, new Date())).returning({ id: cachedJobs.id });
+  const deleted = await db.delete(jobs).where(lt(jobs.expiresAt, new Date())).returning({ id: jobs.id });
   return deleted.length;
 }

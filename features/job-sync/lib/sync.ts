@@ -4,7 +4,7 @@ import { requireDb } from "@/lib/db/client";
 import type { Job } from "@/lib/api/types";
 import type { ListQuery } from "@/jobs/lib/query-types";
 import jobSyncConfig from "../job-sync.config";
-import { cachedJobs, syncRuns } from "../db/schema";
+import { jobs, syncRuns } from "../db/schema";
 import { ensureCompaniesFetched, getEmployerId, refreshStaleCompanies } from "./companies";
 import { pollExpiredJobs, pruneExpiredJobs } from "./expire";
 
@@ -48,7 +48,10 @@ async function getLastSuccessfulRun(kind: RunKind) {
 /** companyName stays a denormalized convenience copy from the job's embedded snapshot (fast search) - companyId/the real company record comes from features/job-sync/lib/companies.ts, not this embedded object. */
 function toJobRow(job: Job, companyId: string | null, expiresAt: Date) {
   return {
-    id: job.id,
+    // No `id` here - it's an internal UUID (see jobs table's doc comment),
+    // left to $defaultFn on insert and untouched on update via set: row.
+    externalId: job.id,
+    source: "cleanjobdata" as const,
     title: job.title,
     companyId,
     companyName: job.company?.name ?? null,
@@ -116,13 +119,20 @@ async function runIncrementalSync() {
       }
 
       // Fetch any never-seen-before employers for this page's jobs before upserting the jobs themselves,
-      // so cachedJobs.companyId's FK always has a real companies row to point at.
+      // so jobs.companyId's FK always has a real companies row to point at.
       const employerIds = pageJobs.map(getEmployerId).filter((id): id is string => id !== null);
       await ensureCompaniesFetched(employerIds);
 
       for (const job of pageJobs) {
         const row = toJobRow(job, getEmployerId(job), expiresAt);
-        await db.insert(cachedJobs).values(row).onConflictDoUpdate({ target: cachedJobs.id, set: row });
+        // Conflict target is the (source, externalId) unique index, not
+        // `id` - `id` is now an internal UUID that a re-synced job (same
+        // externalId) has no way to already know, so it can't be the
+        // matching key. `row` never contains `id`, so this can't clobber it.
+        await db
+          .insert(jobs)
+          .values(row)
+          .onConflictDoUpdate({ target: [jobs.source, jobs.externalId], set: row });
         jobsUpserted++;
 
         const published = new Date(job.published);
@@ -199,7 +209,7 @@ async function runExpiredCheck() {
 
 /**
  * Refreshes canonical company data for every employer already referenced
- * in cachedJobs, via a cheap batched staleness check before paying for
+ * in jobs, via a cheap batched staleness check before paying for
  * individual GET /companies/:id re-fetches - see
  * features/job-sync/lib/companies.ts's refreshStaleCompanies(). Company
  * info changes far less often than job listings, so this defaults to a

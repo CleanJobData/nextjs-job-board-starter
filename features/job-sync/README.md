@@ -1,6 +1,6 @@
 # job-sync
 
-Mirrors CleanJobData job **listings** into a local `cachedJobs` table, so
+Mirrors CleanJobData job **listings** into a local `jobs` table, so
 listing reads can hit Postgres instead of the live API on every request.
 Purely a data-layer feature - no routes, no nav items of its own; it
 registers three scheduled tasks (below) that the app-wide
@@ -140,7 +140,7 @@ end-user filter decides what's shown from it.
 
 ## Schema - no more single `data` blob
 
-Every scalar field on `Job` has its own real typed column on `cachedJobs`
+Every scalar field on `Job` has its own real typed column on `jobs`
 now - nothing hides in an opaque blob, so removing a field a customer
 doesn't want is a normal "drop the column, run a migration" step. Two
 exceptions, both genuinely one-to-many arrays-of-objects that would need
@@ -150,13 +150,13 @@ real child tables to fully relationally normalize:
   not just a "primary" one. `listJobsFromCache()` filters `city_id`/
   `state_id`/`country_id` via JSONB containment queries (e.g.
   `locations @> '[{"country_id": 42}]'`), index-backed via
-  `cachedJobsLocationsGinIdx`. Verified against real data: Postgres
+  `jobsLocationsGinIdx`. Verified against real data: Postgres
   picks a seq scan over the GIN index at small table sizes (expected/
   correct at low row counts - confirmed the index is real and usable via
   `SET enable_seqscan = off`), and will use it automatically as the table
   grows.
 - **`companies`** - a separate table, with a **real, enforced foreign key**
-  (`cachedJobs.companyId` → `companies.id`, `ON DELETE SET NULL`) - not a
+  (`jobs.companyId` → `companies.id`, `ON DELETE SET NULL`) - not a
   soft reference. `companies.id` is CleanJobData's own stable employer id
   (see "Company data" below), not a guessed/computed key, so this is a
   real relation, not an approximation. Company info is **upserted**, not
@@ -180,7 +180,7 @@ populated from CleanJobData's actual company API instead
   payload (socials, industry, team, description, etc). Called once per
   employer the first time we see their `employer_id` on a job (during the
   incremental pass, before that page's jobs get upserted, so
-  `cachedJobs.companyId`'s FK always has a row to point at).
+  `jobs.companyId`'s FK always has a row to point at).
 - **Company refresh is a bounded rotation, not staleness detection.**
   There's no reliable way to cheaply tell "did this company's profile
   change": CleanJobData never exposes `website_enrichment_at`/
@@ -255,12 +255,12 @@ value.
   (or different) filter doesn't retroactively remove what no longer
   matches, and the incremental pass's watermark can cause it to skip older
   jobs that would now match a newly-loosened filter - a filter change is
-  best paired with clearing `cachedJobs`/`companies` and the `incremental`
+  best paired with clearing `jobs`/`companies` and the `incremental`
   rows in `syncRuns` for a clean backfill.
 
 ## DB tables
 
-`companies` (one row per employer, soft-keyed, upserted), `cachedJobs`
+`companies` (one row per employer, soft-keyed, upserted), `jobs`
 (flat typed columns for everything scalar + `locations` JSONB), `syncRuns`
 (one row per sync attempt, split by `kind`, for debugging and
 self-throttle watermarking).

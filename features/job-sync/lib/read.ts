@@ -2,7 +2,7 @@ import { and, desc, eq, gte, ilike, lte, lt, or, sql } from "drizzle-orm";
 import { requireDb } from "@/lib/db/client";
 import type { ListQuery } from "@/jobs/lib/query-types";
 import type { Company, FilterApplied, Job, ListResponse } from "@/lib/api/types";
-import { cachedJobs, companies } from "../db/schema";
+import { jobs, companies } from "../db/schema";
 
 /**
  * Cursor is opaque to callers (same contract as the live API's
@@ -22,11 +22,22 @@ function decodeCursor(cursor: string): { p: string; id: string } | null {
   }
 }
 
-type CachedJobRow = typeof cachedJobs.$inferSelect;
+type JobRow = typeof jobs.$inferSelect;
 type CompanyRow = typeof companies.$inferSelect;
 
-/** Reassembles a Job (the ListResponse<Job> shape components expect) from our columns + the optionally-joined company row. Inverse of sync.ts's toJobRow()/upsertCompany(). */
-function toJob(row: CachedJobRow, company: CompanyRow | null): Job {
+/**
+ * Reassembles a Job (the ListResponse<Job> shape components expect) from our
+ * columns + the optionally-joined company row. Inverse of sync.ts's
+ * toJobRow()/upsertCompany().
+ *
+ * `id` here is `row.externalId`, NOT `row.id` (our internal UUID) - job
+ * detail pages/links round-trip this id straight into a live
+ * GET /jobs/:id call (jobs/routes/JobDetailPage.tsx always fetches live,
+ * even when serving the list from cache), so it must stay in CleanJobData's
+ * id space. Safe to assert non-null: listJobsFromCache() only ever selects
+ * source="cleanjobdata" rows, which always have externalId set.
+ */
+function toJob(row: JobRow, company: CompanyRow | null): Job {
   const companyObj: Company | null = company
     ? {
         name: company.name,
@@ -51,7 +62,7 @@ function toJob(row: CachedJobRow, company: CompanyRow | null): Job {
     : null;
 
   return {
-    id: row.id,
+    id: row.externalId!,
     title: row.title,
     location: row.locationText,
     locations: row.locations,
@@ -74,7 +85,7 @@ function toJob(row: CachedJobRow, company: CompanyRow | null): Job {
 
 /** JSONB containment: matches any location in the array having this key=value - index-backed via cached_jobs_locations_gin_idx, no child table needed. */
 function locationContains(key: "city_id" | "state_id" | "country_id", ids: number[]) {
-  return or(...ids.map((id) => sql`${cachedJobs.locations} @> ${JSON.stringify([{ [key]: id }])}::jsonb`));
+  return or(...ids.map((id) => sql`${jobs.locations} @> ${JSON.stringify([{ [key]: id }])}::jsonb`));
 }
 
 /**
@@ -94,16 +105,23 @@ export async function listJobsFromCache(query: ListQuery = {}): Promise<ListResp
   // only the backstop TTL, but we still filter on it here too, not just at
   // prune time - a row can be past its backstop and not yet swept by the
   // next expired_check run, and it shouldn't render as "active" meanwhile.
-  const conditions = [eq(cachedJobs.isActive, true), gte(cachedJobs.expiresAt, new Date())];
+  // source="cleanjobdata" excludes locally-posted jobs from this cache-only
+  // path (they have no externalId for toJob() to expose as the Job id, and
+  // this function's whole contract is "reassemble a CleanJobData Job").
+  const conditions = [
+    eq(jobs.source, "cleanjobdata" as const),
+    eq(jobs.isActive, true),
+    gte(jobs.expiresAt, new Date()),
+  ];
   const filtersApplied: FilterApplied[] = [];
 
   if (query.title) {
-    conditions.push(ilike(cachedJobs.title, `%${query.title}%`));
+    conditions.push(ilike(jobs.title, `%${query.title}%`));
     filtersApplied.push({ key: "title", value: query.title, display_label: `"${query.title}"` });
   }
   if (query.location?.length) {
     conditions.push(
-      or(...query.location.map((loc) => ilike(cachedJobs.locationText, `%${loc}%`)))!
+      or(...query.location.map((loc) => ilike(jobs.locationText, `%${loc}%`)))!
     );
     filtersApplied.push({ key: "location", value: query.location.join(", "), display_label: query.location.join(", ") });
   }
@@ -120,11 +138,11 @@ export async function listJobsFromCache(query: ListQuery = {}): Promise<ListResp
     filtersApplied.push({ key: "country_id", kind: "country", name: "", display_label: `${query.country_id.length} countr${query.country_id.length === 1 ? "y" : "ies"}`, country_id: query.country_id[0]! });
   }
   if (query.remote_only) {
-    conditions.push(eq(cachedJobs.hasRemote, true));
+    conditions.push(eq(jobs.hasRemote, true));
     filtersApplied.push({ key: "remote_only", value: true, display_label: "Remote Only" });
   }
   if (query.experience_level?.length) {
-    conditions.push(sql`${cachedJobs.experienceLevels} && ${query.experience_level}`);
+    conditions.push(sql`${jobs.experienceLevels} && ${query.experience_level}`);
     filtersApplied.push({
       key: "experience_level",
       value: query.experience_level.join(","),
@@ -132,8 +150,8 @@ export async function listJobsFromCache(query: ListQuery = {}): Promise<ListResp
     });
   }
   if (query.min_salary != null || query.max_salary != null) {
-    if (query.min_salary != null) conditions.push(gte(cachedJobs.salaryMax, query.min_salary));
-    if (query.max_salary != null) conditions.push(lte(cachedJobs.salaryMin, query.max_salary));
+    if (query.min_salary != null) conditions.push(gte(jobs.salaryMax, query.min_salary));
+    if (query.max_salary != null) conditions.push(lte(jobs.salaryMin, query.max_salary));
     filtersApplied.push({
       key: "salary",
       min: query.min_salary ?? null,
@@ -142,16 +160,16 @@ export async function listJobsFromCache(query: ListQuery = {}): Promise<ListResp
     });
   }
   if (query.company_name) {
-    conditions.push(ilike(cachedJobs.companyName, `%${query.company_name}%`));
+    conditions.push(ilike(jobs.companyName, `%${query.company_name}%`));
     filtersApplied.push({ key: "company_name", value: query.company_name, display_label: query.company_name });
   }
   if (query.published_after) {
-    conditions.push(gte(cachedJobs.published, new Date(query.published_after)));
+    conditions.push(gte(jobs.published, new Date(query.published_after)));
     filtersApplied.push({ key: "published_after", value: query.published_after, display_label: "Recently published" });
   }
   if (query.max_age_hours) {
     const since = new Date(Date.now() - query.max_age_hours * 60 * 60 * 1000);
-    conditions.push(gte(cachedJobs.published, since));
+    conditions.push(gte(jobs.published, since));
     filtersApplied.push({ key: "max_age", value: query.max_age_hours, display_label: `Last ${query.max_age_hours}h` });
   }
 
@@ -160,19 +178,19 @@ export async function listJobsFromCache(query: ListQuery = {}): Promise<ListResp
     if (decoded) {
       conditions.push(
         or(
-          lt(cachedJobs.published, new Date(decoded.p)),
-          and(eq(cachedJobs.published, new Date(decoded.p)), lt(cachedJobs.id, decoded.id))
+          lt(jobs.published, new Date(decoded.p)),
+          and(eq(jobs.published, new Date(decoded.p)), lt(jobs.id, decoded.id))
         )!
       );
     }
   }
 
   const rows = await db
-    .select({ job: cachedJobs, company: companies })
-    .from(cachedJobs)
-    .leftJoin(companies, eq(cachedJobs.companyId, companies.id))
+    .select({ job: jobs, company: companies })
+    .from(jobs)
+    .leftJoin(companies, eq(jobs.companyId, companies.id))
     .where(and(...conditions))
-    .orderBy(desc(cachedJobs.published), desc(cachedJobs.id))
+    .orderBy(desc(jobs.published), desc(jobs.id))
     .limit(limit + 1);
 
   const hasMore = rows.length > limit;

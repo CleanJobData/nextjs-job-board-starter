@@ -12,22 +12,30 @@ they've saved/applied to, with a status (`saved` → `applied` →
 (hard-locked to `false` in `features.schema.ts` - this feature inherently
 requires an account). No feature-local config file - nothing here needs tuning.
 
-## Why no foreign key to job-sync's `cachedJobs`
+## The foreign key to job-sync's `jobs`, and why it's SET NULL not CASCADE
 
-The original plan assumed applications would reference `cachedJobs`
-directly. That's wrong for two reasons:
+`applications.jobId` is a real, enforced foreign key into job-sync's
+`jobs` table now - `jobs` merged what used to be the pruned, job-sync-only
+`cachedJobs` cache into a permanent core table (source-discriminated:
+`"cleanjobdata"` synced rows and `"posted"` locally-posted rows), so it's
+no longer true that a deployment might have zero rows there or that rows
+routinely disappear from under a live reference.
 
-1. `job-sync` is optional - a deployment without it enabled has no
-   `cachedJobs` rows at all, and this feature has to work regardless.
-2. Even with job-sync enabled, `cachedJobs` rows aren't permanent - they
-   get pruned on TTL expiry (`features/job-sync/lib/expire.ts`). A hard FK
-   there would mean a user's application history silently breaks the
-   moment the cache entry it pointed to expired.
+It's `onDelete: "set null"`, not `"cascade"`, though: `applications` also
+stores a self-sufficient snapshot (`jobTitle`/`companyName`/`jobUrl`,
+captured at the moment the user tracks the job), so a tracked application
+stays meaningful even if the underlying `jobs` row is later deleted
+(TTL prune, source removed, etc) - it just loses the live link, not the
+user's own record of having tracked it. `jobId` is therefore nullable.
 
-Instead, `applications` stores a self-sufficient snapshot
-(`jobId`/`jobTitle`/`companyName`/`jobUrl`, captured at the moment the
-user tracks the job) - no dependency on job-sync at all, and the record
-stays meaningful forever.
+`trackApplication()` is called with the CleanJobData *external* id (see
+`TrackApplicationButton`/`JobDetailTrackAction`), not `jobs.id` (an
+internal UUID, decoupled from CleanJobData's id space - see `jobs`
+table's doc comment in `features/job-sync/db/schema.ts`). It resolves the
+external id to `jobs.id` via `(source: "cleanjobdata", externalId)`
+before inserting; if no matching row exists (job-sync disabled, or the
+job hasn't been synced yet), it stores the snapshot fields with
+`jobId: null` rather than failing or fabricating a `jobs` row.
 
 ## Routes
 

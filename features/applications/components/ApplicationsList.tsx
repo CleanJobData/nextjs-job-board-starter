@@ -4,7 +4,7 @@ import type { ApplicationStatus } from "../actions/applications";
 
 type ApplicationRowData = {
   id: string;
-  jobId: string;
+  jobId: string | null;
   jobTitle: string;
   companyName: string | null;
   jobUrl: string | null;
