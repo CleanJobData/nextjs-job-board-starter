@@ -52,6 +52,23 @@ export const featuresSchema = z.object({
      * doesn't compose with guestAccess the way the others do.
      */
   }),
+  onboarding: z.object({
+    enabled: z.boolean().default(false),
+    /**
+     * No `guestAccess` here either, but for a different reason than admin's:
+     * this isn't skipped because it's a role check instead of a guest/auth
+     * split, it's skipped because there's no scenario where it applies to a
+     * guest at all - the step only ever appears immediately after a
+     * successful sign-up, for the account that was just created, matching
+     * applications' `guestAccess: z.literal(false)` reasoning (a feature
+     * that is inherently about an authenticated user's own data has no
+     * guest-accessible mode to toggle). Deliberately simple v1 (see
+     * features/auth/db/schema.ts's `accountType` column doc comment): one
+     * inline "Job Seeker / Employer / Skip" choice, not a multi-step wizard
+     * or a standalone gated route - a future pass could grow this into a
+     * real feature module if onboarding ever needs more than one step.
+     */
+  }),
 });
 
 export type FeaturesConfig = z.infer<typeof featuresSchema>;

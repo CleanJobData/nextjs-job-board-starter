@@ -16,6 +16,7 @@ const config: FeaturesConfig = {
   applications: { enabled: true, guestAccess: false },
   jobPosting: { enabled: true, guestAccess: false, requireVerification: true },
   admin: { enabled: true },
+  onboarding: { enabled: true },
 };
 
 export default featuresSchema.parse(config);

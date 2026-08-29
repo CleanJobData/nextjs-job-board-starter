@@ -24,6 +24,18 @@ export const users = pgTable("users", {
   // bootstrap for the first admin until then. requireAdmin() in
   // features/authGuard.ts is the only thing that reads this today.
   role: text("role").$type<"user" | "admin">().notNull().default("user"),
+  // Set by the (optional, features.config.ts-gated) onboarding step shown
+  // right after sign-up: "Job Seeker" or "Employer". Nullable with no
+  // default - every pre-existing user has no value, onboarding.enabled
+  // can be off entirely, and the step itself is skippable, so "no answer"
+  // is a fully normal, permanent state, not a migration gap to backfill.
+  // Deliberately NOT read by any access-control/gating logic anywhere in
+  // the app (e.g. job-posting isn't restricted to "employer", applications
+  // isn't restricted to "seeker") - this pass only stores the signal, per
+  // an explicit scope boundary from the original feature request. A future
+  // pass could add more onboarding steps or act on this value; this one
+  // does neither.
+  accountType: text("accountType").$type<"seeker" | "employer">(),
 });
 
 export const accounts = pgTable(

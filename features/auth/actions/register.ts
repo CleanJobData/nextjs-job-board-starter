@@ -20,6 +20,16 @@ export type RegisterState = {
   success?: boolean;
   /** True when emailVerification is on - UI should show "check your inbox" instead of "you're signed up, go sign in". */
   needsVerification?: boolean;
+  /**
+   * The newly-created row's id, returned so SignUpForm can offer the
+   * (features.config.ts onboarding.enabled-gated) account-type step right
+   * after registration without a session - sign-up here does not auto
+   * sign-in the user (they still land on /sign-in afterward), so there is
+   * no auth() session yet for checkAccess()-style gating to key off. See
+   * setAccountType's doc comment in ../actions/set-account-type.ts for how
+   * this id is used, and its guard against replay.
+   */
+  userId?: string;
   error?: string;
   fieldErrors?: RegisterFieldErrors;
 };
@@ -52,12 +62,15 @@ export async function registerUser(
   }
 
   const passwordHash = await bcrypt.hash(password, 12);
-  await db.insert(users).values({ name, email, passwordHash });
+  const [created] = await db
+    .insert(users)
+    .values({ name, email, passwordHash })
+    .returning({ id: users.id });
 
   if (authConfig.auth.emailVerification) {
     await sendVerificationEmail(email);
-    return { success: true, needsVerification: true };
+    return { success: true, needsVerification: true, userId: created?.id };
   }
 
-  return { success: true };
+  return { success: true, userId: created?.id };
 }

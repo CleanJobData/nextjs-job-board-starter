@@ -50,6 +50,13 @@
       "when": 1787417747457,
       "tag": "0006_clear_viper",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1788025086105,
+      "tag": "0007_medical_queen_noir",
+      "breakpoints": true
     }
   ]
 }
