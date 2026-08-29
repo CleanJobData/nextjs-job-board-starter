@@ -1,4 +1,5 @@
 import { Typography } from "@/components/ui/Typography";
+import { PageContainer } from "@/components/ui/PageContainer";
 import { getSyncStatus } from "../../../lib/sync-status";
 import { SyncStatusSection } from "../../../components/SyncStatusSection";
 
@@ -6,7 +7,7 @@ export default async function AdminSyncPage() {
   const statuses = await getSyncStatus();
 
   return (
-    <div className="container mx-auto py-12 px-4 max-w-4xl">
+    <PageContainer size="lg">
       <div className="mb-8">
         <Typography variant="h1" className="mb-2">
           Sync status
@@ -16,6 +17,6 @@ export default async function AdminSyncPage() {
         </Typography>
       </div>
       <SyncStatusSection statuses={statuses} />
-    </div>
+    </PageContainer>
   );
 }

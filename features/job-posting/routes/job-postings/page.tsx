@@ -1,4 +1,5 @@
 import { Typography } from "@/components/ui/Typography";
+import { PageContainer } from "@/components/ui/PageContainer";
 import { getMyCompanies, } from "../../actions/companies";
 import { getMyJobPostings } from "../../actions/job-postings";
 import { CompanyForm } from "../../components/CompanyForm";
@@ -19,7 +20,7 @@ export default async function JobPostingsPage() {
   }));
 
   return (
-    <div className="container mx-auto py-12 px-4 max-w-3xl space-y-10">
+    <PageContainer className="space-y-10">
       <div>
         <Typography variant="h1" className="mb-2">My Job Postings</Typography>
         <Typography className="text-muted-foreground">
@@ -35,6 +36,6 @@ export default async function JobPostingsPage() {
       ) : (
         <JobPostingForm companies={companies.map((c) => ({ id: c.id, name: c.name }))} />
       )}
-    </div>
+    </PageContainer>
   );
 }

@@ -2,11 +2,11 @@ import { z } from "zod";
 
 /**
  * Selectable design surface for the app's central theming system.
- * See docs/ARCHITECTURE.md for how these values flow into styles/tokens.css
+ * See docs/ARCHITECTURE.md for how these values flow into app/globals.css
  * and styles/presets/*.css.
  */
 export const themeSchema = z.object({
-  /** Which token preset to load on top of styles/tokens.css defaults. "custom" skips presets entirely. */
+  /** Which token preset to load on top of app/globals.css defaults. "custom" skips presets entirely. */
   preset: z.enum(["default", "warm", "minimal-mono", "custom"]).default("default"),
   /** Which next/font family to load app-wide. */
   font: z.enum(["geist", "inter"]).default("geist"),

@@ -15,9 +15,11 @@ interface SheetProps {
   onClose: () => void;
   children: React.ReactNode;
   className?: string;
+  /** Header title - defaults to "Job Details" since that was this component's only caller until the mobile nav drawer reused it. */
+  title?: string;
 }
 
-export function Sheet({ isOpen, onClose, children, className }: SheetProps) {
+export function Sheet({ isOpen, onClose, children, className, title = "Job Details" }: SheetProps) {
   return (
     <Transition show={isOpen} as={React.Fragment}>
       <HeadlessDialog as="div" className="relative z-50" onClose={onClose}>
@@ -53,7 +55,7 @@ export function Sheet({ isOpen, onClose, children, className }: SheetProps) {
                 >
                   <div className="flex h-full flex-col overflow-y-auto">
                     <div className="sticky top-0 z-10 flex items-center justify-between bg-card/80 backdrop-blur-md px-6 py-4 border-b border-border/50">
-                      <h2 className="text-lg font-bold">Job Details</h2>
+                      <h2 className="text-lg font-bold">{title}</h2>
                       <button
                         type="button"
                         className="rounded-full p-2 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"

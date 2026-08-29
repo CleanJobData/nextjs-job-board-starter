@@ -1,6 +1,7 @@
 import { Card } from "@/components/ui/Card";
 import { Typography } from "@/components/ui/Typography";
 import { Badge } from "@/components/ui/Badge";
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/Table";
 import type { SyncKindStatus, SyncRunRow } from "../lib/sync-status";
 
 const KIND_LABEL: Record<SyncKindStatus["kind"], string> = {
@@ -47,44 +48,42 @@ export function SyncStatusSection({ statuses }: { statuses: SyncKindStatus[] }) 
             </Typography>
           )}
 
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="text-left text-muted-foreground border-b border-border">
-                  <th className="py-2 pr-4">Started</th>
-                  <th className="py-2 pr-4">Finished</th>
-                  <th className="py-2 pr-4">Status</th>
-                  <th className="py-2 pr-4">Upserted</th>
-                  <th className="py-2 pr-4">Expired</th>
-                  <th className="py-2 pr-4">Error</th>
-                </tr>
-              </thead>
-              <tbody>
-                {s.recentRuns.length === 0 ? (
-                  <tr>
-                    <td colSpan={6} className="py-3 text-muted-foreground">
-                      No runs recorded yet.
-                    </td>
-                  </tr>
-                ) : (
-                  s.recentRuns.map((run) => (
-                    <tr key={run.id} className="border-b border-border/50 last:border-0">
-                      <td className="py-2 pr-4 whitespace-nowrap">{formatDate(run.startedAt)}</td>
-                      <td className="py-2 pr-4 whitespace-nowrap">{formatDate(run.finishedAt)}</td>
-                      <td className="py-2 pr-4">
-                        <Badge variant={STATUS_VARIANT[run.status]} className="capitalize">
-                          {run.status}
-                        </Badge>
-                      </td>
-                      <td className="py-2 pr-4">{run.jobsUpserted}</td>
-                      <td className="py-2 pr-4">{run.jobsExpired}</td>
-                      <td className="py-2 pr-4 max-w-xs truncate text-destructive">{run.errorMessage ?? "-"}</td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
+          <Table>
+            <TableHeader>
+              <TableRow className="border-border">
+                <TableHead>Started</TableHead>
+                <TableHead>Finished</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Upserted</TableHead>
+                <TableHead>Expired</TableHead>
+                <TableHead>Error</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {s.recentRuns.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={6} className="py-3 text-muted-foreground">
+                    No runs recorded yet.
+                  </TableCell>
+                </TableRow>
+              ) : (
+                s.recentRuns.map((run) => (
+                  <TableRow key={run.id}>
+                    <TableCell className="whitespace-nowrap">{formatDate(run.startedAt)}</TableCell>
+                    <TableCell className="whitespace-nowrap">{formatDate(run.finishedAt)}</TableCell>
+                    <TableCell>
+                      <Badge variant={STATUS_VARIANT[run.status]} className="capitalize">
+                        {run.status}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>{run.jobsUpserted}</TableCell>
+                    <TableCell>{run.jobsExpired}</TableCell>
+                    <TableCell className="max-w-xs truncate text-destructive">{run.errorMessage ?? "-"}</TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
         </Card>
       ))}
     </div>

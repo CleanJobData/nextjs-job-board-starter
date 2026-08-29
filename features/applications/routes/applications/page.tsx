@@ -1,4 +1,5 @@
 import { Typography } from "@/components/ui/Typography";
+import { PageContainer } from "@/components/ui/PageContainer";
 import { auth } from "@/features/auth/lib/auth";
 import { getUserApplications } from "../../lib/queries";
 import { ApplicationsList } from "../../components/ApplicationsList";
@@ -13,7 +14,7 @@ export default async function ApplicationsPage() {
   const applications = userId ? await getUserApplications(userId) : [];
 
   return (
-    <div className="container mx-auto py-12 px-4 max-w-3xl">
+    <PageContainer>
       <div className="mb-8">
         <Typography variant="h1" className="mb-2">My Applications</Typography>
         <Typography className="text-muted-foreground">
@@ -21,6 +22,6 @@ export default async function ApplicationsPage() {
         </Typography>
       </div>
       <ApplicationsList applications={applications} />
-    </div>
+    </PageContainer>
   );
 }

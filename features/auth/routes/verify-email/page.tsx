@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Typography } from "@/components/ui/Typography";
+import { PageContainer } from "@/components/ui/PageContainer";
 import { verifyEmailToken } from "../../lib/verification";
 
 export default async function VerifyEmailPage({
@@ -28,7 +29,7 @@ export default async function VerifyEmailPage({
   }[result];
 
   return (
-    <div className="container mx-auto max-w-md px-4 py-16">
+    <PageContainer size="sm">
       <Card>
         <CardHeader>
           <CardTitle>{copy.title}</CardTitle>
@@ -40,6 +41,6 @@ export default async function VerifyEmailPage({
           </Link>
         </CardContent>
       </Card>
-    </div>
+    </PageContainer>
   );
 }

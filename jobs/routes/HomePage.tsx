@@ -5,6 +5,7 @@ import { JobList } from "@/jobs/components/JobList";
 import { JobFilters } from "@/jobs/components/JobFilters";
 import { ActiveFilterChips } from "@/jobs/components/ActiveFilterChips";
 import { Typography } from "@/components/ui/Typography";
+import { PageContainer } from "@/components/ui/PageContainer";
 import { RetryButton } from "@/jobs/components/RetryButton";
 import { JobBoardSearchParams } from "@/jobs/lib/query-types";
 import { ApiError } from "@/lib/api/client";
@@ -33,7 +34,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
   }
 
   return (
-    <div className="container mx-auto py-12 px-4">
+    <PageContainer size="full">
       {/* Hero Section */}
       <div className="space-y-4 max-w-3xl mb-16">
         <Typography variant="h1" className="text-4xl md:text-6xl font-extrabold tracking-tight">
@@ -76,6 +77,6 @@ export default async function HomePage({ searchParams }: HomePageProps) {
           )}
         </div>
       </div>
-    </div>
+    </PageContainer>
   );
 }

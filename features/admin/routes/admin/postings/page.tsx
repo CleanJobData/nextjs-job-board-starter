@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Typography } from "@/components/ui/Typography";
+import { PageContainer } from "@/components/ui/PageContainer";
 import { cn } from "@/lib/utils";
 import { listPostingsForAdmin } from "../../../actions/postings";
 import { PostingRow } from "../../../components/PostingRow";
@@ -30,7 +31,7 @@ export default async function AdminPostingsPage({
   const postings = await listPostingsForAdmin(status === "all" ? undefined : status);
 
   return (
-    <div className="container mx-auto py-12 px-4 max-w-3xl">
+    <PageContainer>
       <div className="mb-6">
         <Typography variant="h1" className="mb-2">
           Job moderation
@@ -66,6 +67,6 @@ export default async function AdminPostingsPage({
           ))}
         </div>
       )}
-    </div>
+    </PageContainer>
   );
 }

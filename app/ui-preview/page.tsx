@@ -25,6 +25,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/Tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Popover } from "@/components/ui/Popover";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
+import { PageContainer } from "@/components/ui/PageContainer";
 
 export default function UIKitchenSink() {
   const [isRemote, setIsRemote] = React.useState(false);
@@ -49,7 +50,7 @@ export default function UIKitchenSink() {
   ];
 
   return (
-    <div className="container mx-auto py-12 px-4 space-y-16">
+    <PageContainer size="full" className="space-y-16">
       <header className="flex justify-between items-center border-b border-border pb-8">
         <div>
           <Typography variant="h1">UI Foundation</Typography>
@@ -286,6 +287,6 @@ export default function UIKitchenSink() {
           CleanJobData Next.js Template UI Preview
         </Typography>
       </footer>
-    </div>
+    </PageContainer>
   );
 }

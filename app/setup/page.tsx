@@ -1,5 +1,6 @@
 import { Typography } from "@/components/ui/Typography";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
+import { PageContainer } from "@/components/ui/PageContainer";
 import { FaCircleCheck, FaCircleXmark, FaCircleInfo } from "react-icons/fa6";
 
 export const dynamic = "force-dynamic";
@@ -38,7 +39,7 @@ export default function SetupPage() {
     .every((v) => !!v.value);
 
   return (
-    <div className="container mx-auto py-12 px-4 max-w-3xl">
+    <PageContainer>
       <div className="mb-8 text-center">
         <Typography variant="h1" className="mb-2">Setup Status</Typography>
         <Typography className="text-muted-foreground">
@@ -116,6 +117,6 @@ export default function SetupPage() {
           </div>
         )}
       </div>
-    </div>
+    </PageContainer>
   );
 }

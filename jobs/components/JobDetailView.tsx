@@ -231,7 +231,7 @@ export function JobDetailView({ job, extraActions }: JobDetailViewProps) {
                         href={job.company.linkedin_url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="p-2 rounded-md bg-muted hover:bg-muted/80 text-muted-foreground hover:text-[#0077B5] transition-colors"
+                        className="p-2 rounded-md bg-muted hover:bg-muted/80 text-muted-foreground hover:text-brand-linkedin transition-colors"
                       >
                         <FaLinkedin className="h-3.5 w-3.5" />
                       </a>
@@ -241,7 +241,7 @@ export function JobDetailView({ job, extraActions }: JobDetailViewProps) {
                         href={job.company.twitter_url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="p-2 rounded-md bg-muted hover:bg-muted/80 text-muted-foreground hover:text-[#1DA1F2] transition-colors"
+                        className="p-2 rounded-md bg-muted hover:bg-muted/80 text-muted-foreground hover:text-brand-twitter transition-colors"
                       >
                         <FaTwitter className="h-3.5 w-3.5" />
                       </a>
@@ -318,7 +318,7 @@ export function JobDetailView({ job, extraActions }: JobDetailViewProps) {
                                 </div>
                               </div>
                               {isLink && (
-                                <FaLinkedin className="h-3.5 w-3.5 text-muted-foreground group-hover/member:text-[#0077B5] transition-colors shrink-0" />
+                                <FaLinkedin className="h-3.5 w-3.5 text-muted-foreground group-hover/member:text-brand-linkedin transition-colors shrink-0" />
                               )}
                             </Wrapper>
                           );
@@ -389,7 +389,7 @@ export function JobDetailView({ job, extraActions }: JobDetailViewProps) {
                       href={job.company.linkedin_url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="p-2 rounded-md bg-muted hover:bg-muted/80 text-muted-foreground hover:text-[#0077B5] transition-colors"
+                      className="p-2 rounded-md bg-muted hover:bg-muted/80 text-muted-foreground hover:text-brand-linkedin transition-colors"
                       title="LinkedIn"
                     >
                       <FaLinkedin className="h-4 w-4" />
@@ -400,7 +400,7 @@ export function JobDetailView({ job, extraActions }: JobDetailViewProps) {
                       href={job.company.twitter_url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="p-2 rounded-md bg-muted hover:bg-muted/80 text-muted-foreground hover:text-[#1DA1F2] transition-colors"
+                      className="p-2 rounded-md bg-muted hover:bg-muted/80 text-muted-foreground hover:text-brand-twitter transition-colors"
                       title="Twitter"
                     >
                       <FaTwitter className="h-4 w-4" />
@@ -422,7 +422,7 @@ export function JobDetailView({ job, extraActions }: JobDetailViewProps) {
                       href={job.company.youtube_url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="p-2 rounded-md bg-muted hover:bg-muted/80 text-muted-foreground hover:text-[#FF0000] transition-colors"
+                      className="p-2 rounded-md bg-muted hover:bg-muted/80 text-muted-foreground hover:text-brand-youtube transition-colors"
                       title="YouTube"
                     >
                       <FaYoutube className="h-4 w-4" />
@@ -433,7 +433,7 @@ export function JobDetailView({ job, extraActions }: JobDetailViewProps) {
                       href={job.company.facebook_url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="p-2 rounded-md bg-muted hover:bg-muted/80 text-muted-foreground hover:text-[#1877F2] transition-colors"
+                      className="p-2 rounded-md bg-muted hover:bg-muted/80 text-muted-foreground hover:text-brand-facebook transition-colors"
                       title="Facebook"
                     >
                       <FaFacebook className="h-4 w-4" />
@@ -444,7 +444,7 @@ export function JobDetailView({ job, extraActions }: JobDetailViewProps) {
                       href={job.company.instagram_url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="p-2 rounded-md bg-muted hover:bg-muted/80 text-muted-foreground hover:text-[#E4405F] transition-colors"
+                      className="p-2 rounded-md bg-muted hover:bg-muted/80 text-muted-foreground hover:text-brand-instagram transition-colors"
                       title="Instagram"
                     >
                       <FaInstagram className="h-4 w-4" />
@@ -521,7 +521,7 @@ export function JobDetailView({ job, extraActions }: JobDetailViewProps) {
                               </div>
                             </div>
                             {isLink && (
-                              <FaLinkedin className="h-3.5 w-3.5 text-muted-foreground group-hover/member:text-[#0077B5] transition-colors shrink-0" />
+                              <FaLinkedin className="h-3.5 w-3.5 text-muted-foreground group-hover/member:text-brand-linkedin transition-colors shrink-0" />
                             )}
                           </Wrapper>
                         );

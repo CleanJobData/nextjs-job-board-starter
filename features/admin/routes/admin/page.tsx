@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Card } from "@/components/ui/Card";
 import { Typography } from "@/components/ui/Typography";
+import { PageContainer } from "@/components/ui/PageContainer";
 
 const SECTIONS = [
   { href: "/admin/postings", label: "Job moderation", description: "Approve or reject self-service job postings." },
@@ -11,7 +12,7 @@ const SECTIONS = [
 /** Landing page for the /admin route group - three distinct sections, each with its own real data table, so they're separate routes rather than tabs on one page (see AGENTS.md's phase 3 spec). */
 export default function AdminHomePage() {
   return (
-    <div className="container mx-auto py-12 px-4 max-w-3xl">
+    <PageContainer>
       <Typography variant="h1" className="mb-8">
         Admin
       </Typography>
@@ -27,6 +28,6 @@ export default function AdminHomePage() {
           </Link>
         ))}
       </div>
-    </div>
+    </PageContainer>
   );
 }

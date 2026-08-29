@@ -10,6 +10,19 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
+/* Third-party brand colors (social share/profile links on job detail).
+   Declared once at top level, outside the html/html.dark blocks, because
+   a brand's color is defined by the brand, not by our light/dark mode or
+   preset - LinkedIn blue should look the same regardless of which theme
+   the visitor is using, so these must never vary the way --primary etc. do. */
+:root {
+  --brand-linkedin: #0077b5;
+  --brand-twitter: #1da1f2;
+  --brand-youtube: #ff0000;
+  --brand-facebook: #1877f2;
+  --brand-instagram: #e4405f;
+}
+
 /* Use `html` / `html.dark` so variables always override predictably (no :root tie-break). */
 html {
   --background: #faf7f2;
@@ -128,6 +141,11 @@ html.dark {
   --color-inverse-foreground: var(--inverse-foreground);
   --color-switch-thumb: var(--switch-thumb);
   --color-switch-thumb-border: var(--switch-thumb-border);
+  --color-brand-linkedin: var(--brand-linkedin);
+  --color-brand-twitter: var(--brand-twitter);
+  --color-brand-youtube: var(--brand-youtube);
+  --color-brand-facebook: var(--brand-facebook);
+  --color-brand-instagram: var(--brand-instagram);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 

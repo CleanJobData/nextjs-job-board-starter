@@ -5,6 +5,7 @@ import { getJobDetail as getJobById } from "@/jobs/lib/getJobs";
 import { JobDetailView } from "@/jobs/components/JobDetailView";
 import { activeJobDetailActions } from "@/features/registry";
 import { Button } from "@/components/ui/Button";
+import { PageContainer } from "@/components/ui/PageContainer";
 import { FaChevronLeft } from "react-icons/fa6";
 import Link from "next/link";
 import { ApiError } from "@/lib/api/client";
@@ -81,7 +82,10 @@ export default async function JobPage({ params }: JobPageProps) {
     };
 
     return (
-      <div className="container mx-auto py-12 px-10">
+      // full-bleed: JobDetailView manages its own internal max-width for the
+      // two-column layout, same reasoning as HomePage - this also fixes the
+      // px-10 outlier (every other page in the app uses px-4).
+      <PageContainer size="full">
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
@@ -101,7 +105,7 @@ export default async function JobPage({ params }: JobPageProps) {
             <Action key={i} job={job} />
           ))}
         />
-      </div>
+      </PageContainer>
     );
   } catch (error: any) {
     if (error instanceof ApiError && error.status === 404) {
@@ -111,7 +115,11 @@ export default async function JobPage({ params }: JobPageProps) {
     console.error("[Job Page Error]", error);
 
     return (
-      <div className="container mx-auto py-20 px-4 text-center">
+      // Standardized to PageContainer's fixed py-12 (was py-20) - a
+      // deliberate simplification per AGENTS.md phase 1: one fewer knob,
+      // and this error state doesn't have a specific reason to need more
+      // vertical rhythm than any other page.
+      <PageContainer size="sm" className="text-center">
         <h1 className="text-2xl font-bold mb-4">Something went wrong</h1>
         <p className="text-muted-foreground mb-8">
           We couldn't load the job details. Please try again later.
@@ -119,7 +127,7 @@ export default async function JobPage({ params }: JobPageProps) {
         <Button asChild>
           <Link href="/">Return to Job Board</Link>
         </Button>
-      </div>
+      </PageContainer>
     );
   }
 }

@@ -1,10 +1,11 @@
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
+import { PageContainer } from "@/components/ui/PageContainer";
 import { SignUpForm } from "../../components/SignUpForm";
 
 export default function SignUpPage() {
   return (
-    <div className="container mx-auto max-w-md px-4 py-16">
+    <PageContainer size="sm">
       <Card>
         <CardHeader>
           <CardTitle>Create your account</CardTitle>
@@ -19,6 +20,6 @@ export default function SignUpPage() {
           </p>
         </CardContent>
       </Card>
-    </div>
+    </PageContainer>
   );
 }
