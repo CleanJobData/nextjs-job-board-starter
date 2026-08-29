@@ -10,7 +10,7 @@
     "db:generate": "drizzle-kit generate",
     "db:migrate": "node scripts/db-migrate-safe.mjs",
     "db:studio": "drizzle-kit studio",
-    "promote-admin": "tsx scripts/promote-admin.ts"
+    "promote-admin": "tsx --env-file=.env scripts/promote-admin.ts"
   },
   "dependencies": {
     "@auth/drizzle-adapter": "^1.11.3",

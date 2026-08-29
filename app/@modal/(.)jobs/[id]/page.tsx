@@ -1,5 +1,5 @@
 import * as React from "react";
-import { getJobById } from "@/jobs/lib/api";
+import { getJobDetail } from "@/jobs/lib/getJobs";
 import { JobSideView } from "@/jobs/components/JobSideView";
 import { activeJobDetailActions } from "@/features/registry";
 
@@ -12,8 +12,13 @@ export default async function InterceptedJobPage({
 }: InterceptedJobPageProps) {
   const { id } = await params;
 
+  // getJobDetail(), not getJobById() directly - a source="posted" job (see
+  // that function's doc comment) has no CleanJobData identity, so a direct
+  // getJobById() call 500s against the live API for its id. This same bug
+  // was already fixed in jobs/routes/JobDetailPage.tsx (the full-page
+  // route) but missed here on the intercepted-modal route - same fix.
   // Initiate fetch but don't await it here to allow the Sheet to open immediately.
-  const jobPromise = getJobById(id);
+  const jobPromise = getJobDetail(id);
 
   // activeJobDetailActions must only ever be imported server-side (it pulls in
   // job-sync's cronTasks -> lib/db/client.ts -> pg, which broke the browser

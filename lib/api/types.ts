@@ -178,31 +178,38 @@ export interface ExpiredJobsResponse {
   };
 }
 
-export interface GeoSuggestCityResult {
-  kind: "city";
+/**
+ * GET /geo/suggest now returns the full ancestor chain for every result,
+ * not just the matched level's own id - a city hit includes its
+ * state_id/country_id (and vice versa isn't applicable, but a state hit
+ * still includes country_id), with null for whichever fields don't apply
+ * to that result's `kind`. This used to be a flat "just the matched id"
+ * shape (GeoSuggestCityResult/StateResult/CountryResult, each carrying
+ * only its own id) - CleanJobData's backend was expanded specifically to
+ * fix a real gap: picking only a city left state_id/country_id
+ * unresolvable client-side, so a job posted with a city-only location
+ * could never be found by a seeker filtering on country. Shape now
+ * mirrors `Location` almost exactly (see toLocations() in
+ * features/job-posting/actions/job-postings.ts, the shape this feeds).
+ */
+export interface GeoSuggestResult {
+  kind: "city" | "state" | "country";
   name: string;
   display_label: string;
-  city_id: number;
+  city_id: number | null;
+  city_name: string | null;
+  state_id: number | null;
+  state_name: string | null;
+  state_code: string | null;
+  country_id: number | null;
+  country_name: string | null;
+  country_code: string | null;
+  region: string | null;
+  subregion: string | null;
+  lat: number | null;
+  lng: number | null;
+  timezone: string | null;
 }
-
-export interface GeoSuggestStateResult {
-  kind: "state";
-  name: string;
-  display_label: string;
-  state_id: number;
-}
-
-export interface GeoSuggestCountryResult {
-  kind: "country";
-  name: string;
-  display_label: string;
-  country_id: number;
-}
-
-export type GeoSuggestResult =
-  | GeoSuggestCityResult
-  | GeoSuggestStateResult
-  | GeoSuggestCountryResult;
 
 export interface ApiErrorBody {
   status: number;

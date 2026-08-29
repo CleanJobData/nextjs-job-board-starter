@@ -43,8 +43,15 @@ export type CreateCompanyInput = {
   industry?: string | null;
   headquarters?: string | null;
   founded?: number | null;
-  /** Logo file, if the poster attached one - uploaded via lib/storage, not stored inline. */
-  logo?: { buffer: Buffer; filename: string; contentType: string } | null;
+  /**
+   * Logo file, if the poster attached one - uploaded via lib/storage, not
+   * stored inline. Takes the raw File (not a pre-converted Buffer): a Node
+   * Buffer instance doesn't survive the Server Action wire format intact
+   * (arrives here as a plain object, not a real buffer), but File is
+   * natively supported across that boundary - converted to a real Buffer
+   * below, server-side, where Buffer is guaranteed to be the real thing.
+   */
+  logo?: File | null;
 };
 
 /**
@@ -62,11 +69,13 @@ export async function createCompany(input: CreateCompanyInput) {
 
   let logoUrl: string | null = null;
   if (input.logo) {
-    assertValidUpload({ buffer: input.logo.buffer, contentType: input.logo.contentType });
+    const buffer = Buffer.from(await input.logo.arrayBuffer());
+    const contentType = input.logo.type;
+    assertValidUpload({ buffer, contentType });
     const uploaded = await getStorageAdapter().upload({
-      buffer: input.logo.buffer,
-      filename: input.logo.filename,
-      contentType: input.logo.contentType,
+      buffer,
+      filename: input.logo.name,
+      contentType,
       scope: "company-logos",
     });
     logoUrl = uploaded.url;

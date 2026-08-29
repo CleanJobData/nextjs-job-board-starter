@@ -21,18 +21,18 @@ export function CompanyForm() {
     const logoFile = formData.get("logo") as File | null;
     startTransition(async () => {
       try {
-        let logo: { buffer: Buffer; filename: string; contentType: string } | null = null;
-        if (logoFile && logoFile.size > 0) {
-          const buffer = Buffer.from(await logoFile.arrayBuffer());
-          logo = { buffer, filename: logoFile.name, contentType: logoFile.type };
-        }
         await createCompany({
           name: String(formData.get("name") || ""),
           description: (formData.get("description") as string) || null,
           websiteUrl: (formData.get("websiteUrl") as string) || null,
           industry: (formData.get("industry") as string) || null,
           headquarters: (formData.get("headquarters") as string) || null,
-          logo,
+          // Pass the File itself, not a pre-converted Buffer - a Node Buffer
+          // instance doesn't survive the Server Action wire format intact
+          // (it arrives server-side as a plain object, not a real buffer),
+          // but File is natively supported across that boundary. Converted
+          // to a real Buffer server-side in createCompany() instead.
+          logo: logoFile && logoFile.size > 0 ? logoFile : null,
         });
         router.refresh();
       } catch (e: any) {

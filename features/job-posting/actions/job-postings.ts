@@ -54,21 +54,29 @@ async function ownsCompany(userId: string, companyId: string): Promise<boolean> 
 }
 
 /** Converts GeoSuggest's selection shape into the `locations` JSONB shape synced jobs already use, so posted jobs are structurally identical for filtering (locationContains() in job-sync/lib/read.ts). */
+/**
+ * GET /geo/suggest now returns each result's full ancestor chain (see
+ * GeoSuggestResult's doc comment in lib/api/types.ts), so a city pick
+ * already carries its own state_id/country_id - no more nulling those out
+ * just because the poster picked "city" rather than "country". This is
+ * what actually fixes the original gap: a job posted with only a city
+ * selected is still found by a seeker filtering on that city's country.
+ */
 function toLocations(selected: GeoSuggestResult[]): Location[] {
   return selected.map((loc, i) => ({
     kind: loc.kind,
     is_primary: i === 0,
-    city_id: loc.kind === "city" ? loc.city_id : null,
-    city_name: loc.kind === "city" ? loc.name : null,
-    state_id: loc.kind === "state" ? loc.state_id : null,
-    state_name: loc.kind === "state" ? loc.name : null,
-    state_code: null,
-    country_id: loc.kind === "country" ? loc.country_id : null,
-    country_name: loc.kind === "country" ? loc.name : null,
-    country_code: null,
-    lat: null,
-    lng: null,
-    timezone: null,
+    city_id: loc.city_id,
+    city_name: loc.city_name,
+    state_id: loc.state_id,
+    state_name: loc.state_name,
+    state_code: loc.state_code,
+    country_id: loc.country_id,
+    country_name: loc.country_name,
+    country_code: loc.country_code,
+    lat: loc.lat,
+    lng: loc.lng,
+    timezone: loc.timezone,
   }));
 }
 
