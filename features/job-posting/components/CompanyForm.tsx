@@ -3,6 +3,8 @@
 import * as React from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
+import { Textarea } from "@/components/ui/Textarea";
 import { Typography } from "@/components/ui/Typography";
 import { createCompany } from "../actions/companies";
 
@@ -53,29 +55,49 @@ export function CompanyForm() {
 
       <div className="space-y-1">
         <label className="text-sm font-medium">Company name</label>
-        <input name="name" required className="w-full border rounded-md px-3 py-2 bg-background" />
+        <Input name="name" required disabled={pending} />
       </div>
       <div className="space-y-1">
         <label className="text-sm font-medium">Description</label>
-        <textarea name="description" rows={3} className="w-full border rounded-md px-3 py-2 bg-background" />
+        <Textarea name="description" rows={3} disabled={pending} />
       </div>
       <div className="space-y-1">
         <label className="text-sm font-medium">Website</label>
-        <input name="websiteUrl" type="url" className="w-full border rounded-md px-3 py-2 bg-background" />
+        <Input name="websiteUrl" type="url" disabled={pending} />
       </div>
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div className="space-y-1">
           <label className="text-sm font-medium">Industry</label>
-          <input name="industry" className="w-full border rounded-md px-3 py-2 bg-background" />
+          <Input name="industry" disabled={pending} />
         </div>
         <div className="space-y-1">
           <label className="text-sm font-medium">Headquarters</label>
-          <input name="headquarters" className="w-full border rounded-md px-3 py-2 bg-background" />
+          <Input name="headquarters" disabled={pending} />
         </div>
       </div>
       <div className="space-y-1">
         <label className="text-sm font-medium">Logo</label>
-        <input name="logo" type="file" accept="image/*" className="w-full text-sm" />
+        {/*
+          Input.tsx wraps its <input> in a fixed-height (h-11) relative div
+          styled for text entry (background, padding, focus ring) - a
+          type="file" input doesn't render text the same way (it shows a
+          native button + filename, no placeholder/left-right icon slots
+          apply), so reusing Input as-is would mean an empty, misleadingly
+          text-box-shaped chrome around a file picker. Instead we style
+          only the native `::file-selector-button` pseudo-element (a real,
+          supported Tailwind pattern via arbitrary variants) so the button
+          itself matches the app's token palette, while leaving the
+          filename text at its native browser rendering - this keeps the
+          control legible and unambiguous as a file input rather than
+          dressing it up as something it isn't.
+        */}
+        <input
+          name="logo"
+          type="file"
+          accept="image/*"
+          disabled={pending}
+          className="w-full text-sm text-muted-foreground file:mr-3 file:rounded-md file:border-0 file:bg-primary file:px-3 file:py-2 file:text-sm file:font-medium file:text-primary-foreground file:cursor-pointer hover:file:opacity-90 disabled:opacity-60 disabled:cursor-not-allowed"
+        />
       </div>
 
       {error && <p className="text-sm text-destructive">{error}</p>}

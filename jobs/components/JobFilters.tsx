@@ -12,6 +12,7 @@ import {
   FaXmark,
 } from "react-icons/fa6";
 import { Input } from "@/components/ui/Input";
+import { Typography } from "@/components/ui/Typography";
 import { Combobox, ComboboxOptionType } from "@/components/ui/Combobox";
 import { Listbox, ListboxOption } from "@/components/ui/Listbox";
 import { Switch } from "@/components/ui/Switch";
@@ -424,7 +425,13 @@ export function JobFilters() {
         <div className="sticky top-24 space-y-8">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-lg font-bold mb-1">Filters</h2>
+              {/* variant="large" (text-lg font-semibold) is the actual size
+                  match, not h3/h4 (text-2xl/text-xl) - font-bold restores
+                  this heading's original weight over "large"'s semibold
+                  default. as="h2" keeps it semantically a section heading. */}
+              <Typography as="h2" variant="large" className="font-bold mb-1">
+                Filters
+              </Typography>
               <p className="text-xs text-muted-foreground uppercase tracking-widest font-medium">
                 Refine your search
               </p>

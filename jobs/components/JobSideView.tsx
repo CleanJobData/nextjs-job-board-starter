@@ -6,6 +6,7 @@ import { Sheet } from "@/components/ui/Sheet";
 import { JobDetailView } from "./JobDetailView";
 import { JobDetail } from "@/lib/api/types";
 import { FaSpinner } from "react-icons/fa6";
+import { Typography } from "@/components/ui/Typography";
 
 interface JobSideViewProps {
   jobPromise: Promise<JobDetail>;
@@ -51,9 +52,13 @@ function JobLoadingState() {
   return (
     <div className="py-40 flex flex-col items-center justify-center gap-4">
       <FaSpinner className="h-8 w-8 animate-spin text-primary" />
-      <p className="text-muted-foreground animate-pulse font-medium">
+      {/* variant="muted" for the color/intent match; animate-pulse/font-medium
+          kept as an additive className override rather than baked into the
+          variant, same "variant for semantics, className for one-off flair"
+          split used by JobCard elsewhere in this codebase. */}
+      <Typography variant="muted" className="animate-pulse font-medium">
         Loading job details...
-      </p>
+      </Typography>
     </div>
   );
 }

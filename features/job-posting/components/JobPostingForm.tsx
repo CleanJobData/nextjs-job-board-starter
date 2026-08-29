@@ -5,6 +5,10 @@ import { useRouter } from "next/navigation";
 import { GeoSuggest } from "@/jobs/components/GeoSuggest";
 import type { GeoSuggestResult } from "@/lib/api/types";
 import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
+import { Textarea } from "@/components/ui/Textarea";
+import { Listbox } from "@/components/ui/Listbox";
+import { Switch } from "@/components/ui/Switch";
 import { Typography } from "@/components/ui/Typography";
 import { createJobPosting } from "../actions/job-postings";
 
@@ -24,20 +28,41 @@ interface JobPostingFormProps {
 export function JobPostingForm({ companies }: JobPostingFormProps) {
   const router = useRouter();
   const [locations, setLocations] = React.useState<GeoSuggestResult[]>([]);
+  // companyId and hasRemote move from native FormData reads to controlled
+  // React state: Listbox and Switch are headlessui-backed controlled
+  // components (like the existing GeoSuggest/locations field above), not
+  // native name= form fields, so they can't be read off `formData` the way
+  // <select>/<input type="checkbox"> could. companyId defaults to the first
+  // company (mirrors the old <select>'s browser-default behavior of
+  // preselecting its first <option>), so the field is never left in an
+  // invalid unselected state the way a native required <select> could guard
+  // against - there is always a valid selection here as long as
+  // companies.length > 0 (guaranteed by the caller, see doc comment above).
+  const [companyId, setCompanyId] = React.useState(companies[0]?.id ?? "");
+  const [hasRemote, setHasRemote] = React.useState(false);
   const [pending, startTransition] = React.useTransition();
   const [error, setError] = React.useState<string | null>(null);
 
+  const companyOptions = companies.map((c) => ({ value: c.id, label: c.name }));
+
   function onSubmit(formData: FormData) {
     setError(null);
+    // companyId is no longer a real form field, so it can't rely on native
+    // `required` validation - guard it explicitly here instead, matching
+    // the same fail-closed behavior the old required <select> gave for free.
+    if (!companyId) {
+      setError("Please select a company.");
+      return;
+    }
     startTransition(async () => {
       try {
         await createJobPosting({
           title: String(formData.get("title") || ""),
           description: String(formData.get("description") || ""),
-          companyId: String(formData.get("companyId") || ""),
+          companyId,
           locations,
           employmentType: (formData.get("employmentType") as string) || null,
-          hasRemote: formData.get("hasRemote") === "on",
+          hasRemote,
           salaryMin: formData.get("salaryMin") ? Number(formData.get("salaryMin")) : null,
           salaryMax: formData.get("salaryMax") ? Number(formData.get("salaryMax")) : null,
           salaryCurrency: (formData.get("salaryCurrency") as string) || null,
@@ -62,28 +87,24 @@ export function JobPostingForm({ companies }: JobPostingFormProps) {
 
       <div className="space-y-1">
         <label className="text-sm font-medium">Company</label>
-        <select name="companyId" required className="w-full border rounded-md px-3 py-2 bg-background">
-          {companies.map((c) => (
-            <option key={c.id} value={c.id}>
-              {c.name}
-            </option>
-          ))}
-        </select>
+        {/* Listbox has no disabled prop (unlike Input/Textarea) - it's left
+            interactive during submission, same as Switch/GeoSuggest above;
+            the submit Button is disabled meanwhile so no double-submit risk. */}
+        <Listbox options={companyOptions} value={companyId} onChange={setCompanyId} />
       </div>
 
       <div className="space-y-1">
-        <label className="text-sm font-medium">Job title</label>
-        <input name="title" required className="w-full border rounded-md px-3 py-2 bg-background" />
+        <label htmlFor="title" className="text-sm font-medium">
+          Job title
+        </label>
+        <Input id="title" name="title" required disabled={pending} />
       </div>
 
       <div className="space-y-1">
-        <label className="text-sm font-medium">Description</label>
-        <textarea
-          name="description"
-          required
-          rows={6}
-          className="w-full border rounded-md px-3 py-2 bg-background"
-        />
+        <label htmlFor="description" className="text-sm font-medium">
+          Description
+        </label>
+        <Textarea id="description" name="description" required rows={6} disabled={pending} />
       </div>
 
       <div className="space-y-1">
@@ -91,34 +112,48 @@ export function JobPostingForm({ companies }: JobPostingFormProps) {
         <GeoSuggest selectedLocations={locations} onChange={setLocations} />
       </div>
 
-      <div className="flex items-center gap-2">
-        <input type="checkbox" name="hasRemote" id="hasRemote" />
-        <label htmlFor="hasRemote" className="text-sm">Remote friendly</label>
-      </div>
+      {/* Switch is a controlled boolean component (checked/onChange), same
+          category as Listbox above - no name= attribute, so hasRemote is
+          read from React state in onSubmit rather than formData. */}
+      <Switch checked={hasRemote} onChange={setHasRemote} label="Remote friendly" />
 
-      <div className="grid grid-cols-3 gap-3">
+      {/* grid-cols-1 sm:grid-cols-3: the original grid-cols-3 with no
+          breakpoint squeezed three inputs (employment type, salary min,
+          salary max) into unreadably narrow columns below the sm breakpoint
+          - stacks to one column on mobile, matching the sm breakpoint phase
+          1's MobileNav already established as this codebase's mobile cutoff. */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         <div className="space-y-1">
-          <label className="text-sm font-medium">Employment type</label>
-          <input name="employmentType" placeholder="full_time" className="w-full border rounded-md px-3 py-2 bg-background" />
+          <label htmlFor="employmentType" className="text-sm font-medium">
+            Employment type
+          </label>
+          <Input id="employmentType" name="employmentType" placeholder="full_time" disabled={pending} />
         </div>
         <div className="space-y-1">
-          <label className="text-sm font-medium">Salary min</label>
-          <input name="salaryMin" type="number" className="w-full border rounded-md px-3 py-2 bg-background" />
+          <label htmlFor="salaryMin" className="text-sm font-medium">
+            Salary min
+          </label>
+          <Input id="salaryMin" name="salaryMin" type="number" disabled={pending} />
         </div>
         <div className="space-y-1">
-          <label className="text-sm font-medium">Salary max</label>
-          <input name="salaryMax" type="number" className="w-full border rounded-md px-3 py-2 bg-background" />
+          <label htmlFor="salaryMax" className="text-sm font-medium">
+            Salary max
+          </label>
+          <Input id="salaryMax" name="salaryMax" type="number" disabled={pending} />
         </div>
       </div>
 
       <div className="space-y-1">
-        <label className="text-sm font-medium">Application URL</label>
-        <input
+        <label htmlFor="applicationUrl" className="text-sm font-medium">
+          Application URL
+        </label>
+        <Input
+          id="applicationUrl"
           name="applicationUrl"
           type="url"
           required
           placeholder="https://..."
-          className="w-full border rounded-md px-3 py-2 bg-background"
+          disabled={pending}
         />
         <p className="text-xs text-muted-foreground">
           v1 only supports linking out to an external application page - there is no on-site apply flow.

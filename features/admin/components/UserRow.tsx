@@ -33,7 +33,14 @@ export function UserRow({ user, isSelf }: { user: AdminUserRow; isSelf: boolean 
   }
 
   return (
-    <Card className="p-4 flex items-center justify-between gap-4">
+    // flex-col sm:flex-row: name+email is a two-line, often-long block
+    // (real emails routinely run 25-35+ chars) sitting next to a 144px-wide
+    // role picker - side-by-side on a narrow phone forces the email into a
+    // truncated sliver, hiding exactly the field an admin needs to read to
+    // confirm they're changing the right user's role. Stacking gives the
+    // email its own full-width line below sm, then reverts to a compact row
+    // once there's room.
+    <Card className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
       <div className="min-w-0">
         <Typography className="font-medium truncate">{user.name || "(no name)"}</Typography>
         <Typography variant="small" className="text-muted-foreground truncate">
@@ -45,7 +52,7 @@ export function UserRow({ user, isSelf }: { user: AdminUserRow; isSelf: boolean 
           </Typography>
         )}
       </div>
-      <div className="w-36 shrink-0">
+      <div className="w-full sm:w-36 shrink-0">
         {isSelf ? (
           <Typography variant="small" className="text-muted-foreground text-right">
             {user.role} (you)

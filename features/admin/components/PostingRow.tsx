@@ -44,6 +44,13 @@ export function PostingRow({ posting }: { posting: AdminPostingRow }) {
 
   return (
     <Card className="p-4 flex flex-col gap-3">
+      {/* Judgement call: NOT given flex-col sm:flex-row like UserRow.
+          The title already has min-w-0+truncate and the badge is a short,
+          fixed-width chip (shrink-0) - that's the correct flex pair for a
+          narrow screen (the title truncates gracefully instead of forcing
+          overflow), unlike UserRow where truncating the email is itself the
+          problem. Stacking here would just waste a line for no legibility
+          gain. */}
       <div className="flex items-center justify-between gap-4">
         <div className="min-w-0">
           <Link href={`/jobs/${posting.id}`} target="_blank" className="font-semibold hover:text-primary truncate block">

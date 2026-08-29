@@ -6,6 +6,7 @@ import { JobDetailView } from "@/jobs/components/JobDetailView";
 import { activeJobDetailActions } from "@/features/registry";
 import { Button } from "@/components/ui/Button";
 import { PageContainer } from "@/components/ui/PageContainer";
+import { Typography } from "@/components/ui/Typography";
 import { FaChevronLeft } from "react-icons/fa6";
 import Link from "next/link";
 import { ApiError } from "@/lib/api/client";
@@ -120,10 +121,21 @@ export default async function JobPage({ params }: JobPageProps) {
       // and this error state doesn't have a specific reason to need more
       // vertical rhythm than any other page.
       <PageContainer size="sm" className="text-center">
-        <h1 className="text-2xl font-bold mb-4">Something went wrong</h1>
-        <p className="text-muted-foreground mb-8">
+        {/* variant="h3" is the size match (text-2xl), not "h1" - Typography's
+            h1 variant is text-4xl/lg:text-5xl, way heavier than this error
+            state's original text-2xl. as="h1" keeps the element semantically
+            the page's one true heading; font-bold restores the original
+            weight since h3's default is font-semibold. */}
+        <Typography as="h1" variant="h3" className="font-bold mb-4">
+          Something went wrong
+        </Typography>
+        {/* variant="muted" carries the right color+intent, but its text-sm
+            is smaller than this paragraph's original (unset =) base size -
+            text-base overrides that back, same "variant for semantics/color,
+            className override for size" pattern used elsewhere (JobCard). */}
+        <Typography variant="muted" className="text-base mb-8">
           We couldn't load the job details. Please try again later.
-        </p>
+        </Typography>
         <Button asChild>
           <Link href="/">Return to Job Board</Link>
         </Button>
