@@ -3,8 +3,10 @@ import { PageContainer } from "@/components/ui/PageContainer";
 import { getMyCompanies, } from "../../actions/companies";
 import { getMyJobPostings } from "../../actions/job-postings";
 import { CompanyForm } from "../../components/CompanyForm";
+import { CompaniesManager } from "../../components/CompaniesManager";
 import { JobPostingForm } from "../../components/JobPostingForm";
 import { JobPostingsList, type JobPostingRow } from "../../components/JobPostingsList";
+import { JobPostingsTabs } from "../../components/JobPostingsTabs";
 
 export default async function JobPostingsPage() {
   const companies = await getMyCompanies();
@@ -29,21 +31,41 @@ export default async function JobPostingsPage() {
         </Typography>
       </div>
 
-      <section className="space-y-3">
-        <Typography variant="h4">Your postings</Typography>
-        <JobPostingsList postings={postings} />
-      </section>
+      <JobPostingsTabs
+        postingsSection={
+          <section className="space-y-3">
+            <Typography variant="h4">Your postings</Typography>
+            <JobPostingsList postings={postings} />
 
-      <section className="space-y-3">
-        <Typography variant="h4">
-          {companies.length === 0 ? "Create your company" : "Post a new job"}
-        </Typography>
-        {companies.length === 0 ? (
-          <CompanyForm />
-        ) : (
-          <JobPostingForm companies={companies.map((c) => ({ id: c.id, name: c.name }))} />
-        )}
-      </section>
+            <div className="pt-4">
+              <Typography variant="h4" className="mb-3">
+                {companies.length === 0 ? "Create your company" : "Post a new job"}
+              </Typography>
+              {companies.length === 0 ? (
+                <CompanyForm />
+              ) : (
+                <JobPostingForm companies={companies.map((c) => ({ id: c.id, name: c.name }))} />
+              )}
+            </div>
+          </section>
+        }
+        companiesSection={
+          <section className="space-y-3">
+            <Typography variant="h4">Your companies</Typography>
+            <CompaniesManager
+              companies={companies.map((c) => ({
+                id: c.id,
+                name: c.name,
+                description: c.description,
+                websiteUrl: c.websiteUrl,
+                industry: c.industry,
+                headquarters: c.headquarters,
+                logo: c.logo,
+              }))}
+            />
+          </section>
+        }
+      />
     </PageContainer>
   );
 }

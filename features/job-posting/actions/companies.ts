@@ -112,3 +112,90 @@ export async function createCompany(input: CreateCompanyInput) {
   revalidatePath("/job-postings");
   return company;
 }
+
+export type UpdateCompanyInput = Omit<CreateCompanyInput, "logo"> & {
+  id: string;
+  /**
+   * Logo tri-state, expressed via two independent fields rather than one
+   * nullable prop, because the three states this needs to distinguish
+   * ("leave it exactly as-is", "replace with this new file", "clear it to
+   * null") can't be told apart from a single `File | null` value alone -
+   * `null` would be ambiguous between "unchanged" and "cleared". The
+   * calling form expresses this the same way native multipart forms
+   * already do for "did the user touch this field at all": omit `logo`
+   * (or pass undefined) for "unchanged", pass a real `File` to replace it,
+   * or pass `removeLogo: true` (with no `logo`) to clear it. `removeLogo`
+   * is ignored if `logo` is also provided - a new file always wins.
+   */
+  logo?: File | null;
+  removeLogo?: boolean;
+};
+
+/**
+ * Updates a company the current user owns. Only ever touches
+ * source="posted" rows - a source="cleanjobdata" ingested company's real,
+ * scraped data must never be edited through this self-service path, even
+ * in the hypothetical case where a future claim-flow left `ownerId` set on
+ * one (see createCompany()'s doc comment on why claiming isn't built yet).
+ */
+export async function updateCompany(input: UpdateCompanyInput) {
+  const userId = await requireUserId();
+  const db = requireDb();
+
+  const [existing] = await db
+    .select()
+    .from(companies)
+    .where(
+      and(
+        eq(companies.id, input.id),
+        eq(companies.ownerId, userId),
+        eq(companies.source, "posted"),
+      ),
+    )
+    .limit(1);
+  if (!existing) {
+    throw new Error("You can only edit a company you own.");
+  }
+
+  const patch: Partial<typeof companies.$inferInsert> = {
+    name: input.name,
+    description: input.description ?? null,
+    websiteUrl: input.websiteUrl ?? null,
+    linkedinUrl: input.linkedinUrl ?? null,
+    twitterUrl: input.twitterUrl ?? null,
+    githubUrl: input.githubUrl ?? null,
+    youtubeUrl: input.youtubeUrl ?? null,
+    facebookUrl: input.facebookUrl ?? null,
+    instagramUrl: input.instagramUrl ?? null,
+    employeeCount: input.employeeCount ?? null,
+    industry: input.industry ?? null,
+    headquarters: input.headquarters ?? null,
+    founded: input.founded ?? null,
+  };
+
+  if (input.logo) {
+    const buffer = Buffer.from(await input.logo.arrayBuffer());
+    const contentType = input.logo.type;
+    assertValidUpload({ buffer, contentType });
+    const uploaded = await getStorageAdapter().upload({
+      buffer,
+      filename: input.logo.name,
+      contentType,
+      scope: "company-logos",
+    });
+    patch.logo = uploaded.url;
+  } else if (input.removeLogo) {
+    patch.logo = null;
+  }
+  // else: no new file and no removal requested - `logo` is left out of the
+  // patch entirely, leaving the existing column value untouched.
+
+  const [company] = await db
+    .update(companies)
+    .set(patch)
+    .where(eq(companies.id, input.id))
+    .returning();
+
+  revalidatePath("/job-postings");
+  return company;
+}
