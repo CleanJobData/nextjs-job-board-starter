@@ -9,6 +9,7 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { cn } from "@/lib/utils";
 import { ApplicationCard } from "./ApplicationCard";
 import { ApplicationDetailPanel } from "./ApplicationDetailPanel";
+import { STATUS_ACCENT } from "./statusStyles";
 import { updateApplicationStatus, type ApplicationStatus } from "../actions/applications";
 import type { ApplicationRowData } from "./types";
 
@@ -40,21 +41,24 @@ function Column({
     <div
       ref={setNodeRef}
       className={cn(
-        "flex flex-col gap-3 w-72 shrink-0 rounded-lg border border-border bg-muted/20 p-3 transition-colors",
-        isOver && "bg-muted/50 border-primary/50"
+        "flex flex-col gap-3 w-72 shrink-0 rounded-xl border border-border bg-muted/30 p-3 transition-colors",
+        isOver && "bg-primary/5 border-primary/40 ring-1 ring-primary/20"
       )}
     >
       <div className="flex items-center justify-between px-1">
-        <Typography variant="small" className="font-semibold uppercase tracking-wide text-muted-foreground">
-          {label}
-        </Typography>
-        <Typography variant="small" className="text-muted-foreground">
+        <div className="flex items-center gap-2">
+          <span className={cn("h-2 w-2 rounded-full", STATUS_ACCENT[status].dot)} />
+          <Typography variant="small" className="font-semibold uppercase tracking-wide text-muted-foreground">
+            {label}
+          </Typography>
+        </div>
+        <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-background px-1.5 text-xs font-medium text-muted-foreground">
           {applications.length}
-        </Typography>
+        </span>
       </div>
-      <div className="flex flex-col gap-2 min-h-[80px]">
+      <div className="flex flex-col gap-2.5 min-h-[80px]">
         {applications.length === 0 ? (
-          <div className="rounded-md border border-dashed border-border/70 py-6 text-center">
+          <div className="rounded-lg border border-dashed border-border/70 py-8 text-center">
             <Typography variant="small" className="text-muted-foreground">
               No applications
             </Typography>
