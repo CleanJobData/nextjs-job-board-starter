@@ -1,37 +1,13 @@
-import { FaClipboardList } from "react-icons/fa6";
-import { Button } from "@/components/ui/Button";
-import { EmptyState } from "@/components/ui/EmptyState";
-import { ApplicationRow } from "./ApplicationRow";
-import type { ApplicationStatus } from "../actions/applications";
+import { KanbanBoard } from "./KanbanBoard";
+import type { ApplicationRowData } from "./types";
 
-type ApplicationRowData = {
-  id: string;
-  jobId: string | null;
-  jobTitle: string;
-  companyName: string | null;
-  jobUrl: string | null;
-  status: ApplicationStatus;
-  notes: string | null;
-  updatedAt: Date;
-};
-
+/**
+ * Thin server-side entry point: fetches nothing itself (the page shim
+ * already server-fetched the list), just hands it to the client kanban
+ * board. Kept as a separate component (rather than inlining KanbanBoard
+ * into the page) so the page shim doesn't need to know this feature
+ * renders as a board rather than a list.
+ */
 export function ApplicationsList({ applications }: { applications: ApplicationRowData[] }) {
-  if (applications.length === 0) {
-    return (
-      <EmptyState
-        icon={<FaClipboardList />}
-        title="No tracked applications yet"
-        description="Browse jobs and track the ones you apply to, so you can follow their status here."
-        action={<Button href="/jobs">Browse jobs</Button>}
-      />
-    );
-  }
-
-  return (
-    <div className="flex flex-col gap-3">
-      {applications.map((application) => (
-        <ApplicationRow key={application.id} application={application} />
-      ))}
-    </div>
-  );
+  return <KanbanBoard applications={applications} />;
 }
