@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, primaryKey, integer, index } from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, primaryKey, integer, index, boolean } from "drizzle-orm/pg-core";
 import type { AdapterAccountType } from "next-auth/adapters";
 
 /**
@@ -36,6 +36,41 @@ export const users = pgTable("users", {
   // pass could add more onboarding steps or act on this value; this one
   // does neither.
   accountType: text("accountType").$type<"seeker" | "employer">(),
+  /** Set once the user finishes (or skips) the /onboarding flow - gates the post-sign-in redirect so they aren't sent back into onboarding on every visit. */
+  onboardedAt: timestamp("onboardedAt", { mode: "date", withTimezone: true }),
+});
+
+/**
+ * A job seeker's saved search preferences, captured during /onboarding and
+ * editable afterward. One row per user (userId is the primary key, not a
+ * separate id - this is strictly 1:1 with users, and making that the key
+ * makes a duplicate row impossible rather than merely unlikely).
+ *
+ * These are DEFAULTS, not locks: jobs/routes/JobsPage.tsx seeds an empty
+ * search with them, but any explicit filter in the URL wins. Treating them
+ * as hard filters would make the board feel broken ("why can't I see other
+ * jobs?") the moment someone's interests widened.
+ *
+ * The columns deliberately mirror ListQuery's own filter shape (the same
+ * one JobFilters and the CleanJobData API already speak) so seeding a
+ * search is a direct mapping, not a translation layer that has to be kept
+ * in sync as filters are added. Scalar arrays get real Postgres array
+ * columns rather than JSONB, matching how jobs.experienceLevels is stored.
+ */
+export const userPreferences = pgTable("userPreferences", {
+  userId: text("userId")
+    .primaryKey()
+    .references(() => users.id, { onDelete: "cascade" }),
+  /** Free-text interests, matched against job titles - e.g. ["data engineer", "python"]. */
+  titles: text("titles").array().notNull().default([]),
+  /** CleanJobData geo ids, same shape GeoSuggest already produces (see jobs/components/GeoSuggest.tsx). */
+  cityIds: integer("cityIds").array().notNull().default([]),
+  stateIds: integer("stateIds").array().notNull().default([]),
+  countryIds: integer("countryIds").array().notNull().default([]),
+  remoteOnly: boolean("remoteOnly").notNull().default(false),
+  experienceLevels: text("experienceLevels").array().notNull().default([]),
+  minSalary: integer("minSalary"),
+  updatedAt: timestamp("updatedAt", { mode: "date", withTimezone: true }).notNull().defaultNow(),
 });
 
 export const accounts = pgTable(

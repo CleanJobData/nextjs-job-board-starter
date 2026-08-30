@@ -9,6 +9,7 @@ import { PageContainer } from "@/components/ui/PageContainer";
 import { RetryButton } from "@/jobs/components/RetryButton";
 import { JobBoardSearchParams } from "@/jobs/lib/query-types";
 import { ApiError } from "@/lib/api/client";
+import { getPreferredJobQuery } from "@/features/onboarding/lib/preferences";
 
 interface JobsPageProps {
   searchParams: Promise<JobBoardSearchParams>;
@@ -17,7 +18,19 @@ interface JobsPageProps {
 export default async function JobsPage({ searchParams }: JobsPageProps) {
   const rawParams = await searchParams;
   const normalizedParams = normalizeSearchParams(rawParams);
-  const apiQuery = mapSearchParamsToQuery(normalizedParams);
+  const explicitQuery = mapSearchParamsToQuery(normalizedParams);
+
+  // Saved onboarding preferences seed the feed ONLY when the visitor
+  // arrived with no filters of their own - the moment any search param is
+  // present, it wins outright, so the board never silently withholds
+  // results someone explicitly asked for. Signed-out visitors, deployments
+  // with onboarding off, and users who skipped it all get null here and see
+  // the plain unfiltered feed.
+  const hasExplicitFilters = Object.keys(explicitQuery).some(
+    (k) => k !== "limit" && k !== "cursor"
+  );
+  const preferredQuery = hasExplicitFilters ? null : await getPreferredJobQuery();
+  const apiQuery = preferredQuery ? { ...explicitQuery, ...preferredQuery } : explicitQuery;
 
   let initialData;
   let error: string | null = null;
