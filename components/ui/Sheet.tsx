@@ -49,7 +49,7 @@ export function Sheet({ isOpen, onClose, children, className, title = "Job Detai
               >
                 <DialogPanel
                   className={cn(
-                    "pointer-events-auto w-screen max-w-4xl border-l border-border bg-card shadow-2xl",
+                    "pointer-events-auto w-screen max-w-4xl border-l border-border bg-card shadow-lg",
                     className,
                   )}
                 >

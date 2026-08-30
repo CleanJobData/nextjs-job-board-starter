@@ -25,9 +25,15 @@ function Meta({
   accent?: boolean;
 }) {
   return (
-    <div className={`flex items-center gap-2 ${accent ? "text-primary" : "text-muted-foreground"}`}>
+    // min-w-0 on both the row and the label: a flex item won't shrink below
+    // its content width by default, so `truncate` alone silently does
+    // nothing and long values (a full "City, Region, Country" location, a
+    // wide salary range) overflow the card instead of ellipsing.
+    <div
+      className={`flex items-center gap-2 min-w-0 ${accent ? "text-primary" : "text-muted-foreground"}`}
+    >
       <Icon className="h-3.5 w-3.5 shrink-0" />
-      <span className="truncate">{children}</span>
+      <span className="truncate min-w-0">{children}</span>
     </div>
   );
 }
@@ -62,14 +68,17 @@ export function JobCard({ job }: JobCardProps) {
               imageClassName="rounded-lg p-1"
               iconClassName="h-4 w-4 text-muted-foreground"
             />
-            <div className="min-w-0 space-y-0.5">
+            <div className="min-w-0 flex-1 space-y-0.5">
               {/* Title leads, company follows - the job is what someone is
                   scanning for. This used to be inverted, with the company
                   name set in tiny uppercase letter-spaced text above a
-                  bolder title, which read as a label stuck on a heading. */}
+                  bolder title, which read as a label stuck on a heading.
+                  break-words so a single very long unbroken token (some
+                  titles are one long hyphen-free string) wraps instead of
+                  pushing the card's layout wider than its column. */}
               <Typography
                 variant="large"
-                className="line-clamp-2 leading-snug group-hover:text-primary transition-colors"
+                className="line-clamp-2 leading-snug break-words group-hover:text-primary transition-colors"
               >
                 {job.title}
               </Typography>

@@ -114,7 +114,7 @@ export function Popover({
         createPortal(
           <div
             className={cn(
-              "fixed z-[9999] rounded-xl border border-border bg-card/95 p-4 shadow-2xl backdrop-blur-md animate-in fade-in zoom-in-95 duration-150 ease-out",
+              "fixed z-[9999] rounded-xl border border-border bg-card/95 p-4 shadow-lg backdrop-blur-md animate-in fade-in zoom-in-95 duration-150 ease-out",
               mode === "hover" && "pointer-events-none",
               className
             )}

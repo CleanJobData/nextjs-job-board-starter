@@ -63,7 +63,7 @@ export function Listbox({
         multiple={multiple as any}
       >
         <div className="relative mt-1">
-          <ListboxButton className="relative w-full h-11 cursor-default rounded-lg border border-input bg-input-background pl-3 pr-10 text-left text-sm shadow-sm transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-ring/50">
+          <ListboxButton className="relative w-full h-11 cursor-default rounded-lg border border-input bg-input-background pl-3 pr-10 text-left text-sm transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-ring/50">
             <div className="flex items-center gap-2">
               {leftIcon && (
                 <span className="text-muted-foreground [&_svg]:h-4 [&_svg]:w-4">
@@ -81,7 +81,7 @@ export function Listbox({
             </div>
             <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
               <FaAngleDown
-                className="h-4 w-4 text-muted-foreground"
+                className="h-3.5 w-3.5 text-muted-foreground"
                 aria-hidden="true"
               />
             </span>
@@ -92,7 +92,7 @@ export function Listbox({
             leaveFrom="opacity-100"
             leaveTo="opacity-0"
           >
-            <ListboxOptions className="absolute z-50 mt-1 max-h-60 min-h-[50px] w-full overflow-auto rounded-md border border-border bg-card py-1 text-base shadow-lg focus:outline-none sm:text-sm">
+            <ListboxOptions className="absolute z-50 mt-1 max-h-60 min-h-[50px] w-full overflow-auto rounded-md border border-border bg-card py-1 text-base shadow-md focus:outline-none sm:text-sm">
               {options.map((option) => {
                 const isSelected = multiple
                   ? selectedValues?.includes(option.value)
@@ -120,7 +120,7 @@ export function Listbox({
                       </span>
                       {isSelected ? (
                         <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-primary">
-                          <FaCheck className="h-4 w-4" aria-hidden="true" />
+                          <FaCheck className="h-3.5 w-3.5" aria-hidden="true" />
                         </span>
                       ) : null}
                     </>

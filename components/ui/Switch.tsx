@@ -15,7 +15,7 @@ export function Switch({ checked, onChange, label, className }: SwitchProps) {
     <label
       className={cn(
         "flex items-center justify-between gap-3 cursor-pointer group transition-all",
-        label ? "w-full h-11 px-3 rounded-lg border border-input bg-input-background shadow-sm" : "",
+        label ? "w-full h-11 px-3 rounded-lg border border-input bg-input-background" : "",
         className
       )}
     >

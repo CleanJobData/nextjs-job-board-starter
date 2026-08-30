@@ -26,14 +26,14 @@ export function ComboboxInput({
   ...props
 }: any) {
   return (
-    <div className="relative w-full h-11 cursor-default overflow-hidden rounded-lg border border-input bg-input-background text-left text-sm shadow-sm transition-all focus-within:ring-2 focus-within:ring-ring/50">
+    <div className="relative w-full h-11 cursor-default overflow-hidden rounded-lg border border-input bg-input-background text-left text-sm transition-all focus-within:ring-2 focus-within:ring-ring/50">
       <div className="flex items-center px-3 h-full">
         {leftIcon ? (
           <span className="mr-2 text-muted-foreground [&_svg]:h-4 [&_svg]:w-4">
             {leftIcon}
           </span>
         ) : (
-          <FaMagnifyingGlass className="mr-2 h-4 w-4 text-muted-foreground" />
+          <FaMagnifyingGlass className="mr-2 h-3.5 w-3.5 text-muted-foreground" />
         )}
         <HeadlessComboboxInput
           className={cn(
@@ -45,7 +45,7 @@ export function ComboboxInput({
         />
         <HeadlessComboboxButton className="flex items-center">
           <FaArrowsUpDown
-            className="h-4 w-4 text-muted-foreground opacity-80"
+            className="h-3.5 w-3.5 text-muted-foreground opacity-80"
             aria-hidden="true"
           />
         </HeadlessComboboxButton>
@@ -69,7 +69,7 @@ export function ComboboxOptions({
     >
       <HeadlessComboboxOptions
         className={cn(
-          "absolute z-50 mt-1 max-h-60 min-h-[50px] w-full overflow-auto rounded-lg border border-border bg-card text-base shadow-xl focus:outline-none sm:text-sm",
+          "absolute z-50 mt-1 max-h-60 min-h-[50px] w-full overflow-auto rounded-lg border border-border bg-card text-base shadow-md focus:outline-none sm:text-sm",
           className,
         )}
         {...props}
@@ -115,7 +115,7 @@ export function ComboboxOption({
           </span>
           {selected ? (
             <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-primary">
-                        <FaCheck className="h-4 w-4" aria-hidden="true" />
+                        <FaCheck className="h-3.5 w-3.5" aria-hidden="true" />
             </span>
           ) : null}
         </>

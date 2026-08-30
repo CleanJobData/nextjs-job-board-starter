@@ -54,7 +54,7 @@ export function Dialog({
             >
               <DialogPanel
                 className={cn(
-                  "w-full max-w-md transform overflow-hidden rounded-t-2xl sm:rounded-lg bg-card p-card text-left align-middle shadow-xl transition-all border border-border",
+                  "w-full max-w-md transform overflow-hidden rounded-t-2xl sm:rounded-lg bg-card p-card text-left align-middle shadow-lg transition-all border border-border",
                   className,
                 )}
               >
@@ -79,7 +79,7 @@ export function Dialog({
                     className="ml-auto shrink-0 rounded-full p-1 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
                     onClick={onClose}
                   >
-                    <FaXmark className="h-5 w-5" />
+                    <FaXmark className="h-4 w-4" />
                   </button>
                 </div>
                 {children}

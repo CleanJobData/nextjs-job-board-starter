@@ -48,6 +48,9 @@ export function ApplicationDetailPanel({
   onDelete: (id: string) => void;
 }) {
   const [notes, setNotes] = useState(application?.notes ?? "");
+  /** Last value actually persisted - compared against the draft to know whether there are unsaved edits. */
+  const [savedNotes, setSavedNotes] = useState(application?.notes ?? "");
+  const [notesSaving, setNotesSaving] = useState(false);
   const [, startTransition] = useTransition();
   const [jobDetail, setJobDetail] = useState<ApplicationJobDetail | null>(null);
   const [loadingDetail, setLoadingDetail] = useState(false);
@@ -55,7 +58,10 @@ export function ApplicationDetailPanel({
   // Reset the local notes draft whenever a different application is opened.
   useEffect(() => {
     setNotes(application?.notes ?? "");
+    setSavedNotes(application?.notes ?? "");
   }, [application?.id]);
+
+  const notesDirty = notes !== savedNotes;
 
   // Fetch extra job context (description/location/salary) on open - not
   // stored on the application row itself, since it's genuinely live/full
@@ -84,16 +90,20 @@ export function ApplicationDetailPanel({
     });
   }
 
-  function handleNotesBlur() {
+  function handleSaveNotes() {
     if (!application) return;
     const previous = application.notes ?? "";
+    setNotesSaving(true);
     onNotesChange(application.id, notes);
     startTransition(async () => {
       try {
         await updateApplicationNotes(application.id, notes);
+        setSavedNotes(notes);
       } catch {
         onNotesChange(application.id, previous);
         setNotes(previous);
+      } finally {
+        setNotesSaving(false);
       }
     });
   }
@@ -174,14 +184,36 @@ export function ApplicationDetailPanel({
           </div>
 
           <div className="space-y-2">
-            <Typography variant="small" className="font-medium text-muted-foreground">
-              Notes
-            </Typography>
+            <div className="flex items-center justify-between gap-3">
+              <Typography variant="small" className="font-medium text-muted-foreground">
+                Notes
+              </Typography>
+              {/* An explicit Save button, not just save-on-blur: blur-saving
+                  gave no feedback at all, so it read as "my notes weren't
+                  saved" even when they were. Blur still saves (below) so a
+                  click-away never silently loses work - the button is the
+                  visible confirmation, and it reports its own state. */}
+              <div className="flex items-center gap-2">
+                {!notesDirty && !notesSaving && savedNotes !== "" && (
+                  <Typography variant="small" className="text-muted-foreground">
+                    Saved
+                  </Typography>
+                )}
+                <Button
+                  size="sm"
+                  variant={notesDirty ? "default" : "ghost"}
+                  disabled={!notesDirty || notesSaving}
+                  onClick={handleSaveNotes}
+                >
+                  {notesSaving ? "Saving..." : "Save"}
+                </Button>
+              </div>
+            </div>
             <Textarea
               key={application.id}
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              onBlur={handleNotesBlur}
+              onBlur={() => notesDirty && handleSaveNotes()}
               rows={8}
               placeholder="Add a note - interview prep, contact name, anything you want to remember..."
             />
