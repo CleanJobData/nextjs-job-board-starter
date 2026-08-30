@@ -35,6 +35,8 @@ export const applications = pgTable(
     jobId: text("jobId").references(() => jobs.id, { onDelete: "set null" }),
     jobTitle: text("jobTitle").notNull(),
     companyName: text("companyName"),
+    /** Snapshot of the company's logo URL at track time, same reasoning as companyName/jobUrl - avoids a live join just to render an avatar, and stays meaningful even if the underlying job/company row is later deleted. */
+    companyLogo: text("companyLogo"),
     jobUrl: text("jobUrl"),
     status: text("status")
       .$type<"saved" | "applied" | "interviewing" | "offer" | "rejected" | "withdrawn">()

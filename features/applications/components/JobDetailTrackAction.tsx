@@ -9,6 +9,7 @@ export function JobDetailTrackAction({ job }: { job: Job }) {
         jobId: job.id,
         jobTitle: job.title,
         companyName: job.company?.name ?? null,
+        companyLogo: job.company?.logo ?? null,
         jobUrl: job.application_url,
       }}
     />

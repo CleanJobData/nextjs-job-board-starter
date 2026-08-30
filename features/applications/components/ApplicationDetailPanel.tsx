@@ -8,10 +8,14 @@ import { Listbox } from "@/components/ui/Listbox";
 import { Button } from "@/components/ui/Button";
 import { Textarea } from "@/components/ui/Textarea";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
+import { CompanyLogo } from "@/jobs/components/CompanyLogo";
+import { Skeleton } from "@/components/ui/Skeleton";
 import {
   deleteApplication,
+  getApplicationJobDetail,
   updateApplicationNotes,
   updateApplicationStatus,
+  type ApplicationJobDetail,
   type ApplicationStatus,
 } from "../actions/applications";
 import type { ApplicationRowData } from "./types";
@@ -45,11 +49,27 @@ export function ApplicationDetailPanel({
 }) {
   const [notes, setNotes] = useState(application?.notes ?? "");
   const [, startTransition] = useTransition();
+  const [jobDetail, setJobDetail] = useState<ApplicationJobDetail | null>(null);
+  const [loadingDetail, setLoadingDetail] = useState(false);
 
   // Reset the local notes draft whenever a different application is opened.
   useEffect(() => {
     setNotes(application?.notes ?? "");
   }, [application?.id]);
+
+  // Fetch extra job context (description/location/salary) on open - not
+  // stored on the application row itself, since it's genuinely live/full
+  // data not needed until someone actually opens the panel. No jobId means
+  // the underlying job was never synced or has since been deleted - the
+  // panel still works fine with just the snapshot fields in that case.
+  useEffect(() => {
+    setJobDetail(null);
+    if (!application?.jobId) return;
+    setLoadingDetail(true);
+    getApplicationJobDetail(application.jobId)
+      .then(setJobDetail)
+      .finally(() => setLoadingDetail(false));
+  }, [application?.id, application?.jobId]);
 
   function handleStatusChange(next: ApplicationStatus) {
     if (!application) return;
@@ -89,23 +109,52 @@ export function ApplicationDetailPanel({
     <Sheet isOpen={Boolean(application)} onClose={onClose} title="Application Details" className="max-w-lg">
       {application && (
         <div className="flex flex-col gap-6">
-          <div className="space-y-1">
-            <Typography variant="h3">{application.jobTitle}</Typography>
-            {application.companyName && (
-              <Typography className="text-muted-foreground">{application.companyName}</Typography>
+          <div className="flex items-start gap-3">
+            {application.companyLogo && (
+              <CompanyLogo src={application.companyLogo} className="h-10 w-10 rounded-lg mt-0.5" iconClassName="h-4 w-4" />
             )}
-            {application.jobUrl && (
-              <a
-                href={application.jobUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 text-sm text-primary hover:underline underline-offset-2 mt-1"
-              >
-                View original posting
-                <FaArrowUpRightFromSquare className="h-3 w-3" />
-              </a>
-            )}
+            <div className="space-y-1 min-w-0">
+              <Typography variant="h3">{application.jobTitle}</Typography>
+              {application.companyName && (
+                <Typography className="text-muted-foreground">{application.companyName}</Typography>
+              )}
+              {application.jobUrl && (
+                <a
+                  href={application.jobUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 text-sm text-primary hover:underline underline-offset-2 mt-1"
+                >
+                  View original posting
+                  <FaArrowUpRightFromSquare className="h-3 w-3" />
+                </a>
+              )}
+            </div>
           </div>
+
+          {loadingDetail ? (
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-2/3" />
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-4 w-full" />
+            </div>
+          ) : jobDetail ? (
+            <div className="space-y-3">
+              {(jobDetail.locationText || jobDetail.hasRemote || jobDetail.employmentType || jobDetail.salaryText) && (
+                <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted-foreground">
+                  {jobDetail.locationText && <span>{jobDetail.locationText}</span>}
+                  {jobDetail.hasRemote && <span>Remote</span>}
+                  {jobDetail.employmentType && <span>{jobDetail.employmentType}</span>}
+                  {jobDetail.salaryText && <span>{jobDetail.salaryText}</span>}
+                </div>
+              )}
+              {jobDetail.description && (
+                <Typography variant="small" className="text-muted-foreground whitespace-pre-line line-clamp-6">
+                  {jobDetail.description}
+                </Typography>
+              )}
+            </div>
+          ) : null}
 
           <div className="space-y-2">
             <Typography variant="small" className="font-medium text-muted-foreground">

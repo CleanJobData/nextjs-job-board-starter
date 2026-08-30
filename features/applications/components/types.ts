@@ -5,6 +5,7 @@ export type ApplicationRowData = {
   jobId: string | null;
   jobTitle: string;
   companyName: string | null;
+  companyLogo: string | null;
   jobUrl: string | null;
   status: ApplicationStatus;
   notes: string | null;

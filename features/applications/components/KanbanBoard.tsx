@@ -21,6 +21,22 @@ const COLUMNS: { value: ApplicationStatus; label: string }[] = [
   { value: "withdrawn", label: "Withdrawn" },
 ];
 
+/**
+ * One soft background/border tint per status, built from existing tokens
+ * only (primary/accent/warning/destructive/muted - never raw hex), applied
+ * to the column itself rather than per-card chrome. A column-level tint is
+ * one clear signal per status instead of the earlier attempt's repeated
+ * dot+border+badge combination on every card, which read as noisy.
+ */
+const COLUMN_STYLES: Record<ApplicationStatus, string> = {
+  saved: "bg-muted/40 border-border",
+  applied: "bg-primary/5 border-primary/20",
+  interviewing: "bg-accent/50 border-accent-foreground/20",
+  offer: "bg-warning/10 border-warning/30",
+  rejected: "bg-destructive/5 border-destructive/20",
+  withdrawn: "bg-secondary/60 border-border",
+};
+
 function Column({
   status,
   label,
@@ -40,8 +56,9 @@ function Column({
     <div
       ref={setNodeRef}
       className={cn(
-        "flex flex-col gap-3 w-72 shrink-0 rounded-lg p-2 transition-colors",
-        isOver && "bg-muted/50"
+        "flex flex-col gap-3 w-72 shrink-0 rounded-lg border p-2 transition-colors",
+        COLUMN_STYLES[status],
+        isOver && "ring-1 ring-inset ring-foreground/20"
       )}
     >
       <div className="flex items-center justify-between px-1.5">
@@ -54,7 +71,7 @@ function Column({
       </div>
       <div className="flex flex-col gap-2 min-h-[80px]">
         {applications.length === 0 ? (
-          <div className="rounded-lg border border-dashed border-border py-8 text-center">
+          <div className="rounded-lg border border-dashed border-border/70 py-8 text-center">
             <Typography variant="small" className="text-muted-foreground/70">
               No applications
             </Typography>

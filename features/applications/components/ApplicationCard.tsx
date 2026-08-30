@@ -4,6 +4,7 @@ import { useDraggable } from "@dnd-kit/core";
 import { FaNoteSticky } from "react-icons/fa6";
 import { Card } from "@/components/ui/Card";
 import { Typography } from "@/components/ui/Typography";
+import { CompanyLogo } from "@/jobs/components/CompanyLogo";
 import { cn } from "@/lib/utils";
 import type { ApplicationRowData } from "./types";
 
@@ -51,20 +52,31 @@ export function ApplicationCard({
         if (e.key === "Enter" || e.key === " ") onOpen();
       }}
       className={cn(
-        "p-3.5 flex flex-col gap-2 cursor-pointer select-none shadow-none",
+        "p-3.5 flex flex-col gap-2 cursor-grab select-none shadow-none",
         "transition-colors hover:border-foreground/20 active:cursor-grabbing",
         isDragging && "opacity-50 z-10 shadow-md",
         pending && "opacity-70"
       )}
     >
-      <Typography className="font-medium text-sm leading-snug line-clamp-2">
-        {application.jobTitle}
-      </Typography>
-      {application.companyName && (
-        <Typography variant="small" className="text-muted-foreground truncate">
-          {application.companyName}
-        </Typography>
-      )}
+      <div className="flex items-start gap-2.5">
+        {application.companyLogo && (
+          <CompanyLogo
+            src={application.companyLogo}
+            className="h-6 w-6 rounded-md mt-0.5"
+            iconClassName="h-3 w-3"
+          />
+        )}
+        <div className="min-w-0 flex-1">
+          <Typography className="font-medium text-sm leading-snug line-clamp-2">
+            {application.jobTitle}
+          </Typography>
+          {application.companyName && (
+            <Typography variant="small" className="text-muted-foreground/80 text-xs truncate">
+              {application.companyName}
+            </Typography>
+          )}
+        </div>
+      </div>
       <div className="flex items-center justify-between gap-2">
         <Typography variant="small" className="text-muted-foreground/70">
           {daysAgo === 0 ? "Today" : `${daysAgo}d ago`}
