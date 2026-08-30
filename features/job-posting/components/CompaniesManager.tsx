@@ -1,10 +1,13 @@
 "use client";
 
 import * as React from "react";
+import { FaBuilding } from "react-icons/fa6";
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent } from "@/components/ui/Card";
 import { Dialog } from "@/components/ui/Dialog";
 import { Typography } from "@/components/ui/Typography";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { CompanyLogo } from "@/jobs/components/CompanyLogo";
 import { CompanyForm } from "./CompanyForm";
 
 type CompanyRow = {
@@ -15,6 +18,8 @@ type CompanyRow = {
   industry: string | null;
   headquarters: string | null;
   logo: string | null;
+  /** Cheap to compute from the postings the page already fetched (see route's page.tsx) - a real, useful count, not decoration. */
+  postingCount: number;
 };
 
 interface CompaniesManagerProps {
@@ -36,33 +41,38 @@ export function CompaniesManager({ companies }: CompaniesManagerProps) {
 
   return (
     <div className="space-y-4">
+      <div className="flex items-center justify-end">
+        <Button variant="secondary" size="sm" onClick={() => setCreating(true)}>
+          Add another company
+        </Button>
+      </div>
+
       {companies.length === 0 ? (
-        <Typography className="text-muted-foreground">
-          You don&apos;t have any companies yet.
-        </Typography>
+        <EmptyState
+          icon={<FaBuilding />}
+          title="No companies yet"
+          description="Create a company profile to start posting jobs under it."
+        />
       ) : (
         <div className="space-y-3">
           {companies.map((company) => (
             <Card key={company.id}>
               <CardContent className="flex items-center justify-between gap-4 py-4">
                 <div className="flex items-center gap-3 min-w-0">
-                  {company.logo ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={company.logo}
-                      alt=""
-                      className="h-10 w-10 rounded object-cover border border-border shrink-0"
-                    />
-                  ) : (
-                    <div className="h-10 w-10 rounded bg-muted shrink-0" />
-                  )}
+                  <CompanyLogo src={company.logo} className="h-10 w-10 rounded-lg shrink-0" iconClassName="h-4 w-4" />
                   <div className="min-w-0">
                     <Typography className="font-medium truncate">{company.name}</Typography>
-                    {company.industry && (
-                      <Typography variant="small" className="text-muted-foreground truncate">
-                        {company.industry}
+                    <div className="flex flex-wrap items-center gap-x-2 text-muted-foreground">
+                      {company.industry && (
+                        <Typography variant="small" className="truncate">
+                          {company.industry}
+                        </Typography>
+                      )}
+                      {company.industry && <span className="text-xs">·</span>}
+                      <Typography variant="small">
+                        {company.postingCount} {company.postingCount === 1 ? "job posting" : "job postings"}
                       </Typography>
-                    )}
+                    </div>
                   </div>
                 </div>
                 <Button variant="outline" size="sm" onClick={() => setEditing(company)}>
@@ -73,10 +83,6 @@ export function CompaniesManager({ companies }: CompaniesManagerProps) {
           ))}
         </div>
       )}
-
-      <Button variant="secondary" onClick={() => setCreating(true)}>
-        Add another company
-      </Button>
 
       <Dialog isOpen={!!editing} onClose={() => setEditing(null)} className="max-w-lg">
         {editing && (
