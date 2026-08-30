@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Textarea } from "@/components/ui/Textarea";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/Card";
+import { Typography } from "@/components/ui/Typography";
 import { createCompany, updateCompany } from "../actions/companies";
 
 type ExistingCompany = {
@@ -77,20 +77,18 @@ export function CompanyForm({ company, onSuccess }: CompanyFormProps) {
   }
 
   return (
-    <Card>
-      <form action={onSubmit}>
-        <CardHeader>
-          <CardTitle className="text-xl">
-            {isEdit ? `Edit ${company.name}` : "Create your company profile"}
-          </CardTitle>
-          <CardDescription>
-            {isEdit
-              ? "Update your company's details below."
-              : "You need a company profile before you can post a job. Already have a company on CleanJobData? Claiming it is coming soon - create a new profile for now."}
-          </CardDescription>
-        </CardHeader>
-
-        <CardContent className="space-y-4 pt-0">
+    // No Card wrapper: this form is always hosted inside a Dialog, which
+    // already provides the panel chrome (bg-card, border, padding) and the
+    // title. Rendering a Card here too produced a visible box-inside-a-box.
+    // The host owns the container; this component owns only the fields.
+    <form action={onSubmit}>
+      <div className="space-y-4">
+        {!isEdit && (
+          <Typography variant="muted">
+            You need a company profile before you can post a job. Already have a company on
+            CleanJobData? Claiming it is coming soon - create a new profile for now.
+          </Typography>
+        )}
           <div className="space-y-1">
             <label className="text-sm font-medium">
               Company name <span className="text-destructive">*</span>
@@ -165,15 +163,14 @@ export function CompanyForm({ company, onSuccess }: CompanyFormProps) {
             )}
           </div>
 
-          {error && <p className="text-sm text-destructive">{error}</p>}
-        </CardContent>
+        {error && <p className="text-sm text-destructive">{error}</p>}
 
-        <CardFooter>
-          <Button type="submit" disabled={pending}>
+        <div className="flex justify-end gap-2 pt-2 border-t border-border">
+          <Button type="submit" disabled={pending} className="mt-4">
             {pending ? (isEdit ? "Saving..." : "Creating...") : isEdit ? "Save changes" : "Create company"}
           </Button>
-        </CardFooter>
-      </form>
-    </Card>
+        </div>
+      </div>
+    </form>
   );
 }

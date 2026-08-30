@@ -10,13 +10,14 @@ import { Textarea } from "@/components/ui/Textarea";
 import { Listbox } from "@/components/ui/Listbox";
 import { Switch } from "@/components/ui/Switch";
 import { Typography } from "@/components/ui/Typography";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/Card";
 import { createJobPosting } from "../actions/job-postings";
 
 type CompanyOption = { id: string; name: string };
 
 interface JobPostingFormProps {
   companies: CompanyOption[];
+  /** Called after a successful create - lets the Dialog hosting this form close itself. */
+  onSuccess?: () => void;
 }
 
 /**
@@ -26,7 +27,7 @@ interface JobPostingFormProps {
  * - this form assumes at least one company option exists (the page below
  * only renders it once companies.length > 0).
  */
-export function JobPostingForm({ companies }: JobPostingFormProps) {
+export function JobPostingForm({ companies, onSuccess }: JobPostingFormProps) {
   const router = useRouter();
   const [locations, setLocations] = React.useState<GeoSuggestResult[]>([]);
   // companyId and hasRemote move from native FormData reads to controlled
@@ -70,6 +71,7 @@ export function JobPostingForm({ companies }: JobPostingFormProps) {
           applicationUrl: String(formData.get("applicationUrl") || ""),
         });
         router.refresh();
+        onSuccess?.();
       } catch (e: any) {
         setError(e.message ?? "Failed to create job posting.");
       }
@@ -77,17 +79,15 @@ export function JobPostingForm({ companies }: JobPostingFormProps) {
   }
 
   return (
-    <Card>
-      <form action={onSubmit}>
-        <CardHeader>
-          <CardTitle className="text-xl">Post a Job</CardTitle>
-          <CardDescription>
-            Every new posting is reviewed by an admin before it appears publicly. It will show as
-            &quot;Pending&quot; on the list above until then.
-          </CardDescription>
-        </CardHeader>
+    // No Card wrapper - this form is hosted inside a Dialog, which already
+    // supplies the panel chrome and title. See CompanyForm for the same note.
+    <form action={onSubmit}>
+      <div className="space-y-6">
+        <Typography variant="muted">
+          Every new posting is reviewed by an admin before it appears publicly. It will show as
+          &quot;Pending&quot; on your list until then.
+        </Typography>
 
-        <CardContent className="space-y-6 pt-0">
           <div className="space-y-4">
             <Typography variant="small" className="text-muted-foreground uppercase tracking-wide">
               Basics
@@ -175,15 +175,14 @@ export function JobPostingForm({ companies }: JobPostingFormProps) {
             </p>
           </div>
 
-          {error && <p className="text-sm text-destructive">{error}</p>}
-        </CardContent>
+        {error && <p className="text-sm text-destructive">{error}</p>}
 
-        <CardFooter>
+        <div className="flex justify-end border-t border-border pt-4">
           <Button type="submit" disabled={pending}>
             {pending ? "Posting..." : "Submit for review"}
           </Button>
-        </CardFooter>
-      </form>
-    </Card>
+        </div>
+      </div>
+    </form>
   );
 }

@@ -58,7 +58,7 @@ export function Dialog({
                   className,
                 )}
               >
-                <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-4 mb-4">
                   {title && (
                     <DialogTitle
                       as="h3"
@@ -67,9 +67,16 @@ export function Dialog({
                       {title}
                     </DialogTitle>
                   )}
+                  {/* ml-auto, not justify-between on the parent: with no
+                      `title` the close button was the row's only child, so
+                      justify-between left it sitting at the start (visually
+                      the top-LEFT of the dialog) instead of the top-right
+                      where a close affordance belongs. ml-auto pins it right
+                      whether or not a title is present. */}
                   <button
                     type="button"
-                    className="rounded-full p-1 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+                    aria-label="Close"
+                    className="ml-auto shrink-0 rounded-full p-1 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
                     onClick={onClose}
                   >
                     <FaXmark className="h-5 w-5" />

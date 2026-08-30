@@ -41,9 +41,13 @@ export function CompaniesManager({ companies }: CompaniesManagerProps) {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-end">
+      {/* Title lives in this row, not above it in the page: the "Add
+          company" CTA belongs on the same baseline as the section heading
+          it acts on, rather than floating on its own line underneath. */}
+      <div className="flex items-center justify-between gap-4">
+        <Typography variant="h4">Your companies</Typography>
         <Button variant="secondary" size="sm" onClick={() => setCreating(true)}>
-          Add another company
+          Add company
         </Button>
       </div>
 
@@ -84,13 +88,23 @@ export function CompaniesManager({ companies }: CompaniesManagerProps) {
         </div>
       )}
 
-      <Dialog isOpen={!!editing} onClose={() => setEditing(null)} className="max-w-lg">
+      <Dialog
+        isOpen={!!editing}
+        onClose={() => setEditing(null)}
+        title={editing ? `Edit ${editing.name}` : undefined}
+        className="max-w-lg"
+      >
         {editing && (
           <CompanyForm company={editing} onSuccess={() => setEditing(null)} />
         )}
       </Dialog>
 
-      <Dialog isOpen={creating} onClose={() => setCreating(false)} className="max-w-lg">
+      <Dialog
+        isOpen={creating}
+        onClose={() => setCreating(false)}
+        title="Create a company"
+        className="max-w-lg"
+      >
         <CompanyForm onSuccess={() => setCreating(false)} />
       </Dialog>
     </div>
