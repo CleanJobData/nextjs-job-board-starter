@@ -41,7 +41,14 @@ export async function SiteHeader() {
       ? [{ label: "Sign In", href: "/sign-in" }]
       : [];
 
-  const navItems = [...activeNavItems, ...authNavItems];
+  // "Browse Jobs" is a fixed, always-present core link (not routed through
+  // features/registry.ts's navItems() composition) - job browsing itself
+  // isn't an optional feature, it's core, so it doesn't belong in the same
+  // list as feature-registered items. This became necessary once the
+  // logo/home link started pointing at a separate marketing landing page
+  // instead of the job search results - before that, "/" already was the
+  // browse page, so no explicit nav entry was needed.
+  const navItems = [{ label: "Browse Jobs", href: "/jobs" }, ...activeNavItems, ...authNavItems];
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">

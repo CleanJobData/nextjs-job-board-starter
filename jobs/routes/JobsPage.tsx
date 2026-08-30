@@ -10,11 +10,11 @@ import { RetryButton } from "@/jobs/components/RetryButton";
 import { JobBoardSearchParams } from "@/jobs/lib/query-types";
 import { ApiError } from "@/lib/api/client";
 
-interface HomePageProps {
+interface JobsPageProps {
   searchParams: Promise<JobBoardSearchParams>;
 }
 
-export default async function HomePage({ searchParams }: HomePageProps) {
+export default async function JobsPage({ searchParams }: JobsPageProps) {
   const rawParams = await searchParams;
   const normalizedParams = normalizeSearchParams(rawParams);
   const apiQuery = mapSearchParamsToQuery(normalizedParams);
@@ -35,14 +35,14 @@ export default async function HomePage({ searchParams }: HomePageProps) {
 
   return (
     <PageContainer size="full">
-      {/* Hero Section */}
-      <div className="space-y-4 max-w-3xl mb-16">
-        <Typography variant="h1" className="text-4xl md:text-6xl font-extrabold tracking-tight">
-          Find your next <span className="text-primary">dream job.</span>
-        </Typography>
-        <Typography variant="lead" className="text-xl text-muted-foreground max-w-2xl">
-          Discover curated opportunities for data professionals, engineers, and designers.
-          Structured job data for the modern workforce.
+      {/* This page is search results, not the pitch - the "Find your next
+          dream job" hero now lives on the landing page (components/landing/),
+          which is what a visitor sees before choosing to browse. Repeating
+          the marketing pitch here, after they've already clicked through,
+          would just push the actual results further down the page. */}
+      <div className="mb-8">
+        <Typography variant="h1" className="text-3xl font-bold tracking-tight">
+          Browse Jobs
         </Typography>
       </div>
 

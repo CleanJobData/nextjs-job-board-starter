@@ -22,7 +22,7 @@ export function ApplicationsList({ applications }: { applications: ApplicationRo
         icon={<FaClipboardList />}
         title="No tracked applications yet"
         description="Browse jobs and track the ones you apply to, so you can follow their status here."
-        action={<Button href="/">Browse jobs</Button>}
+        action={<Button href="/jobs">Browse jobs</Button>}
       />
     );
   }

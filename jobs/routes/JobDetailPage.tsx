@@ -93,7 +93,7 @@ export default async function JobPage({ params }: JobPageProps) {
         />
         <div className="mb-8">
           <Button variant="ghost" size="sm" asChild className="-ml-2 text-muted-foreground">
-            <Link href="/">
+            <Link href="/jobs">
               <FaChevronLeft className="mr-1 h-4 w-4" />
               Back to Jobs
             </Link>
@@ -137,7 +137,7 @@ export default async function JobPage({ params }: JobPageProps) {
           We couldn't load the job details. Please try again later.
         </Typography>
         <Button asChild>
-          <Link href="/">Return to Job Board</Link>
+          <Link href="/jobs">Return to Job Board</Link>
         </Button>
       </PageContainer>
     );
