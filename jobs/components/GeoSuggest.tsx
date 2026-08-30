@@ -112,7 +112,7 @@ export function GeoSuggest({
             <Badge
               key={`${loc.kind}-${loc.display_label}`}
               variant="accent"
-              className="gap-1 pr-1 text-[10px] h-6 uppercase tracking-wider"
+              className="gap-1 pr-1 text-xs h-6 uppercase tracking-wider"
             >
               {loc.display_label}
               <button

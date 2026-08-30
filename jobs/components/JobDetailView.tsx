@@ -80,9 +80,7 @@ export function JobDetailView({ job, extraActions }: JobDetailViewProps) {
                 className="h-6 w-6 rounded-md bg-muted p-1"
                 iconClassName="h-3.5 w-3.5"
               />
-              <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-                {job.company?.name}
-              </span>
+              <Typography variant="overline">{job.company?.name}</Typography>
             </div>
 
             <Typography variant="h2" className="text-2xl md:text-3xl font-bold leading-tight">
@@ -261,12 +259,12 @@ export function JobDetailView({ job, extraActions }: JobDetailViewProps) {
                   {/* Specialties */}
                   {job.company.specialties && job.company.specialties.length > 0 && (
                     <div className="pt-2 space-y-2">
-                      <Typography variant="small" className="font-bold uppercase tracking-wider text-[10px] text-muted-foreground">
+                      <Typography variant="overline">
                         Specialties
                       </Typography>
                       <div className="flex flex-wrap gap-1.5">
                         {job.company.specialties.map((specialty, i) => (
-                          <Badge key={i} variant="outline" className="text-[10px] py-0 px-2 font-normal">
+                          <Badge key={i} variant="outline" className="py-0 px-2 font-normal">
                             {specialty}
                           </Badge>
                         ))}
@@ -277,7 +275,7 @@ export function JobDetailView({ job, extraActions }: JobDetailViewProps) {
                   {/* Team Members */}
                   {job.company.team && job.company.team.length > 0 && (
                     <div className="pt-2 space-y-3">
-                      <Typography variant="small" className="font-bold uppercase tracking-wider text-[10px] text-muted-foreground">
+                      <Typography variant="overline">
                         Team Members
                       </Typography>
                       <div className="flex flex-col gap-1">
@@ -304,7 +302,7 @@ export function JobDetailView({ job, extraActions }: JobDetailViewProps) {
                                     className="h-8 w-8 rounded-full object-cover"
                                   />
                                 ) : (
-                                  <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center text-[10px] font-bold">
+                                  <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center text-xs font-bold">
                                     {member.name?.charAt(0)}
                                   </div>
                                 )}
@@ -312,7 +310,7 @@ export function JobDetailView({ job, extraActions }: JobDetailViewProps) {
                                   <p className="text-xs font-semibold truncate group-hover/member:text-primary transition-colors">
                                     {member.name}
                                   </p>
-                                  <p className="text-[10px] text-muted-foreground truncate">
+                                  <p className="text-xs text-muted-foreground truncate">
                                     {member.title}
                                   </p>
                                 </div>
@@ -465,12 +463,12 @@ export function JobDetailView({ job, extraActions }: JobDetailViewProps) {
 
                 {job.company.specialties && job.company.specialties.length > 0 && (
                   <div className="pt-4 space-y-3">
-                    <Typography variant="small" className="font-bold uppercase tracking-wider text-[10px] text-muted-foreground">
+                    <Typography variant="overline">
                       Specialties
                     </Typography>
                     <div className="flex flex-wrap gap-1.5">
                       {job.company.specialties.map((specialty, i) => (
-                        <Badge key={i} variant="outline" className="text-[10px] py-0 px-2 font-normal">
+                        <Badge key={i} variant="outline" className="py-0 px-2 font-normal">
                           {specialty}
                         </Badge>
                       ))}
@@ -480,7 +478,7 @@ export function JobDetailView({ job, extraActions }: JobDetailViewProps) {
 
                 {job.company.team && job.company.team.length > 0 && (
                   <div className="pt-4 space-y-4">
-                    <Typography variant="small" className="font-bold uppercase tracking-wider text-[10px] text-muted-foreground">
+                    <Typography variant="overline">
                       Team Members
                     </Typography>
                     <div className="flex flex-col gap-1">
@@ -507,7 +505,7 @@ export function JobDetailView({ job, extraActions }: JobDetailViewProps) {
                                   className="h-8 w-8 rounded-full object-cover"
                                 />
                               ) : (
-                                <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center text-[10px] font-bold">
+                                <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center text-xs font-bold">
                                   {member.name?.charAt(0)}
                                 </div>
                               )}
@@ -515,7 +513,7 @@ export function JobDetailView({ job, extraActions }: JobDetailViewProps) {
                                 <p className="text-xs font-semibold truncate group-hover/member:text-primary transition-colors">
                                   {member.name}
                                 </p>
-                                <p className="text-[10px] text-muted-foreground truncate">
+                                <p className="text-xs text-muted-foreground truncate">
                                   {member.title}
                                 </p>
                               </div>

@@ -140,7 +140,7 @@ export function Listbox({
               <Badge
                 key={val}
                 variant="accent"
-                className="gap-1 pr-1 text-[10px] h-6 uppercase tracking-wider"
+                className="gap-1 pr-1 text-xs h-6 uppercase tracking-wider"
               >
                 {label}
                 <button

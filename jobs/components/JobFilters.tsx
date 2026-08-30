@@ -183,7 +183,7 @@ function FilterContent({
           </div>
           <div>
             <p className="text-sm font-semibold">Remote Only</p>
-            <p className="text-[10px] text-muted-foreground uppercase tracking-tight">
+            <p className="text-xs text-muted-foreground uppercase tracking-tight">
               Work from anywhere
             </p>
           </div>

@@ -41,12 +41,15 @@ export default async function JobsPage({ searchParams }: JobsPageProps) {
           the marketing pitch here, after they've already clicked through,
           would just push the actual results further down the page. */}
       <div className="mb-8">
-        <Typography variant="h1" className="text-3xl font-bold tracking-tight">
+        <Typography variant="h1" className="text-3xl font-bold tracking-tight mb-1">
           Browse Jobs
+        </Typography>
+        <Typography className="text-muted-foreground">
+          Filter by location, salary, experience level, and more.
         </Typography>
       </div>
 
-      <div className="flex flex-col lg:flex-row gap-12">
+      <div className="flex flex-col lg:flex-row gap-8">
         {/* Sidebar Filters */}
         <JobFilters />
 

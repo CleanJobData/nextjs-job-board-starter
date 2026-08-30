@@ -14,6 +14,24 @@ interface JobCardProps {
   job: Job;
 }
 
+/** One metadata item - fixed icon box so every row aligns on the same axis regardless of which glyph it uses. */
+function Meta({
+  icon: Icon,
+  children,
+  accent,
+}: {
+  icon: React.ComponentType<{ className?: string }>;
+  children: React.ReactNode;
+  accent?: boolean;
+}) {
+  return (
+    <div className={`flex items-center gap-2 ${accent ? "text-primary" : "text-muted-foreground"}`}>
+      <Icon className="h-3.5 w-3.5 shrink-0" />
+      <span className="truncate">{children}</span>
+    </div>
+  );
+}
+
 export function JobCard({ job }: JobCardProps) {
   const { label: locationLabel } = clampLocationLabel(job.location);
   const addedAgo = formatAddedAgo(job.published);
@@ -31,80 +49,65 @@ export function JobCard({ job }: JobCardProps) {
 
   return (
     <Link href={`/jobs/${job.id}`} scroll={false} className="block group h-full">
-      <Card className="hover:border-primary/50 transition-all duration-300 hover:shadow-md h-full flex flex-col">
-        <CardContent className="p-4 sm:p-6 space-y-5 flex flex-col flex-1">
-          <div className="flex items-start justify-between gap-4">
-            <div className="flex items-center gap-4">
-              <CompanyLogo
-                src={job.company?.logo}
-                fallbackIcon="briefcase"
-                className="h-12 w-12 sm:h-14 sm:w-14 rounded-2xl bg-muted p-1 border border-border/50 group-hover:border-primary/20 transition-colors"
-                imageClassName="rounded-lg"
-                iconClassName="h-6 w-6 sm:h-7 sm:w-7 text-muted-foreground/50"
-              />
-              <div className="space-y-1 min-w-0">
-                <Typography
-                  variant="small"
-                  className="text-muted-foreground font-semibold uppercase tracking-wider text-[10px]"
-                >
-                  {job.company?.name || "Unknown Company"}
-                </Typography>
-                <Typography
-                  variant="h4"
-                  className="line-clamp-2 group-hover:text-primary transition-colors text-base sm:text-lg font-bold leading-tight"
-                >
-                  {job.title}
-                </Typography>
-              </div>
+      {/* Quiet border-tint hover, matching ApplicationCard/JobPostingsList -
+          not a shadow+scale animation. The title tinting to primary is the
+          real "this is clickable" signal. */}
+      <Card className="h-full flex flex-col transition-colors hover:border-primary/50">
+        <CardContent className="p-4 sm:p-5 flex flex-col flex-1 gap-4">
+          <div className="flex items-start gap-3">
+            <CompanyLogo
+              src={job.company?.logo}
+              fallbackIcon="briefcase"
+              className="h-11 w-11 rounded-lg bg-muted border border-border shrink-0"
+              imageClassName="rounded-lg p-1"
+              iconClassName="h-4 w-4 text-muted-foreground"
+            />
+            <div className="min-w-0 space-y-0.5">
+              {/* Title leads, company follows - the job is what someone is
+                  scanning for. This used to be inverted, with the company
+                  name set in tiny uppercase letter-spaced text above a
+                  bolder title, which read as a label stuck on a heading. */}
+              <Typography
+                variant="large"
+                className="line-clamp-2 leading-snug group-hover:text-primary transition-colors"
+              >
+                {job.title}
+              </Typography>
+              <Typography variant="small" className="text-muted-foreground truncate">
+                {job.company?.name || "Unknown Company"}
+              </Typography>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-3 gap-x-6 text-sm">
-            <div className="flex gap-2.5 text-muted-foreground">
-              <div className="flex shrink-0 pt-1">
-                <FaLocationDot className="h-3 w-3" />
-              </div>
-              <span className="line-clamp-1 font-medium">{locationLabel}</span>
-            </div>
-            
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2 text-sm">
+            <Meta icon={FaLocationDot}>{locationLabel}</Meta>
             {salaryDisplay && (
-              <div className="flex gap-2.5 text-foreground">
-                <div className="flex shrink-0 pt-1.5 text-primary">
-                  <FaDollarSign className="h-3 w-3" />
-                </div>
-                <span className="line-clamp-1 font-bold">{salaryDisplay}</span>
-              </div>
+              <Meta icon={FaDollarSign} accent>
+                {salaryDisplay}
+              </Meta>
             )}
-
-            <div className="flex gap-2.5 text-muted-foreground">
-              <div className="flex shrink-0 pt-1.5">
-                <FaClock className="h-2.5 w-2.5" />
-              </div>
-              <span className="font-medium">{addedAgo}</span>
-            </div>
-
+            <Meta icon={FaClock}>{addedAgo}</Meta>
             {job.has_remote && (
-              <div className="flex gap-2.5 text-primary">
-                <div className="flex shrink-0 pt-1.5">
-                  <FaGlobe className="h-2.5 w-2.5" />
-                </div>
-                <span className="font-bold">Remote</span>
-              </div>
+              <Meta icon={FaGlobe} accent>
+                Remote
+              </Meta>
             )}
           </div>
 
-          <div className="flex flex-wrap gap-2 pt-1 mt-auto">
-            {job.experience_level && (
-              <Badge variant="secondary" className="capitalize px-2.5 py-0.5 text-[11px] font-bold tracking-wide bg-muted/50 border-transparent">
-                {job.experience_level.toLowerCase()}
-              </Badge>
-            )}
-            {job.employment_type && (
-              <Badge variant="outline" className="capitalize px-2.5 py-0.5 text-[11px] font-bold tracking-wide border-border/60">
-                {job.employment_type.replace("_", " ")}
-              </Badge>
-            )}
-          </div>
+          {(job.experience_level || job.employment_type) && (
+            <div className="flex flex-wrap gap-2 mt-auto pt-1">
+              {job.experience_level && (
+                <Badge variant="secondary" className="capitalize font-medium">
+                  {job.experience_level.toLowerCase()}
+                </Badge>
+              )}
+              {job.employment_type && (
+                <Badge variant="outline" className="capitalize font-medium">
+                  {job.employment_type.replace(/_/g, " ")}
+                </Badge>
+              )}
+            </div>
+          )}
         </CardContent>
       </Card>
     </Link>

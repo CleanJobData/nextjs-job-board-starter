@@ -17,6 +17,16 @@ const typographyVariants = cva("text-foreground", {
       large: "text-lg font-semibold",
       small: "text-sm font-medium leading-none",
       muted: "text-sm text-muted-foreground",
+      /**
+       * Small uppercase section label ("ABOUT THE COMPANY", "SKILLS").
+       * Exists because this exact treatment was being hand-rolled as
+       * `text-[10px] uppercase tracking-wider font-bold text-muted-foreground`
+       * in a dozen places - an arbitrary pixel value that bypasses the type
+       * scale entirely, so it couldn't be restyled from one place and
+       * drifted (10px vs 11px, tracking-wide vs -wider vs -widest). Uses
+       * text-xs from the real scale.
+       */
+      overline: "text-xs font-semibold uppercase tracking-wider text-muted-foreground",
     },
   },
   defaultVariants: {
@@ -39,6 +49,7 @@ const variantToElement: Record<NonNullable<VariantProps<typeof typographyVariant
   large: "span",
   small: "small" as any, // small is a valid tag but we use span/p usually
   muted: "p",
+  overline: "span",
 };
 
 export interface TypographyProps
