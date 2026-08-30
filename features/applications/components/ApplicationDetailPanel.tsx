@@ -149,9 +149,15 @@ export function ApplicationDetailPanel({
                 </div>
               )}
               {jobDetail.description && (
-                <Typography variant="small" className="text-muted-foreground whitespace-pre-line line-clamp-6">
-                  {jobDetail.description}
-                </Typography>
+                // CleanJobData's description field is real HTML (headings/
+                // paragraphs/bold), not plain text - matches JobDetailView's
+                // existing rendering exactly (same prose classes), otherwise
+                // the raw <h3>/<p> tags would print out literally instead of
+                // rendering as formatted text.
+                <div
+                  className="job-description prose prose-sm max-w-none prose-neutral dark:prose-invert prose-headings:text-foreground prose-p:text-muted-foreground prose-li:text-muted-foreground prose-strong:text-foreground prose-a:text-primary max-h-64 overflow-y-auto"
+                  dangerouslySetInnerHTML={{ __html: jobDetail.description }}
+                />
               )}
             </div>
           ) : null}

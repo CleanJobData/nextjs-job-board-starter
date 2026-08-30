@@ -1,13 +1,24 @@
 "use client";
 
 import { useState } from "react";
-import { DndContext, useDroppable, type DragEndEvent, PointerSensor, useSensor, useSensors } from "@dnd-kit/core";
+import {
+  DndContext,
+  DragOverlay,
+  useDroppable,
+  type DragEndEvent,
+  type DragStartEvent,
+  PointerSensor,
+  TouchSensor,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
 import { FaClipboardList } from "react-icons/fa6";
 import { Button } from "@/components/ui/Button";
+import { Card } from "@/components/ui/Card";
 import { Typography } from "@/components/ui/Typography";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { cn } from "@/lib/utils";
-import { ApplicationCard } from "./ApplicationCard";
+import { ApplicationCard, ApplicationCardContent } from "./ApplicationCard";
 import { ApplicationDetailPanel } from "./ApplicationDetailPanel";
 import { updateApplicationStatus, type ApplicationStatus } from "../actions/applications";
 import type { ApplicationRowData } from "./types";
@@ -22,19 +33,22 @@ const COLUMNS: { value: ApplicationStatus; label: string }[] = [
 ];
 
 /**
- * One soft background/border tint per status, built from existing tokens
- * only (primary/accent/warning/destructive/muted - never raw hex), applied
- * to the column itself rather than per-card chrome. A column-level tint is
- * one clear signal per status instead of the earlier attempt's repeated
- * dot+border+badge combination on every card, which read as noisy.
+ * A vivid top accent bar + a real (not barely-there) background/border
+ * tint per status, built from existing tokens only (primary/accent/
+ * warning/destructive - never raw hex), applied to the column itself
+ * rather than per-card chrome. A column-level treatment is one clear
+ * signal per status instead of repeating it as chrome on every card,
+ * which read as noisy - but the tint needs to actually read as color at a
+ * glance, not just a faint wash, hence the solid top bar doing most of the
+ * "lively" work while the background stays a supporting tint.
  */
-const COLUMN_STYLES: Record<ApplicationStatus, string> = {
-  saved: "bg-muted/40 border-border",
-  applied: "bg-primary/5 border-primary/20",
-  interviewing: "bg-accent/50 border-accent-foreground/20",
-  offer: "bg-warning/10 border-warning/30",
-  rejected: "bg-destructive/5 border-destructive/20",
-  withdrawn: "bg-secondary/60 border-border",
+const COLUMN_STYLES: Record<ApplicationStatus, { bar: string; body: string; label: string }> = {
+  saved: { bar: "bg-muted-foreground", body: "bg-muted/60 border-border", label: "text-foreground" },
+  applied: { bar: "bg-primary", body: "bg-primary/10 border-primary/30", label: "text-primary" },
+  interviewing: { bar: "bg-accent-foreground", body: "bg-accent border-accent-foreground/30", label: "text-accent-foreground" },
+  offer: { bar: "bg-warning", body: "bg-warning/15 border-warning/40", label: "text-warning-foreground" },
+  rejected: { bar: "bg-destructive", body: "bg-destructive/10 border-destructive/30", label: "text-destructive" },
+  withdrawn: { bar: "bg-secondary-foreground/50", body: "bg-secondary/80 border-border", label: "text-secondary-foreground" },
 };
 
 function Column({
@@ -51,26 +65,33 @@ function Column({
   onOpen: (app: ApplicationRowData) => void;
 }) {
   const { setNodeRef, isOver } = useDroppable({ id: status });
+  const styles = COLUMN_STYLES[status];
 
   return (
     <div
       ref={setNodeRef}
       className={cn(
-        "flex flex-col gap-3 w-72 shrink-0 rounded-lg border p-2 transition-colors",
-        COLUMN_STYLES[status],
+        "flex flex-col w-60 shrink-0 rounded-lg border transition-colors",
+        styles.body,
         isOver && "ring-1 ring-inset ring-foreground/20"
       )}
     >
-      <div className="flex items-center justify-between px-1.5">
-        <Typography variant="small" className="font-medium text-muted-foreground">
-          {label}
-        </Typography>
-        <Typography variant="small" className="text-muted-foreground/60">
-          {applications.length}
-        </Typography>
-      </div>
-      <div className="flex flex-col gap-2 min-h-[80px]">
-        {applications.length === 0 ? (
+      {/* rounded-t-lg on the bar itself, not overflow-hidden on the whole
+          column - overflow-hidden would clip a card mid-drag the instant it
+          moves past this column's edge, which is exactly what's supposed to
+          happen when dragging it into a different column. */}
+      <div className={cn("h-1.5 rounded-t-lg", styles.bar)} />
+      <div className="flex flex-col gap-3 p-2">
+        <div className="flex items-center justify-between px-1.5 pt-1">
+          <Typography variant="small" className={cn("font-semibold", styles.label)}>
+            {label}
+          </Typography>
+          <Typography variant="small" className={cn("font-medium", styles.label, "opacity-60")}>
+            {applications.length}
+          </Typography>
+        </div>
+        <div className="flex flex-col gap-2 min-h-[80px]">
+          {applications.length === 0 ? (
           <div className="rounded-lg border border-dashed border-border/70 py-8 text-center">
             <Typography variant="small" className="text-muted-foreground/70">
               No applications
@@ -86,6 +107,7 @@ function Column({
             />
           ))
         )}
+        </div>
       </div>
     </div>
   );
@@ -100,17 +122,25 @@ function Column({
  * row of columns (each column keeps its fixed width) rather than a
  * column-picker/tabs view - it preserves the same mental model as desktop
  * (all statuses visible, just swipe sideways) and needs no extra UI, at the
- * cost of requiring a horizontal swipe to see every column. Drag-and-drop
- * itself isn't touch-tuned (no PointerSensor touch delay/activation
- * distance beyond default), but every status change is also available
- * from the detail panel's Listbox, so touch users are never stuck.
+ * cost of requiring a horizontal swipe to see every column. TouchSensor
+ * uses a short press-and-hold delay (200ms) before a drag starts, so a
+ * quick swipe still scrolls the row normally instead of every touch being
+ * interpreted as a drag attempt - PointerSensor (mouse) keeps its
+ * distance-based activation since a delay would feel laggy with a mouse,
+ * which doesn't have this scroll-vs-drag ambiguity to begin with. Every
+ * status change is also available from the detail panel's Listbox, so
+ * touch users are never stuck even before they discover press-and-hold.
  */
 export function KanbanBoard({ applications: initial }: { applications: ApplicationRowData[] }) {
   const [applications, setApplications] = useState(initial);
   const [activeApp, setActiveApp] = useState<ApplicationRowData | null>(null);
   const [pendingId, setPendingId] = useState<string | null>(null);
+  const [activeId, setActiveId] = useState<string | null>(null);
 
-  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }));
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 8 } })
+  );
 
   if (applications.length === 0) {
     return (
@@ -138,7 +168,12 @@ export function KanbanBoard({ applications: initial }: { applications: Applicati
     setActiveApp((prev) => (prev && prev.id === id ? null : prev));
   }
 
+  function handleDragStart(event: DragStartEvent) {
+    setActiveId(event.active.id as string);
+  }
+
   function handleDragEnd(event: DragEndEvent) {
+    setActiveId(null);
     const { active, over } = event;
     if (!over) return;
     const id = active.id as string;
@@ -156,9 +191,24 @@ export function KanbanBoard({ applications: initial }: { applications: Applicati
       .finally(() => setPendingId((p) => (p === id ? null : p)));
   }
 
+  const activeApplication = activeId ? applications.find((a) => a.id === activeId) ?? null : null;
+
   return (
     <>
-      <DndContext id="applications-kanban" sensors={sensors} onDragEnd={handleDragEnd}>
+      {/* autoScroll={false}: dnd-kit's default auto-scroll hunts for the
+          nearest scrollable ancestor (here, the board's own
+          horizontally-scrolling row below) and can trigger it mid-drag in
+          ways that feel like the container randomly jumping/scrolling -
+          this board is small enough that scroll-while-dragging isn't
+          needed at all, so it's simplest to turn it off outright rather
+          than fight its heuristics. */}
+      <DndContext
+        id="applications-kanban"
+        sensors={sensors}
+        onDragStart={handleDragStart}
+        onDragEnd={handleDragEnd}
+        autoScroll={false}
+      >
         <div className="flex gap-4 overflow-x-auto pb-4 -mx-1 px-1">
           {COLUMNS.map((col) => (
             <Column
@@ -171,6 +221,17 @@ export function KanbanBoard({ applications: initial }: { applications: Applicati
             />
           ))}
         </div>
+        {/* Portals the dragged card to the document body (via React
+            portal, outside the overflow-x-auto row above), so it's never
+            clipped by that row's scroll container while being dragged
+            across column boundaries - see ApplicationCard's doc comment. */}
+        <DragOverlay>
+          {activeApplication && (
+            <Card className="p-3.5 w-60 shadow-lg cursor-grabbing">
+              <ApplicationCardContent application={activeApplication} />
+            </Card>
+          )}
+        </DragOverlay>
       </DndContext>
       <ApplicationDetailPanel
         application={activeApp}
