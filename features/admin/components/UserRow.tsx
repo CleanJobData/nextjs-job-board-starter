@@ -4,6 +4,8 @@ import { useState, useTransition } from "react";
 import { Card } from "@/components/ui/Card";
 import { Typography } from "@/components/ui/Typography";
 import { Listbox } from "@/components/ui/Listbox";
+import { Dialog } from "@/components/ui/Dialog";
+import { Button } from "@/components/ui/Button";
 import type { AdminUserRow } from "../actions/users";
 import { setUserRole } from "../actions/users";
 
@@ -17,19 +19,36 @@ export function UserRow({ user, isSelf }: { user: AdminUserRow; isSelf: boolean 
   const [role, setRole] = useState(user.role);
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
+  // Only promoting to admin is gated behind a confirmation - it's the
+  // direction that actually grants access (moderation queue, other users'
+  // roles), so a stray click has real consequences. Demoting back to
+  // "user" merely revokes access and is trivially reversible by any other
+  // admin, so it doesn't need the extra step - Listbox fires its onChange
+  // immediately on selection (unlike a plain button), which is why this
+  // needs its own confirm-then-commit state rather than reusing
+  // ConfirmDialog's trigger-wrapping API.
+  const [confirmingAdmin, setConfirmingAdmin] = useState(false);
 
-  function handleChange(next: string) {
+  function applyRoleChange(next: "user" | "admin") {
     const prev = role;
-    setRole(next as "user" | "admin");
+    setRole(next);
     setError(null);
     startTransition(async () => {
       try {
-        await setUserRole(user.id, next as "user" | "admin");
+        await setUserRole(user.id, next);
       } catch (err) {
         setRole(prev);
         setError(err instanceof Error ? err.message : "Failed to update role.");
       }
     });
+  }
+
+  function handleChange(next: string) {
+    if (next === "admin") {
+      setConfirmingAdmin(true);
+      return;
+    }
+    applyRoleChange(next as "user" | "admin");
   }
 
   return (
@@ -70,6 +89,30 @@ export function UserRow({ user, isSelf }: { user: AdminUserRow; isSelf: boolean 
           </Typography>
         )}
       </div>
+      <Dialog
+        isOpen={confirmingAdmin}
+        onClose={() => setConfirmingAdmin(false)}
+        title="Grant admin access?"
+      >
+        <Typography variant="muted" className="mb-6">
+          {user.email} will be able to manage every user&apos;s role and moderate every job
+          posting. Only do this for someone you trust with full admin access.
+        </Typography>
+        <div className="flex justify-end gap-2">
+          <Button variant="outline" onClick={() => setConfirmingAdmin(false)}>
+            Cancel
+          </Button>
+          <Button
+            variant="destructive"
+            onClick={() => {
+              setConfirmingAdmin(false);
+              applyRoleChange("admin");
+            }}
+          >
+            Grant Admin
+          </Button>
+        </div>
+      </Dialog>
     </Card>
   );
 }

@@ -53,7 +53,7 @@ if (authConfig.auth.credentials) {
           throw new EmailNotVerifiedError();
         }
 
-        return { id: user.id, name: user.name, email: user.email, image: user.image };
+        return { id: user.id, name: user.name, email: user.email, image: user.image, role: user.role };
       },
     })
   );
@@ -88,9 +88,30 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   },
   providers,
   callbacks: {
+    async jwt({ token, user, trigger }) {
+      // `user` is only present on the sign-in request itself - on every
+      // later request `jwt()` runs with just the existing token, so a role
+      // change (e.g. scripts/promote-admin.ts) only reaches this token on
+      // the next sign-in. Fine for the nav-display use case this exists
+      // for (see types.d.ts's doc comment) - real access control never
+      // trusts this, it queries the DB fresh every time.
+      if (user) {
+        token.role = (user as { role?: "user" | "admin" }).role ?? "user";
+      } else if (trigger === "update" && token.sub) {
+        // Lets a caller force a refresh via next-auth/react's update() if a
+        // signed-in session's own role changes mid-session - not currently
+        // called anywhere, but cheap to support now that jwt() is already
+        // doing DB-touching work for the sign-in case.
+        const db = requireDb();
+        const [row] = await db.select({ role: users.role }).from(users).where(eq(users.id, token.sub)).limit(1);
+        if (row) token.role = row.role;
+      }
+      return token;
+    },
     async session({ session, token }) {
       if (session.user && token.sub) {
         session.user.id = token.sub;
+        session.user.role = (token.role as "user" | "admin") ?? "user";
       }
       return session;
     },

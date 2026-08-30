@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Typography } from "@/components/ui/Typography";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { deleteJobPosting } from "../actions/job-postings";
 
 export type JobPostingRow = {
@@ -51,25 +52,33 @@ export function JobPostingsList({ postings }: { postings: JobPostingRow[] }) {
   return (
     <div className="space-y-3">
       {postings.map((p) => (
-        <div key={p.id} className="flex items-center justify-between gap-4 p-4 rounded-xl border border-border bg-card">
+        <div
+          key={p.id}
+          className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 p-4 rounded-xl border border-border bg-card"
+        >
           <div className="min-w-0">
             <Link href={`/jobs/${p.id}`} className="font-semibold hover:text-primary truncate block">
               {p.title}
             </Link>
-            <p className="text-xs text-muted-foreground">{p.companyName}</p>
+            <Typography variant="small" className="text-muted-foreground">
+              {p.companyName}
+            </Typography>
           </div>
           <div className="flex items-center gap-3 shrink-0">
             <Badge variant={STATUS_VARIANT[p.status]} className="capitalize">
               {p.status}
             </Badge>
-            <Button
-              variant="ghost"
-              size="sm"
-              disabled={pendingId === p.id}
-              onClick={() => onDelete(p.id)}
-            >
-              Delete
-            </Button>
+            <ConfirmDialog
+              trigger={
+                <Button variant="ghost" size="sm" disabled={pendingId === p.id}>
+                  Delete
+                </Button>
+              }
+              title="Delete this job posting?"
+              description={`This permanently deletes "${p.title}". This can't be undone.`}
+              confirmLabel="Delete"
+              onConfirm={() => onDelete(p.id)}
+            />
           </div>
         </div>
       ))}

@@ -7,6 +7,7 @@ import { Typography } from "@/components/ui/Typography";
 import { Listbox } from "@/components/ui/Listbox";
 import { Button } from "@/components/ui/Button";
 import { Textarea } from "@/components/ui/Textarea";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import {
   deleteApplication,
   updateApplicationNotes,
@@ -96,9 +97,17 @@ export function ApplicationRow({ application }: { application: ApplicationRowDat
           >
             <FaNoteSticky className="h-4 w-4" />
           </Button>
-          <Button variant="ghost" size="sm" disabled={pending} onClick={handleDelete}>
-            Remove
-          </Button>
+          <ConfirmDialog
+            trigger={
+              <Button variant="ghost" size="sm" disabled={pending}>
+                Remove
+              </Button>
+            }
+            title="Remove this application?"
+            description={`This removes "${application.jobTitle}" from your tracked applications, including any notes. This can't be undone.`}
+            confirmLabel="Remove"
+            onConfirm={handleDelete}
+          />
         </div>
       </div>
       {notesOpen && (
