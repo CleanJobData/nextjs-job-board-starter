@@ -8,8 +8,6 @@ import { Listbox } from "@/components/ui/Listbox";
 import { Button } from "@/components/ui/Button";
 import { Textarea } from "@/components/ui/Textarea";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
-import { cn } from "@/lib/utils";
-import { STATUS_ACCENT } from "./statusStyles";
 import {
   deleteApplication,
   updateApplicationNotes,
@@ -91,18 +89,11 @@ export function ApplicationDetailPanel({
     <Sheet isOpen={Boolean(application)} onClose={onClose} title="Application Details" className="max-w-lg">
       {application && (
         <div className="flex flex-col gap-6">
-          <div className="flex items-start gap-3">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-muted text-sm font-bold text-muted-foreground">
-              {application.companyName?.trim()?.[0]?.toUpperCase() ?? "?"}
-            </div>
-            <div className="space-y-1 min-w-0">
-              <Typography variant="h3">{application.jobTitle}</Typography>
-              {application.companyName && (
-                <Typography className="text-muted-foreground">{application.companyName}</Typography>
-              )}
-            </div>
-          </div>
-          <div className="space-y-1 -mt-4">
+          <div className="space-y-1">
+            <Typography variant="h3">{application.jobTitle}</Typography>
+            {application.companyName && (
+              <Typography className="text-muted-foreground">{application.companyName}</Typography>
+            )}
             {application.jobUrl && (
               <a
                 href={application.jobUrl}
@@ -117,12 +108,9 @@ export function ApplicationDetailPanel({
           </div>
 
           <div className="space-y-2">
-            <div className="flex items-center gap-1.5">
-              <span className={cn("h-2 w-2 rounded-full", STATUS_ACCENT[application.status].dot)} />
-              <Typography variant="small" className="font-medium text-muted-foreground">
-                Status
-              </Typography>
-            </div>
+            <Typography variant="small" className="font-medium text-muted-foreground">
+              Status
+            </Typography>
             <Listbox
               options={STATUS_OPTIONS}
               value={application.status}
