@@ -8,9 +8,16 @@ import { FilterApplied } from "@/lib/api/types";
 
 interface ActiveFilterChipsProps {
   filtersApplied: FilterApplied[];
+  /**
+   * Where "Clear all" should land. Defaults to the bare pathname, but a
+   * page whose empty URL re-applies saved preferences (see JobsPage) has
+   * to send clearing somewhere that explicitly opts out, or clearing
+   * appears to do nothing.
+   */
+  clearAllHref?: string;
 }
 
-export function ActiveFilterChips({ filtersApplied }: ActiveFilterChipsProps) {
+export function ActiveFilterChips({ filtersApplied, clearAllHref }: ActiveFilterChipsProps) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -79,7 +86,7 @@ export function ActiveFilterChips({ filtersApplied }: ActiveFilterChipsProps) {
         </Badge>
       ))}
       <button
-        onClick={() => router.push(pathname, { scroll: false })}
+        onClick={() => router.push(clearAllHref ?? pathname, { scroll: false })}
         className="text-xs text-muted-foreground hover:text-foreground underline underline-offset-4 px-2"
       >
         Clear all

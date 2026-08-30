@@ -5,24 +5,19 @@ import { useRouter } from "next/navigation";
 import { FaMagnifyingGlass, FaBuilding } from "react-icons/fa6";
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent } from "@/components/ui/Card";
-import { Input } from "@/components/ui/Input";
-import { Switch } from "@/components/ui/Switch";
 import { Typography } from "@/components/ui/Typography";
-import { GeoSuggest } from "@/jobs/components/GeoSuggest";
-import type { GeoSuggestResult } from "@/lib/api/types";
 import { cn } from "@/lib/utils";
+import {
+  PreferenceFields,
+  draftToPreferences,
+  emptyPreferenceDraft,
+  type PreferenceDraft,
+} from "./PreferenceFields";
 import { completeOnboarding, skipOnboarding } from "../actions/onboarding";
-
-const EXPERIENCE_LEVELS = [
-  { value: "EN", label: "Entry" },
-  { value: "MI", label: "Mid" },
-  { value: "SE", label: "Senior" },
-  { value: "EX", label: "Executive" },
-];
 
 type AccountType = "seeker" | "employer";
 
-/** One selectable tile - used for both the role choice and the experience-level toggles. */
+/** Local copy of the shared Choice tile, used for the role step. */
 function Choice({
   selected,
   onClick,
@@ -41,9 +36,7 @@ function Choice({
       aria-pressed={selected}
       className={cn(
         "rounded-lg border px-4 py-3 text-left transition-colors",
-        selected
-          ? "border-primary bg-primary/10 text-foreground"
-          : "border-border hover:border-foreground/20",
+        selected ? "border-primary bg-primary/10 text-foreground" : "border-border hover:border-foreground/20",
         className
       )}
     >
@@ -66,15 +59,7 @@ export function OnboardingFlow() {
   const [pending, startTransition] = React.useTransition();
   const [error, setError] = React.useState<string | null>(null);
 
-  const [titles, setTitles] = React.useState("");
-  const [locations, setLocations] = React.useState<GeoSuggestResult[]>([]);
-  const [remoteOnly, setRemoteOnly] = React.useState(false);
-  const [levels, setLevels] = React.useState<string[]>([]);
-  const [minSalary, setMinSalary] = React.useState("");
-
-  function toggleLevel(value: string) {
-    setLevels((prev) => (prev.includes(value) ? prev.filter((v) => v !== value) : [...prev, value]));
-  }
+  const [draft, setDraft] = React.useState<PreferenceDraft>(emptyPreferenceDraft);
 
   function finish(type: AccountType) {
     setError(null);
@@ -82,25 +67,7 @@ export function OnboardingFlow() {
       try {
         await completeOnboarding({
           accountType: type,
-          preferences:
-            type === "seeker"
-              ? {
-                  titles: titles
-                    .split(",")
-                    .map((t) => t.trim())
-                    .filter(Boolean),
-                  cityIds: locations.filter((l) => l.city_id != null).map((l) => l.city_id!),
-                  stateIds: locations
-                    .filter((l) => l.city_id == null && l.state_id != null)
-                    .map((l) => l.state_id!),
-                  countryIds: locations
-                    .filter((l) => l.city_id == null && l.state_id == null && l.country_id != null)
-                    .map((l) => l.country_id!),
-                  remoteOnly,
-                  experienceLevels: levels,
-                  minSalary: minSalary ? Number(minSalary) : null,
-                }
-              : null,
+          preferences: type === "seeker" ? draftToPreferences(draft) : null,
         });
         router.push(type === "employer" ? "/job-postings" : "/jobs");
         router.refresh();
@@ -168,54 +135,7 @@ export function OnboardingFlow() {
               </Choice>
             </div>
           ) : (
-            <>
-              <div className="space-y-1">
-                <label className="text-sm font-medium">Roles you're interested in</label>
-                <Input
-                  value={titles}
-                  onChange={(e) => setTitles(e.target.value)}
-                  placeholder="Data engineer, product designer"
-                  disabled={pending}
-                />
-                <Typography variant="small" className="text-muted-foreground">
-                  Separate with commas.
-                </Typography>
-              </div>
-
-              <div className="space-y-1">
-                <label className="text-sm font-medium">Preferred locations</label>
-                <GeoSuggest selectedLocations={locations} onChange={setLocations} />
-              </div>
-
-              <Switch checked={remoteOnly} onChange={setRemoteOnly} label="Only show remote roles" />
-
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Experience level</label>
-                <div className="flex flex-wrap gap-2">
-                  {EXPERIENCE_LEVELS.map((l) => (
-                    <Choice
-                      key={l.value}
-                      selected={levels.includes(l.value)}
-                      onClick={() => toggleLevel(l.value)}
-                      className="py-2 text-sm"
-                    >
-                      {l.label}
-                    </Choice>
-                  ))}
-                </div>
-              </div>
-
-              <div className="space-y-1">
-                <label className="text-sm font-medium">Minimum salary</label>
-                <Input
-                  type="number"
-                  value={minSalary}
-                  onChange={(e) => setMinSalary(e.target.value)}
-                  placeholder="80000"
-                  disabled={pending}
-                />
-              </div>
-            </>
+            <PreferenceFields draft={draft} onChange={setDraft} disabled={pending} />
           )}
 
           {error && <p className="text-sm text-destructive">{error}</p>}

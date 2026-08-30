@@ -1,4 +1,5 @@
-import { pgTable, text, timestamp, primaryKey, integer, index, boolean } from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, primaryKey, integer, index, boolean, jsonb } from "drizzle-orm/pg-core";
+import type { GeoSuggestResult } from "@/lib/api/types";
 import type { AdapterAccountType } from "next-auth/adapters";
 
 /**
@@ -54,8 +55,7 @@ export const users = pgTable("users", {
  * The columns deliberately mirror ListQuery's own filter shape (the same
  * one JobFilters and the CleanJobData API already speak) so seeding a
  * search is a direct mapping, not a translation layer that has to be kept
- * in sync as filters are added. Scalar arrays get real Postgres array
- * columns rather than JSONB, matching how jobs.experienceLevels is stored.
+ * in sync as filters are added.
  */
 export const userPreferences = pgTable("userPreferences", {
   userId: text("userId")
@@ -63,10 +63,16 @@ export const userPreferences = pgTable("userPreferences", {
     .references(() => users.id, { onDelete: "cascade" }),
   /** Free-text interests, matched against job titles - e.g. ["data engineer", "python"]. */
   titles: text("titles").array().notNull().default([]),
-  /** CleanJobData geo ids, same shape GeoSuggest already produces (see jobs/components/GeoSuggest.tsx). */
-  cityIds: integer("cityIds").array().notNull().default([]),
-  stateIds: integer("stateIds").array().notNull().default([]),
-  countryIds: integer("countryIds").array().notNull().default([]),
+  /**
+   * The full GeoSuggest selections, stored as-is rather than as three
+   * separate id arrays. The ids alone are enough to FILTER with, but not
+   * enough to re-render the picker: GeoSuggest needs each entry's kind and
+   * display_label to show what you previously chose, and those can't be
+   * reconstructed from a bare id without another API round-trip. Storing
+   * the objects keeps /preferences able to round-trip its own state.
+   * Query-time id extraction lives in features/onboarding/lib/preferences.ts.
+   */
+  locations: jsonb("locations").$type<GeoSuggestResult[]>().notNull().default([]),
   remoteOnly: boolean("remoteOnly").notNull().default(false),
   experienceLevels: text("experienceLevels").array().notNull().default([]),
   minSalary: integer("minSalary"),

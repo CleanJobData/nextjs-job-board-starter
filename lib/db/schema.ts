@@ -6,3 +6,4 @@
 export * from "@/features/auth/db/schema";
 export * from "@/features/job-sync/db/schema";
 export * from "@/features/applications/db/schema";
+export * from "@/features/job-alerts/db/schema";

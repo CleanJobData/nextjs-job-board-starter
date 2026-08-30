@@ -35,6 +35,11 @@ export async function SiteHeader() {
 
   const authNavItems = session
     ? [
+        // Preferences is signed-in-only and lives with the other
+        // account-scoped links rather than in the registry's static
+        // navItems, for the same reason Admin does - it depends on
+        // per-request session state the registry can't see.
+        ...(featuresConfig.jobAlerts.enabled ? [{ label: "Preferences", href: "/preferences" }] : []),
         ...(isAdmin ? [{ label: "Admin", href: "/admin" }] : []),
       ]
     : featuresConfig.auth.enabled

@@ -52,6 +52,16 @@ export const featuresSchema = z.object({
      * doesn't compose with guestAccess the way the others do.
      */
   }),
+  jobAlerts: z.object({
+    enabled: z.boolean().default(false),
+    /**
+     * No `guestAccess`: an alert is emailed to a specific account, so it
+     * has no meaningful signed-out mode. Reuses userPreferences (see
+     * features/auth/db/schema.ts) as its criteria rather than storing a
+     * second copy of the same filters, and needs a working mailer plus a
+     * scheduler hitting /api/cron - see features/job-alerts/README.md.
+     */
+  }),
   onboarding: z.object({
     enabled: z.boolean().default(false),
     /**

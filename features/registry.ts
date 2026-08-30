@@ -8,6 +8,7 @@ import { jobSyncFeature } from "./job-sync/feature";
 import { applicationsFeature } from "./applications/feature";
 import { jobPostingFeature } from "./job-posting/feature";
 import { adminFeature } from "./admin/feature";
+import { jobAlertsFeature } from "./job-alerts/feature";
 
 export type NavItem = {
   label: string;
@@ -48,6 +49,7 @@ const allFeaturePlugins: Partial<Record<FeatureKey, FeaturePlugin>> = {
   applications: applicationsFeature,
   jobPosting: jobPostingFeature,
   admin: adminFeature,
+  jobAlerts: jobAlertsFeature,
 };
 
 /** Plugins for every feature that is both registered above AND enabled in features.config.ts. */

@@ -6,6 +6,7 @@ import { requireDb } from "@/lib/db/client";
 import { auth } from "@/features/auth/lib/auth";
 import { users, userPreferences } from "@/features/auth/db/schema";
 import featuresConfig from "@/features.config";
+import type { GeoSuggestResult } from "@/lib/api/types";
 
 async function requireUserId(): Promise<string> {
   if (!featuresConfig.onboarding.enabled) {
@@ -19,9 +20,7 @@ async function requireUserId(): Promise<string> {
 
 export type OnboardingPreferences = {
   titles: string[];
-  cityIds: number[];
-  stateIds: number[];
-  countryIds: number[];
+  locations: GeoSuggestResult[];
   remoteOnly: boolean;
   experienceLevels: string[];
   minSalary: number | null;
@@ -68,4 +67,27 @@ export async function skipOnboarding() {
   const userId = await requireUserId();
   const db = requireDb();
   await db.update(users).set({ onboardedAt: new Date() }).where(eq(users.id, userId));
+}
+
+/**
+ * Lets a user change the preferences they set during onboarding.
+ *
+ * Deliberately gated on a session ALONE, not on onboarding.enabled: a
+ * deployment can perfectly well run job-alerts (whose /preferences page
+ * hosts this editor) with the onboarding flow itself turned off, and
+ * reusing requireUserId() here would make editing throw in exactly that
+ * combination.
+ */
+export async function updatePreferences(prefs: OnboardingPreferences) {
+  const session = await auth();
+  const userId = session?.user?.id;
+  if (!userId) throw new Error("You must be signed in.");
+  const db = requireDb();
+  const row = { userId, ...prefs, updatedAt: new Date() };
+  await db
+    .insert(userPreferences)
+    .values(row)
+    .onConflictDoUpdate({ target: userPreferences.userId, set: row });
+  revalidatePath("/jobs");
+  revalidatePath("/preferences");
 }

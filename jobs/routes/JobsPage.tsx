@@ -9,7 +9,8 @@ import { PageContainer } from "@/components/ui/PageContainer";
 import { RetryButton } from "@/jobs/components/RetryButton";
 import { JobBoardSearchParams } from "@/jobs/lib/query-types";
 import { ApiError } from "@/lib/api/client";
-import { getPreferredJobQuery } from "@/features/onboarding/lib/preferences";
+import { redirect } from "next/navigation";
+import { getPreferredSearchParams } from "@/features/onboarding/lib/preferences";
 
 interface JobsPageProps {
   searchParams: Promise<JobBoardSearchParams>;
@@ -20,17 +21,23 @@ export default async function JobsPage({ searchParams }: JobsPageProps) {
   const normalizedParams = normalizeSearchParams(rawParams);
   const explicitQuery = mapSearchParamsToQuery(normalizedParams);
 
-  // Saved onboarding preferences seed the feed ONLY when the visitor
-  // arrived with no filters of their own - the moment any search param is
-  // present, it wins outright, so the board never silently withholds
-  // results someone explicitly asked for. Signed-out visitors, deployments
-  // with onboarding off, and users who skipped it all get null here and see
-  // the plain unfiltered feed.
-  const hasExplicitFilters = Object.keys(explicitQuery).some(
-    (k) => k !== "limit" && k !== "cursor"
-  );
-  const preferredQuery = hasExplicitFilters ? null : await getPreferredJobQuery();
-  const apiQuery = preferredQuery ? { ...explicitQuery, ...preferredQuery } : explicitQuery;
+  // Saved preferences seed the feed only on a genuinely bare /jobs - and
+  // by REDIRECTING to /jobs?<prefs> rather than applying them invisibly,
+  // so the URL stays the single source of truth and the existing filter
+  // chips can actually remove them (a chip whose filter isn't in the URL
+  // has nothing to delete, so its remove button silently does nothing).
+  //
+  // `all=1` is the escape hatch "Clear all" uses: bare /jobs would just
+  // redirect straight back here, so clearing needs a URL that explicitly
+  // means "no preferences, show me everything".
+  const isBareVisit = Object.keys(rawParams).length === 0;
+  if (isBareVisit) {
+    const preferred = await getPreferredSearchParams();
+    if (preferred) redirect(`/jobs?${preferred.toString()}`);
+  }
+
+  const apiQuery = explicitQuery;
+  const preferencesApplied = !isBareVisit && rawParams.all !== "1";
 
   let initialData;
   let error: string | null = null;
@@ -68,7 +75,10 @@ export default async function JobsPage({ searchParams }: JobsPageProps) {
 
         {/* Main Content */}
         <div className="flex-1 min-w-0">
-          <ActiveFilterChips filtersApplied={initialData?.meta?.filters_applied || []} />
+          <ActiveFilterChips
+            filtersApplied={initialData?.meta?.filters_applied || []}
+            clearAllHref={preferencesApplied ? "/jobs?all=1" : undefined}
+          />
 
           {error ? (
             <div className="bg-destructive/10 border border-destructive/20 rounded-xl p-10 text-center space-y-6">

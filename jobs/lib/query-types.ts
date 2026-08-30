@@ -20,6 +20,8 @@ export interface JobBoardSearchParams {
   sort_by?: string;
   cursor?: string;
   limit?: string;
+  /** "1" means "ignore my saved preferences on this visit" - set by Clear all, see JobsPage. */
+  all?: string;
 }
 
 /**

@@ -7,6 +7,7 @@ const SECTIONS = [
   { href: "/admin/postings", label: "Job moderation", description: "Approve or reject self-service job postings." },
   { href: "/admin/users", label: "Users", description: "View users and change roles." },
   { href: "/admin/sync", label: "Sync status", description: "Job-sync run history and due status per kind." },
+  { href: "/admin/alerts", label: "Job alerts", description: "Who receives digest emails, and how often." },
 ];
 
 /** Landing page for the /admin route group - three distinct sections, each with its own real data table, so they're separate routes rather than tabs on one page (see AGENTS.md's phase 3 spec). */
