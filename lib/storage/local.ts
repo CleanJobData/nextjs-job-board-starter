@@ -32,7 +32,7 @@ function safeExt(filename: string): string {
 
 class LocalStorageAdapter implements StorageAdapter {
   async upload(input: UploadInput): Promise<UploadResult> {
-    assertValidUpload(input);
+    assertValidUpload(input, input.allowedMimeTypes);
 
     // Scope is folded into the key itself (not just the directory) so
     // delete()/the route handler only ever need one string, same as the

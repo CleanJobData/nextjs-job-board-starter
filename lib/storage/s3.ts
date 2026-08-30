@@ -53,7 +53,7 @@ class S3StorageAdapter implements StorageAdapter {
   }
 
   async upload(input: UploadInput): Promise<UploadResult> {
-    assertValidUpload(input);
+    assertValidUpload(input, input.allowedMimeTypes);
 
     const key = `${input.scope}/${nanoid(16)}${safeExt(input.filename)}`;
 

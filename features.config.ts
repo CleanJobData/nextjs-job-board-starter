@@ -12,7 +12,7 @@ import { featuresSchema, type FeaturesConfig } from "./features.schema";
 const config: FeaturesConfig = {
   auth: { enabled: true, credentials: true, oauthProviders: [], emailVerification: false },
   jobSync: { enabled: true, guestAccess: true },
-  resume: { enabled: false, guestAccess: false, parsing: true, aiParsing: false },
+  resume: { enabled: true, guestAccess: false, parsing: true, aiParsing: false },
   applications: { enabled: true, guestAccess: false },
   jobPosting: { enabled: true, guestAccess: false, requireVerification: true },
   admin: { enabled: true },

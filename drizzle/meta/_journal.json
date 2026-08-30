@@ -85,6 +85,13 @@
       "when": 1788087233379,
       "tag": "0011_slim_sandman",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1788088607037,
+      "tag": "0012_outstanding_professor_monster",
+      "breakpoints": true
     }
   ]
 }

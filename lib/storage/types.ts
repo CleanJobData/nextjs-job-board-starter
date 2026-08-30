@@ -20,6 +20,14 @@ export interface UploadInput {
   contentType: string;
   /** Namespacing bucket-within-the-bucket, e.g. "company-logos" - keeps unrelated features' files from colliding in the same underlying store. */
   scope: string;
+  /**
+   * What THIS upload accepts. Adapters re-validate defensively, so without
+   * this they'd re-check against the image-only default and reject a
+   * legitimate PDF even when the caller had already allowed it - which is
+   * exactly what happened when resumes were first wired up. Defaults to
+   * images, matching every pre-resume consumer.
+   */
+  allowedMimeTypes?: readonly string[];
 }
 
 export interface UploadResult {
@@ -32,8 +40,7 @@ export interface UploadResult {
 /** 5MB - generous enough for a company logo, small enough to not need multipart/chunked upload handling. Bump per-consumer only once a real need shows up; not worth a caller-supplied override yet. */
 export const MAX_UPLOAD_SIZE_BYTES = 5 * 1024 * 1024;
 
-/** Image-only for now - the sole current consumer is company logos. Widen (e.g. add application/pdf for resumes) when that feature actually lands. */
-export const ALLOWED_UPLOAD_MIME_TYPES = [
+export const IMAGE_UPLOAD_MIME_TYPES = [
   "image/png",
   "image/jpeg",
   "image/webp",
@@ -41,11 +48,26 @@ export const ALLOWED_UPLOAD_MIME_TYPES = [
   "image/svg+xml",
 ] as const;
 
-export function assertValidUpload(input: Pick<UploadInput, "buffer" | "contentType">) {
+/** Resume uploads. PDF only for now - see features/resume/lib/parse.ts for why DOCX isn't in v1. */
+export const DOCUMENT_UPLOAD_MIME_TYPES = ["application/pdf"] as const;
+
+/** Back-compat default: callers that don't say otherwise get images, which is what every pre-resume consumer expected. */
+export const ALLOWED_UPLOAD_MIME_TYPES = IMAGE_UPLOAD_MIME_TYPES;
+
+/**
+ * The allowed list is per-call rather than one global union: widening the
+ * global set so resumes could be PDFs would also have let a PDF be
+ * uploaded as a company logo. Each consumer states what IT accepts.
+ */
+export function assertValidUpload(
+  input: Pick<UploadInput, "buffer" | "contentType">,
+  allowed: readonly string[] | undefined = ALLOWED_UPLOAD_MIME_TYPES
+) {
   if (input.buffer.byteLength > MAX_UPLOAD_SIZE_BYTES) {
     throw new Error(`File exceeds max upload size of ${MAX_UPLOAD_SIZE_BYTES} bytes.`);
   }
-  if (!ALLOWED_UPLOAD_MIME_TYPES.includes(input.contentType as (typeof ALLOWED_UPLOAD_MIME_TYPES)[number])) {
-    throw new Error(`Content type "${input.contentType}" is not allowed. Allowed: ${ALLOWED_UPLOAD_MIME_TYPES.join(", ")}`);
+  const list = allowed ?? ALLOWED_UPLOAD_MIME_TYPES;
+  if (!list.includes(input.contentType)) {
+    throw new Error(`Content type "${input.contentType}" is not allowed. Allowed: ${list.join(", ")}`);
   }
 }
