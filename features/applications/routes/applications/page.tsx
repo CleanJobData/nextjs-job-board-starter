@@ -14,7 +14,7 @@ export default async function ApplicationsPage() {
   const applications = userId ? await getUserApplications(userId) : [];
 
   return (
-    <PageContainer>
+    <PageContainer size="full">
       <div className="mb-8">
         <Typography variant="h1" className="mb-2">My Applications</Typography>
         <Typography className="text-muted-foreground">

@@ -3,10 +3,13 @@
 import * as React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { FaBriefcase } from "react-icons/fa6";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
+import { Card } from "@/components/ui/Card";
 import { Typography } from "@/components/ui/Typography";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
+import { EmptyState } from "@/components/ui/EmptyState";
 import { deleteJobPosting } from "../actions/job-postings";
 
 export type JobPostingRow = {
@@ -46,53 +49,54 @@ export function JobPostingsList({ postings }: { postings: JobPostingRow[] }) {
   }
 
   if (postings.length === 0) {
-    return <Typography className="text-muted-foreground">You haven&apos;t posted any jobs yet.</Typography>;
+    return (
+      <EmptyState
+        icon={<FaBriefcase />}
+        title="No job postings yet"
+        description="Once you've created a company profile, your postings will show up here for you to track and manage."
+      />
+    );
   }
 
   return (
     <div className="space-y-3">
       {postings.map((p) => (
-        <div
-          key={p.id}
-          className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 p-4 rounded-xl border border-border bg-card"
-        >
-          <div className="min-w-0">
-            <Link href={`/jobs/${p.id}`} className="font-semibold hover:text-primary truncate block">
-              {p.title}
-            </Link>
-            <Typography variant="small" className="text-muted-foreground">
-              {p.companyName}
-            </Typography>
-          </div>
-          <div className="flex items-center gap-3 shrink-0">
-            <Badge variant={STATUS_VARIANT[p.status]} className="capitalize">
-              {p.status}
-            </Badge>
-            <ConfirmDialog
-              trigger={
-                <Button variant="ghost" size="sm" disabled={pendingId === p.id}>
-                  Delete
-                </Button>
-              }
-              title="Delete this job posting?"
-              description={`This permanently deletes "${p.title}". This can't be undone.`}
-              confirmLabel="Delete"
-              onConfirm={() => onDelete(p.id)}
-            />
-          </div>
-        </div>
-      ))}
-      {postings.some((p) => p.status === "rejected" && p.rejectionReason) && (
-        <div className="space-y-2">
-          {postings
-            .filter((p) => p.status === "rejected" && p.rejectionReason)
-            .map((p) => (
-              <Typography key={p.id} variant="small" className="text-muted-foreground">
-                &quot;{p.title}&quot; was rejected: {p.rejectionReason}
+        <Card key={p.id} className="p-4 flex flex-col gap-3 transition-shadow hover:shadow-md">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
+            <div className="min-w-0 space-y-1">
+              <div className="flex flex-wrap items-center gap-2">
+                <Link href={`/jobs/${p.id}`} className="font-semibold hover:text-primary hover:underline underline-offset-2 truncate">
+                  {p.title}
+                </Link>
+                <Badge variant={STATUS_VARIANT[p.status]} className="capitalize">
+                  {p.status}
+                </Badge>
+              </div>
+              <Typography variant="small" className="text-muted-foreground">
+                {p.companyName}
               </Typography>
-            ))}
-        </div>
-      )}
+            </div>
+            <div className="flex items-center gap-2 shrink-0">
+              <ConfirmDialog
+                trigger={
+                  <Button variant="ghost" size="sm" disabled={pendingId === p.id}>
+                    Delete
+                  </Button>
+                }
+                title="Delete this job posting?"
+                description={`This permanently deletes "${p.title}". This can't be undone.`}
+                confirmLabel="Delete"
+                onConfirm={() => onDelete(p.id)}
+              />
+            </div>
+          </div>
+          {p.status === "rejected" && p.rejectionReason && (
+            <Typography variant="small" className="text-destructive border-t border-border pt-3">
+              Rejected: {p.rejectionReason}
+            </Typography>
+          )}
+        </Card>
+      ))}
     </div>
   );
 }

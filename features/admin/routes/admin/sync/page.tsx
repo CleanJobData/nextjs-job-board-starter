@@ -7,7 +7,7 @@ export default async function AdminSyncPage() {
   const statuses = await getSyncStatus();
 
   return (
-    <PageContainer size="lg">
+    <PageContainer size="full">
       <div className="mb-8">
         <Typography variant="h1" className="mb-2">
           Sync status

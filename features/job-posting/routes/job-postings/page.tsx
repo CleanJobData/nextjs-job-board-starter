@@ -20,7 +20,7 @@ export default async function JobPostingsPage() {
   }));
 
   return (
-    <PageContainer className="space-y-10">
+    <PageContainer size="full" className="space-y-10">
       <div>
         <Typography variant="h1" className="mb-2">My Job Postings</Typography>
         <Typography className="text-muted-foreground">
@@ -29,13 +29,21 @@ export default async function JobPostingsPage() {
         </Typography>
       </div>
 
-      <JobPostingsList postings={postings} />
+      <section className="space-y-3">
+        <Typography variant="h4">Your postings</Typography>
+        <JobPostingsList postings={postings} />
+      </section>
 
-      {companies.length === 0 ? (
-        <CompanyForm />
-      ) : (
-        <JobPostingForm companies={companies.map((c) => ({ id: c.id, name: c.name }))} />
-      )}
+      <section className="space-y-3">
+        <Typography variant="h4">
+          {companies.length === 0 ? "Create your company" : "Post a new job"}
+        </Typography>
+        {companies.length === 0 ? (
+          <CompanyForm />
+        ) : (
+          <JobPostingForm companies={companies.map((c) => ({ id: c.id, name: c.name }))} />
+        )}
+      </section>
     </PageContainer>
   );
 }

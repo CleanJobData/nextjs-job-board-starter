@@ -23,7 +23,12 @@ const sizeClasses = {
   md: "max-w-3xl",
   /** Wider content, e.g. admin's sync-status table. */
   lg: "max-w-4xl",
-  /** No max-w - page manages its own internal width (homepage, job detail). */
+  /**
+   * No max-w - page manages its own internal width. Used deliberately by
+   * the homepage/job-detail's sidebar+grid browse layout (the wide feel is
+   * intentional there, not an oversight) and by ui-preview's component
+   * showcase.
+   */
   full: "",
 } as const;
 

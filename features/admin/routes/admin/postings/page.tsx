@@ -31,7 +31,7 @@ export default async function AdminPostingsPage({
   const postings = await listPostingsForAdmin(status === "all" ? undefined : status);
 
   return (
-    <PageContainer>
+    <PageContainer size="full">
       <div className="mb-6">
         <Typography variant="h1" className="mb-2">
           Job moderation

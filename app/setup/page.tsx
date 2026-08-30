@@ -39,7 +39,7 @@ export default function SetupPage() {
     .every((v) => !!v.value);
 
   return (
-    <PageContainer>
+    <PageContainer size="full">
       <div className="mb-8 text-center">
         <Typography variant="h1" className="mb-2">Setup Status</Typography>
         <Typography className="text-muted-foreground">

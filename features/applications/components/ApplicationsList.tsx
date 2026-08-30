@@ -1,4 +1,6 @@
-import { Typography } from "@/components/ui/Typography";
+import { FaClipboardList } from "react-icons/fa6";
+import { Button } from "@/components/ui/Button";
+import { EmptyState } from "@/components/ui/EmptyState";
 import { ApplicationRow } from "./ApplicationRow";
 import type { ApplicationStatus } from "../actions/applications";
 
@@ -16,11 +18,12 @@ type ApplicationRowData = {
 export function ApplicationsList({ applications }: { applications: ApplicationRowData[] }) {
   if (applications.length === 0) {
     return (
-      <div className="text-center py-16">
-        <Typography variant="muted">
-          You haven&apos;t tracked any applications yet. Browse jobs and track the ones you apply to.
-        </Typography>
-      </div>
+      <EmptyState
+        icon={<FaClipboardList />}
+        title="No tracked applications yet"
+        description="Browse jobs and track the ones you apply to, so you can follow their status here."
+        action={<Button href="/">Browse jobs</Button>}
+      />
     );
   }
 

@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/Textarea";
 import { Listbox } from "@/components/ui/Listbox";
 import { Switch } from "@/components/ui/Switch";
 import { Typography } from "@/components/ui/Typography";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/Card";
 import { createJobPosting } from "../actions/job-postings";
 
 type CompanyOption = { id: string; name: string };
@@ -76,95 +77,113 @@ export function JobPostingForm({ companies }: JobPostingFormProps) {
   }
 
   return (
-    <form action={onSubmit} className="space-y-4 p-6 rounded-2xl border border-border bg-card">
-      <Typography variant="h4" className="font-bold">
-        Post a Job
-      </Typography>
-      <p className="text-xs text-muted-foreground">
-        Every new posting is reviewed by an admin before it appears publicly. It will show as
-        &quot;Pending&quot; below until then.
-      </p>
+    <Card>
+      <form action={onSubmit}>
+        <CardHeader>
+          <CardTitle className="text-xl">Post a Job</CardTitle>
+          <CardDescription>
+            Every new posting is reviewed by an admin before it appears publicly. It will show as
+            &quot;Pending&quot; on the list above until then.
+          </CardDescription>
+        </CardHeader>
 
-      <div className="space-y-1">
-        <label className="text-sm font-medium">Company</label>
-        {/* Listbox has no disabled prop (unlike Input/Textarea) - it's left
-            interactive during submission, same as Switch/GeoSuggest above;
-            the submit Button is disabled meanwhile so no double-submit risk. */}
-        <Listbox options={companyOptions} value={companyId} onChange={setCompanyId} />
-      </div>
+        <CardContent className="space-y-6 pt-0">
+          <div className="space-y-4">
+            <Typography variant="small" className="text-muted-foreground uppercase tracking-wide">
+              Basics
+            </Typography>
+            <div className="space-y-1">
+              <label className="text-sm font-medium">
+                Company <span className="text-destructive">*</span>
+              </label>
+              {/* Listbox has no disabled prop (unlike Input/Textarea) - it's left
+                  interactive during submission, same as Switch/GeoSuggest above;
+                  the submit Button is disabled meanwhile so no double-submit risk. */}
+              <Listbox options={companyOptions} value={companyId} onChange={setCompanyId} />
+            </div>
 
-      <div className="space-y-1">
-        <label htmlFor="title" className="text-sm font-medium">
-          Job title
-        </label>
-        <Input id="title" name="title" required disabled={pending} />
-      </div>
+            <div className="space-y-1">
+              <label htmlFor="title" className="text-sm font-medium">
+                Job title <span className="text-destructive">*</span>
+              </label>
+              <Input id="title" name="title" required disabled={pending} />
+            </div>
 
-      <div className="space-y-1">
-        <label htmlFor="description" className="text-sm font-medium">
-          Description
-        </label>
-        <Textarea id="description" name="description" required rows={6} disabled={pending} />
-      </div>
+            <div className="space-y-1">
+              <label htmlFor="description" className="text-sm font-medium">
+                Description <span className="text-destructive">*</span>
+              </label>
+              <Textarea id="description" name="description" required rows={6} disabled={pending} />
+            </div>
+          </div>
 
-      <div className="space-y-1">
-        <label className="text-sm font-medium">Location</label>
-        <GeoSuggest selectedLocations={locations} onChange={setLocations} />
-      </div>
+          <div className="space-y-4 border-t border-border pt-6">
+            <Typography variant="small" className="text-muted-foreground uppercase tracking-wide">
+              Location &amp; type
+            </Typography>
+            <div className="space-y-1">
+              <label className="text-sm font-medium">Location</label>
+              <GeoSuggest selectedLocations={locations} onChange={setLocations} />
+            </div>
 
-      {/* Switch is a controlled boolean component (checked/onChange), same
-          category as Listbox above - no name= attribute, so hasRemote is
-          read from React state in onSubmit rather than formData. */}
-      <Switch checked={hasRemote} onChange={setHasRemote} label="Remote friendly" />
+            {/* Switch is a controlled boolean component (checked/onChange), same
+                category as Listbox above - no name= attribute, so hasRemote is
+                read from React state in onSubmit rather than formData. */}
+            <Switch checked={hasRemote} onChange={setHasRemote} label="Remote friendly" />
 
-      {/* grid-cols-1 sm:grid-cols-3: the original grid-cols-3 with no
-          breakpoint squeezed three inputs (employment type, salary min,
-          salary max) into unreadably narrow columns below the sm breakpoint
-          - stacks to one column on mobile, matching the sm breakpoint phase
-          1's MobileNav already established as this codebase's mobile cutoff. */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-        <div className="space-y-1">
-          <label htmlFor="employmentType" className="text-sm font-medium">
-            Employment type
-          </label>
-          <Input id="employmentType" name="employmentType" placeholder="full_time" disabled={pending} />
-        </div>
-        <div className="space-y-1">
-          <label htmlFor="salaryMin" className="text-sm font-medium">
-            Salary min
-          </label>
-          <Input id="salaryMin" name="salaryMin" type="number" disabled={pending} />
-        </div>
-        <div className="space-y-1">
-          <label htmlFor="salaryMax" className="text-sm font-medium">
-            Salary max
-          </label>
-          <Input id="salaryMax" name="salaryMax" type="number" disabled={pending} />
-        </div>
-      </div>
+            {/* grid-cols-1 sm:grid-cols-3: the original grid-cols-3 with no
+                breakpoint squeezed three inputs (employment type, salary min,
+                salary max) into unreadably narrow columns below the sm breakpoint
+                - stacks to one column on mobile, matching the sm breakpoint phase
+                1's MobileNav already established as this codebase's mobile cutoff. */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div className="space-y-1">
+                <label htmlFor="employmentType" className="text-sm font-medium">
+                  Employment type
+                </label>
+                <Input id="employmentType" name="employmentType" placeholder="full_time" disabled={pending} />
+              </div>
+              <div className="space-y-1">
+                <label htmlFor="salaryMin" className="text-sm font-medium">
+                  Salary min
+                </label>
+                <Input id="salaryMin" name="salaryMin" type="number" disabled={pending} />
+              </div>
+              <div className="space-y-1">
+                <label htmlFor="salaryMax" className="text-sm font-medium">
+                  Salary max
+                </label>
+                <Input id="salaryMax" name="salaryMax" type="number" disabled={pending} />
+              </div>
+            </div>
+          </div>
 
-      <div className="space-y-1">
-        <label htmlFor="applicationUrl" className="text-sm font-medium">
-          Application URL
-        </label>
-        <Input
-          id="applicationUrl"
-          name="applicationUrl"
-          type="url"
-          required
-          placeholder="https://..."
-          disabled={pending}
-        />
-        <p className="text-xs text-muted-foreground">
-          v1 only supports linking out to an external application page - there is no on-site apply flow.
-        </p>
-      </div>
+          <div className="space-y-1 border-t border-border pt-6">
+            <label htmlFor="applicationUrl" className="text-sm font-medium">
+              Application URL <span className="text-destructive">*</span>
+            </label>
+            <Input
+              id="applicationUrl"
+              name="applicationUrl"
+              type="url"
+              required
+              placeholder="https://..."
+              disabled={pending}
+            />
+            <p className="text-xs text-muted-foreground">
+              v1 only supports linking out to an external application page - there is no on-site apply flow.
+            </p>
+          </div>
 
-      {error && <p className="text-sm text-destructive">{error}</p>}
+          {error && <p className="text-sm text-destructive">{error}</p>}
+        </CardContent>
 
-      <Button type="submit" disabled={pending}>
-        {pending ? "Posting..." : "Submit for review"}
-      </Button>
-    </form>
+        <CardFooter>
+          <Button type="submit" disabled={pending}>
+            {pending ? "Posting..." : "Submit for review"}
+          </Button>
+        </CardFooter>
+      </form>
+    </Card>
   );
 }

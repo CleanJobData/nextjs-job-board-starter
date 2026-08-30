@@ -12,7 +12,7 @@ const SECTIONS = [
 /** Landing page for the /admin route group - three distinct sections, each with its own real data table, so they're separate routes rather than tabs on one page (see AGENTS.md's phase 3 spec). */
 export default function AdminHomePage() {
   return (
-    <PageContainer>
+    <PageContainer size="full">
       <Typography variant="h1" className="mb-8">
         Admin
       </Typography>

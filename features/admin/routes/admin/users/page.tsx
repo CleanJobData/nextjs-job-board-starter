@@ -9,7 +9,7 @@ export default async function AdminUsersPage() {
   const currentUserId = session?.user?.id;
 
   return (
-    <PageContainer>
+    <PageContainer size="full">
       <div className="mb-8">
         <Typography variant="h1" className="mb-2">
           Users
