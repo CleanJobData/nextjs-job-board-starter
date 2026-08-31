@@ -12,6 +12,8 @@
 export interface StorageAdapter {
   upload(input: UploadInput): Promise<UploadResult>;
   delete(key: string): Promise<void>;
+  /** Reads a stored object back. Needed to re-process an existing upload (e.g. re-running resume extraction after the extractor improves) without asking the user to upload it again. */
+  read(key: string): Promise<Buffer>;
 }
 
 export interface UploadInput {

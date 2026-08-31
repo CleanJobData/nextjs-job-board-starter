@@ -1,5 +1,6 @@
 import { pgTable, text, timestamp, boolean, jsonb, index } from "drizzle-orm/pg-core";
 import { users } from "@/features/auth/db/schema";
+import type { AtsReport } from "../lib/ats";
 
 /** The structured shape both parsing and the builder produce - see lib/parse.ts. */
 export type ResumeContact = {
@@ -23,12 +24,34 @@ export type ResumeEducation = {
   dates: string | null;
 };
 
+export type ResumeProject = {
+  name: string | null;
+  description: string | null;
+};
+
+/**
+ * A recognised-but-unmodelled section - certifications, awards, languages,
+ * volunteering, and the rest of parse.ts's SECTION_PATTERNS "other" bucket.
+ * Generic rather than one typed field per category: those headings are too
+ * varied and too rare individually to justify their own field each, and
+ * this is exactly how the parser already treats them - "a heading with a
+ * body," nothing more specific.
+ */
+export type ResumeAdditionalSection = {
+  heading: string;
+  content: string;
+};
+
 export type ResumeContent = {
   contact: ResumeContact;
   summary: string | null;
   skills: string[];
   experience: ResumeExperience[];
   education: ResumeEducation[];
+  /** Captured separately from experience - a "Personal Projects" section used to be discarded entirely. */
+  projects: ResumeProject[];
+  /** Certifications, awards, languages, etc. - see ResumeAdditionalSection. */
+  additionalSections: ResumeAdditionalSection[];
 };
 
 /**
@@ -68,6 +91,8 @@ export const resumes = pgTable(
     fileName: text("fileName"),
     rawText: text("rawText"),
     content: jsonb("content").$type<ResumeContent>().notNull(),
+    /** Latest ATS analysis (features/resume/lib/ats.ts). Null for resumes built in-app, which have no uploaded PDF to analyse. */
+    atsReport: jsonb("atsReport").$type<AtsReport | null>(),
     isDefault: boolean("isDefault").notNull().default(false),
     createdAt: timestamp("createdAt", { mode: "date", withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp("updatedAt", { mode: "date", withTimezone: true }).notNull().defaultNow(),

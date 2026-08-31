@@ -32,7 +32,7 @@ export function PreferencesEditor({ initial }: { initial: PreferenceDraft }) {
   }
 
   return (
-    <Card>
+    <Card className="max-w-2xl">
       <CardContent className="p-5 space-y-6">
         <div>
           <Typography variant="h4">Job preferences</Typography>

@@ -18,11 +18,12 @@ export default async function ResumePage() {
     hasRawText: Boolean(r.rawText),
     isDefault: r.isDefault,
     content: r.content,
+    atsReport: r.atsReport,
     updatedAt: r.updatedAt.toISOString(),
   }));
 
   return (
-    <PageContainer size="md" className="space-y-6">
+    <PageContainer size="full" className="space-y-6">
       <div>
         <Typography variant="h1" className="text-3xl font-bold tracking-tight mb-1">
           Resumes

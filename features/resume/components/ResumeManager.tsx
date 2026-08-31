@@ -1,8 +1,9 @@
 "use client";
 
 import * as React from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { FaFileLines, FaStar, FaArrowUpRightFromSquare, FaWandMagicSparkles } from "react-icons/fa6";
+import { FaFileLines, FaStar, FaArrowUpRightFromSquare, FaWandMagicSparkles, FaDownload, FaEye } from "react-icons/fa6";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent } from "@/components/ui/Card";
@@ -12,14 +13,14 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { Input } from "@/components/ui/Input";
 import { Typography } from "@/components/ui/Typography";
 import type { ResumeContent } from "../db/schema";
+import type { AtsReport } from "../lib/ats";
 import {
   createResume,
   deleteResume,
-  reparseResume,
+  reextractResume,
   setDefaultResume,
   uploadResume,
 } from "../actions/resumes";
-import { ResumeEditor } from "./ResumeEditor";
 
 export type ResumeRow = {
   id: string;
@@ -30,12 +31,12 @@ export type ResumeRow = {
   hasRawText: boolean;
   isDefault: boolean;
   content: ResumeContent;
+  atsReport: AtsReport | null;
   updatedAt: string;
 };
 
 export function ResumeManager({ resumes }: { resumes: ResumeRow[] }) {
   const router = useRouter();
-  const [editing, setEditing] = React.useState<ResumeRow | null>(null);
   const [creating, setCreating] = React.useState(false);
   const [newTitle, setNewTitle] = React.useState("");
   const [pending, startTransition] = React.useTransition();
@@ -48,8 +49,8 @@ export function ResumeManager({ resumes }: { resumes: ResumeRow[] }) {
     setError(null);
     startTransition(async () => {
       try {
-        await uploadResume({ file });
-        router.refresh();
+        const created = await uploadResume({ file });
+        router.push(`/resume/${created.id}/edit`);
       } catch (err: any) {
         setError(err?.message ?? "Upload failed.");
       } finally {
@@ -62,10 +63,8 @@ export function ResumeManager({ resumes }: { resumes: ResumeRow[] }) {
     setError(null);
     startTransition(async () => {
       try {
-        await createResume({ title: newTitle });
-        setCreating(false);
-        setNewTitle("");
-        router.refresh();
+        const created = await createResume({ title: newTitle });
+        router.push(`/resume/${created.id}/edit`);
       } catch (err: any) {
         setError(err?.message ?? "Could not create resume.");
       }
@@ -130,6 +129,21 @@ export function ResumeManager({ resumes }: { resumes: ResumeRow[] }) {
                 </div>
 
                 <div className="flex flex-wrap items-center gap-2 shrink-0">
+                  <Button size="sm" variant="ghost" asChild>
+                    <Link href={`/resume/${r.id}`}>
+                      <FaEye className="h-3 w-3 mr-1.5" /> View
+                    </Link>
+                  </Button>
+                  {r.atsReport && (
+                    <Button size="sm" variant="ghost" asChild>
+                      <Link href={`/resume/${r.id}`}>ATS score {r.atsReport.score}</Link>
+                    </Button>
+                  )}
+                  <Button size="sm" variant="ghost" asChild>
+                    <a href={`/api/resume/${r.id}/pdf`}>
+                      <FaDownload className="h-3 w-3 mr-1.5" /> Download PDF
+                    </a>
+                  </Button>
                   {r.fileUrl && (
                     <Button size="sm" variant="ghost" asChild>
                       <a href={r.fileUrl} target="_blank" rel="noopener noreferrer">
@@ -137,20 +151,20 @@ export function ResumeManager({ resumes }: { resumes: ResumeRow[] }) {
                       </a>
                     </Button>
                   )}
-                  {r.hasRawText && (
+                  {r.fileUrl && (
                     <Button
                       size="sm"
                       variant="ghost"
                       disabled={pending}
-                      title="Run the parser over this resume again"
+                      title="Re-read the original PDF and re-run extraction, parsing and the ATS check"
                       onClick={() =>
                         startTransition(async () => {
-                          await reparseResume(r.id);
+                          await reextractResume(r.id);
                           router.refresh();
                         })
                       }
                     >
-                      <FaWandMagicSparkles className="h-3 w-3 mr-1.5" /> Re-parse
+                      <FaWandMagicSparkles className="h-3 w-3 mr-1.5" /> Re-analyse
                     </Button>
                   )}
                   {!r.isDefault && (
@@ -168,8 +182,8 @@ export function ResumeManager({ resumes }: { resumes: ResumeRow[] }) {
                       Make default
                     </Button>
                   )}
-                  <Button size="sm" variant="outline" onClick={() => setEditing(r)}>
-                    Edit
+                  <Button size="sm" variant="outline" asChild>
+                    <Link href={`/resume/${r.id}/edit`}>Edit</Link>
                   </Button>
                   <ConfirmDialog
                     trigger={
@@ -193,24 +207,6 @@ export function ResumeManager({ resumes }: { resumes: ResumeRow[] }) {
           ))}
         </div>
       )}
-
-      <Dialog
-        isOpen={!!editing}
-        onClose={() => setEditing(null)}
-        title={editing ? `Edit ${editing.title}` : undefined}
-        className="max-w-3xl"
-      >
-        {editing && (
-          <div className="max-h-[70vh] overflow-y-auto pr-1">
-            <ResumeEditor
-              id={editing.id}
-              initialTitle={editing.title}
-              initialContent={editing.content}
-              onSaved={() => setEditing(null)}
-            />
-          </div>
-        )}
-      </Dialog>
 
       <Dialog isOpen={creating} onClose={() => setCreating(false)} title="Create a resume" className="max-w-md">
         <div className="space-y-4">

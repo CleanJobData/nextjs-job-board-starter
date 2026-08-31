@@ -1,4 +1,4 @@
-import { mkdir, writeFile, unlink } from "fs/promises";
+import { mkdir, writeFile, unlink, readFile } from "fs/promises";
 import path from "path";
 import { nanoid } from "nanoid";
 import type { StorageAdapter, UploadInput, UploadResult } from "./types";
@@ -46,6 +46,15 @@ class LocalStorageAdapter implements StorageAdapter {
     await writeFile(finalPath, input.buffer);
 
     return { key, url: `/api/uploads/${key}` };
+  }
+
+  async read(key: string): Promise<Buffer> {
+    // Same traversal guard as delete() - a key is caller-supplied data.
+    const resolved = path.join(UPLOADS_ROOT, key);
+    if (!resolved.startsWith(UPLOADS_ROOT + path.sep)) {
+      throw new Error("Invalid storage key.");
+    }
+    return readFile(resolved);
   }
 
   async delete(key: string): Promise<void> {

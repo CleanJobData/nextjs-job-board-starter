@@ -9,7 +9,10 @@ import { getStorageAdapter } from "@/lib/storage";
 import { assertValidUpload, DOCUMENT_UPLOAD_MIME_TYPES } from "@/lib/storage/types";
 import featuresConfig from "@/features.config";
 import { resumes, type ResumeContent } from "../db/schema";
-import { emptyResumeContent, extractPdfText, parseResumeText } from "../lib/parse";
+import { emptyResumeContent, parseResumeText } from "../lib/parse";
+import { extractPdfContent } from "../lib/extract";
+import { analyseAts, type AtsReport } from "../lib/ats";
+import { parseResumeWithAi } from "../lib/ai-parse";
 
 const RESUME_PATH = "/resume";
 
@@ -34,6 +37,12 @@ async function requireOwnedResume(userId: string, resumeId: string) {
     .limit(1);
   if (!row) throw new Error("Resume not found.");
   return row;
+}
+
+/** Single-resume, ownership-checked fetch - the `/resume/[id]` preview and edit pages both need exactly this. */
+export async function getResume(id: string) {
+  const userId = await requireUserId();
+  return requireOwnedResume(userId, id);
 }
 
 export async function getMyResumes() {
@@ -77,10 +86,16 @@ export async function uploadResume(input: { file: File; title?: string }) {
 
   let rawText: string | null = null;
   let content: ResumeContent = emptyResumeContent();
+  let atsReport: AtsReport | null = null;
   if (featuresConfig.resume.parsing) {
     try {
-      rawText = await extractPdfText(buffer);
-      content = parseResumeText(rawText);
+      // One extraction pass feeds both the parser and the ATS analysis -
+      // they need the same positioned text, and re-reading the PDF twice
+      // would just be slower for identical input.
+      const pdfContent = await extractPdfContent(buffer);
+      atsReport = analyseAts(pdfContent);
+      rawText = atsReport.layoutAwareText;
+      content = await parseWithBestAvailable(rawText);
     } catch {
       // Keep the upload; leave the parsed fields empty for manual entry.
       rawText = null;
@@ -100,6 +115,7 @@ export async function uploadResume(input: { file: File; title?: string }) {
       fileName: input.file.name,
       rawText,
       content,
+      atsReport,
       // First resume becomes the default automatically - a user with exactly
       // one resume shouldn't have to also declare it the default.
       isDefault: existing.length === 0,
@@ -107,6 +123,7 @@ export async function uploadResume(input: { file: File; title?: string }) {
     .returning();
 
   revalidatePath(RESUME_PATH);
+  if (!created) throw new Error("Failed to create resume.");
   return created;
 }
 
@@ -127,6 +144,7 @@ export async function createResume(input: { title: string }) {
     .returning();
 
   revalidatePath(RESUME_PATH);
+  if (!created) throw new Error("Failed to create resume.");
   return created;
 }
 
@@ -147,7 +165,32 @@ export async function updateResume(input: { id: string; title?: string; content?
   revalidatePath(RESUME_PATH);
 }
 
-/** Re-runs the parser over the stored rawText - lets an improved parser be applied without asking for a re-upload. */
+/**
+ * AI parsing when features.config.ts's resume.aiParsing is on AND a real
+ * ANTHROPIC_API_KEY is configured; the heuristic parser otherwise, and as
+ * a fallback if the AI call itself comes back empty (parseResumeWithAi
+ * never throws - see its doc comment).
+ */
+async function parseWithBestAvailable(text: string): Promise<ResumeContent> {
+  if (featuresConfig.resume.aiParsing) {
+    const aiResult = await parseResumeWithAi(text);
+    if (aiResult) return aiResult;
+  }
+  return parseResumeText(text);
+}
+
+/**
+ * Re-runs the parser over the stored rawText.
+ *
+ * `rawText` is retained precisely so parser improvements can reach resumes
+ * that were uploaded before them - without this, every stored parse stays
+ * frozen at whatever the parser did on upload day, and a user sees stale,
+ * already-fixed mistakes until they happen to re-upload the same file.
+ *
+ * Note this re-parses the stored TEXT, not the original PDF: improvements
+ * to extraction itself (reading order, wrapped-line joining) need
+ * reextractResume() below, which goes back to the file.
+ */
 export async function reparseResume(id: string) {
   const userId = await requireUserId();
   const row = await requireOwnedResume(userId, id);
@@ -156,7 +199,36 @@ export async function reparseResume(id: string) {
   const db = requireDb();
   await db
     .update(resumes)
-    .set({ content: parseResumeText(row.rawText), updatedAt: new Date() })
+    .set({ content: await parseWithBestAvailable(row.rawText), updatedAt: new Date() })
+    .where(eq(resumes.id, id));
+
+  revalidatePath(RESUME_PATH);
+}
+
+/**
+ * Re-reads the ORIGINAL uploaded PDF: re-extracts text, re-runs the ATS
+ * analysis, and re-parses. This is what picks up extraction-level fixes
+ * (column detection, wrapped-line joining), which reparseResume() cannot,
+ * since those change the text itself rather than how it's interpreted.
+ */
+export async function reextractResume(id: string) {
+  const userId = await requireUserId();
+  const row = await requireOwnedResume(userId, id);
+  if (!row.fileKey) throw new Error("This resume has no uploaded file to re-read.");
+
+  const buffer = await getStorageAdapter().read(row.fileKey);
+  const pdfContent = await extractPdfContent(buffer);
+  const report = analyseAts(pdfContent);
+
+  const db = requireDb();
+  await db
+    .update(resumes)
+    .set({
+      rawText: report.layoutAwareText,
+      atsReport: report,
+      content: await parseWithBestAvailable(report.layoutAwareText),
+      updatedAt: new Date(),
+    })
     .where(eq(resumes.id, id));
 
   revalidatePath(RESUME_PATH);

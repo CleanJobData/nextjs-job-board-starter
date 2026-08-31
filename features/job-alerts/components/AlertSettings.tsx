@@ -36,7 +36,7 @@ export function AlertSettings({
   }
 
   return (
-    <Card>
+    <Card className="max-w-2xl">
       <CardContent className="p-5 space-y-4">
         <div>
           <Typography variant="h4">Email alerts</Typography>

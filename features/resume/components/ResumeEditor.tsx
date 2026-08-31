@@ -9,24 +9,31 @@ import { Textarea } from "@/components/ui/Textarea";
 import { Typography } from "@/components/ui/Typography";
 import type { ResumeContent } from "../db/schema";
 import { updateResume } from "../actions/resumes";
+import { parseLinkLine } from "../lib/markdown";
+import { MarkdownHelp } from "./MarkdownHelp";
+import { ResumePreview } from "./ResumePreview";
 
 /** Every parsed field is editable here by design - the parser is a best-effort head start (see lib/parse.ts), so the user always gets the final say. */
 export function ResumeEditor({
   id,
   initialTitle,
   initialContent,
-  onSaved,
 }: {
   id: string;
   initialTitle: string;
   initialContent: ResumeContent;
-  onSaved?: () => void;
 }) {
   const router = useRouter();
   const [title, setTitle] = React.useState(initialTitle);
-  const [content, setContent] = React.useState<ResumeContent>(initialContent);
+  // Defensive defaults, not just types: rows saved before `projects`/
+  // `additionalSections` existed are still real JSONB in the DB with those
+  // keys simply absent, and there's no migration step for a JSONB column.
+  const [content, setContent] = React.useState<ResumeContent>(() => ({
+    ...initialContent,
+    projects: initialContent.projects ?? [],
+    additionalSections: initialContent.additionalSections ?? [],
+  }));
   const [pending, startTransition] = React.useTransition();
-  const [saved, setSaved] = React.useState(false);
 
   const dirty =
     title !== initialTitle || JSON.stringify(content) !== JSON.stringify(initialContent);
@@ -39,16 +46,15 @@ export function ResumeEditor({
   }
 
   function save() {
-    setSaved(false);
     startTransition(async () => {
       await updateResume({ id, title, content });
-      setSaved(true);
-      onSaved?.();
+      router.push(`/resume/${id}`);
       router.refresh();
     });
   }
 
   return (
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
     <div className="space-y-6">
       <div className="space-y-1">
         <label className="text-sm font-medium">Resume name</label>
@@ -83,12 +89,53 @@ export function ResumeEditor({
             disabled={pending}
           />
         </div>
+        <div className="space-y-1">
+          <div className="flex items-center justify-between gap-1.5">
+            <Typography variant="small" className="font-medium">Links</Typography>
+            <MarkdownHelp />
+          </div>
+          <Textarea
+            rows={3}
+            placeholder={"[Portfolio](https://example.com)\ngithub.com/you\nlinkedin.com/in/you"}
+            value={content.contact.links.join("\n")}
+            onChange={(e) =>
+              setContact(
+                "links",
+                e.target.value.split("\n").map((l) => l.trim()).filter(Boolean)
+              )
+            }
+            disabled={pending}
+          />
+          {content.contact.links.length > 0 && (
+            <div className="flex flex-wrap gap-2 pt-1">
+              {content.contact.links.map((l, i) => {
+                const { label, href } = parseLinkLine(l);
+                return (
+                  <a
+                    key={i}
+                    href={href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    title={href}
+                    className="rounded-md bg-muted px-2 py-0.5 text-xs text-primary hover:underline"
+                  >
+                    {label}
+                  </a>
+                );
+              })}
+            </div>
+          )}
+        </div>
       </section>
 
       <section className="space-y-3">
-        <Typography variant="overline">Summary</Typography>
+        <div className="flex items-center justify-between gap-1.5">
+          <Typography variant="overline">Summary</Typography>
+          <MarkdownHelp />
+        </div>
         <Textarea
           rows={4}
+          className="min-h-[400px]"
           placeholder="A short professional summary..."
           value={content.summary ?? ""}
           onChange={(e) => setContent((c) => ({ ...c, summary: e.target.value || null }))}
@@ -174,8 +221,13 @@ export function ResumeEditor({
                 disabled={pending}
               />
             </div>
+            <div className="flex items-center justify-between gap-1.5">
+              <Typography variant="small" className="text-muted-foreground">Description</Typography>
+              <MarkdownHelp />
+            </div>
             <Textarea
               rows={3}
+              className="min-h-[400px]"
               placeholder="What you worked on..."
               value={exp.description ?? ""}
               onChange={(e) =>
@@ -279,16 +331,164 @@ export function ResumeEditor({
         ))}
       </section>
 
-      <div className="flex items-center justify-end gap-3 border-t border-border pt-4">
-        {saved && !dirty && (
-          <Typography variant="small" className="text-muted-foreground">
-            Saved
-          </Typography>
+      <section className="space-y-3">
+        <div className="flex items-center justify-between">
+          <Typography variant="overline">Projects</Typography>
+          <Button
+            size="sm"
+            variant="outline"
+            disabled={pending}
+            onClick={() =>
+              setContent((c) => ({
+                ...c,
+                projects: [...c.projects, { name: null, description: null }],
+              }))
+            }
+          >
+            <FaPlus className="h-3 w-3 mr-1.5" /> Add
+          </Button>
+        </div>
+        {content.projects.length === 0 && (
+          <Typography variant="muted">No projects added yet.</Typography>
         )}
+        {content.projects.map((pr, i) => (
+          <div key={i} className="rounded-lg border border-border p-4 space-y-3">
+            <Input
+              placeholder="Project name"
+              value={pr.name ?? ""}
+              onChange={(e) =>
+                setContent((c) => {
+                  const next = [...c.projects];
+                  next[i] = { ...next[i]!, name: e.target.value || null };
+                  return { ...c, projects: next };
+                })
+              }
+              disabled={pending}
+            />
+            <div className="flex items-center justify-between gap-1.5">
+              <Typography variant="small" className="text-muted-foreground">Description</Typography>
+              <MarkdownHelp />
+            </div>
+            <Textarea
+              rows={3}
+              className="min-h-[400px]"
+              placeholder="What it does, your role, tech used..."
+              value={pr.description ?? ""}
+              onChange={(e) =>
+                setContent((c) => {
+                  const next = [...c.projects];
+                  next[i] = { ...next[i]!, description: e.target.value || null };
+                  return { ...c, projects: next };
+                })
+              }
+              disabled={pending}
+            />
+            <div className="flex justify-end">
+              <Button
+                size="sm"
+                variant="ghost"
+                disabled={pending}
+                onClick={() =>
+                  setContent((c) => ({ ...c, projects: c.projects.filter((_, j) => j !== i) }))
+                }
+              >
+                <FaTrash className="h-3 w-3 mr-1.5" /> Remove
+              </Button>
+            </div>
+          </div>
+        ))}
+      </section>
+
+      <section className="space-y-3">
+        <div className="flex items-center justify-between">
+          <Typography variant="overline">Additional sections</Typography>
+          <Button
+            size="sm"
+            variant="outline"
+            disabled={pending}
+            onClick={() =>
+              setContent((c) => ({
+                ...c,
+                additionalSections: [...c.additionalSections, { heading: "", content: "" }],
+              }))
+            }
+          >
+            <FaPlus className="h-3 w-3 mr-1.5" /> Add
+          </Button>
+        </div>
+        <Typography variant="small" className="text-muted-foreground">
+          Certifications, awards, languages, volunteering - anything that doesn&apos;t fit the sections above.
+        </Typography>
+        {content.additionalSections.length === 0 && (
+          <Typography variant="muted">No additional sections added yet.</Typography>
+        )}
+        {content.additionalSections.map((s, i) => (
+          <div key={i} className="rounded-lg border border-border p-4 space-y-3">
+            <Input
+              placeholder="Section heading, e.g. Certifications"
+              value={s.heading}
+              onChange={(e) =>
+                setContent((c) => {
+                  const next = [...c.additionalSections];
+                  next[i] = { ...next[i]!, heading: e.target.value };
+                  return { ...c, additionalSections: next };
+                })
+              }
+              disabled={pending}
+            />
+            <div className="flex items-center justify-between gap-1.5">
+              <Typography variant="small" className="text-muted-foreground">Content</Typography>
+              <MarkdownHelp />
+            </div>
+            <Textarea
+              rows={3}
+              className="min-h-[400px]"
+              placeholder={"- AWS Certified Solutions Architect (2022)\n- Spanish (Fluent)"}
+              value={s.content}
+              onChange={(e) =>
+                setContent((c) => {
+                  const next = [...c.additionalSections];
+                  next[i] = { ...next[i]!, content: e.target.value };
+                  return { ...c, additionalSections: next };
+                })
+              }
+              disabled={pending}
+            />
+            <div className="flex justify-end">
+              <Button
+                size="sm"
+                variant="ghost"
+                disabled={pending}
+                onClick={() =>
+                  setContent((c) => ({
+                    ...c,
+                    additionalSections: c.additionalSections.filter((_, j) => j !== i),
+                  }))
+                }
+              >
+                <FaTrash className="h-3 w-3 mr-1.5" /> Remove
+              </Button>
+            </div>
+          </div>
+        ))}
+      </section>
+
+      <div className="flex items-center justify-end gap-3 border-t border-border pt-4">
+        <Button variant="outline" disabled={pending} onClick={() => router.push(`/resume/${id}`)}>
+          Cancel
+        </Button>
         <Button disabled={!dirty || pending} onClick={save}>
           {pending ? "Saving..." : "Save resume"}
         </Button>
       </div>
+    </div>
+
+    <div className="lg:sticky lg:top-6 space-y-3">
+      <Typography variant="overline">Live preview</Typography>
+      <div className="rounded-lg border border-border p-6 max-h-[calc(100vh-8rem)] overflow-y-auto">
+        <ResumePreview content={content} />
+      </div>
+    </div>
     </div>
   );
 }
