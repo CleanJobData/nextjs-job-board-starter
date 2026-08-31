@@ -85,7 +85,15 @@ function buildStyles(template: "classic" | "banner" | "executive") {
     bannerName: { fontSize: 22, fontWeight: bold, color: "#ffffff", marginBottom: 8 },
     bannerContactCol: { flexDirection: "column", gap: 3 },
     bannerContactText: { color: "#cbd5e1", fontSize: 10 },
+    bannerLinkRow: { flexDirection: "row", flexWrap: "wrap", gap: 10, marginTop: 6 },
     bannerLink: { color: "#93c5fd", textDecoration: "none" },
+    linksRow: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      justifyContent: cfg.headerAlign === "center" ? "center" : "flex-start",
+      gap: 10,
+      marginTop: 3,
+    },
     header: { marginBottom: template === "executive" ? 22 : 16, alignItems: cfg.headerAlign === "center" ? "center" : "flex-start" },
     name: {
       fontSize: template === "executive" ? 22 : 20,
@@ -244,15 +252,19 @@ function LinearResumeDocument({ content, template }: { content: ResumeContent; t
                   {c}
                 </Text>
               ))}
-              {contact.links.map((l, i) => {
-                const { label, href } = parseLinkLine(l);
-                return (
-                  <Link key={`l-${i}`} src={href} style={styles.bannerLink}>
-                    {label}
-                  </Link>
-                );
-              })}
             </View>
+            {contact.links.length > 0 && (
+              <View style={styles.bannerLinkRow}>
+                {contact.links.map((l, i) => {
+                  const { label, href } = parseLinkLine(l);
+                  return (
+                    <Link key={`l-${i}`} src={href} style={styles.bannerLink}>
+                      {label}
+                    </Link>
+                  );
+                })}
+              </View>
+            )}
           </View>
         )}
 
@@ -260,11 +272,15 @@ function LinearResumeDocument({ content, template }: { content: ResumeContent; t
           {template !== "banner" && (
             <View style={styles.header}>
               {contact.name && <Text style={styles.name}>{contact.name}</Text>}
-              {(plainContact.length > 0 || contact.links.length > 0) && (
+              {plainContact.length > 0 && (
                 <View style={styles.contactRow}>
                   {plainContact.map((c, i) => (
                     <Text key={`c-${i}`}>{c}</Text>
                   ))}
+                </View>
+              )}
+              {contact.links.length > 0 && (
+                <View style={styles.linksRow}>
                   {contact.links.map((l, i) => {
                     const { label, href } = parseLinkLine(l);
                     return (
@@ -360,13 +376,18 @@ function LinearResumeDocument({ content, template }: { content: ResumeContent; t
 
 const sidebarStyles = StyleSheet.create({
   page: { flexDirection: "row", fontSize: 10, fontFamily: "Helvetica", color: "#1a1a1a" },
-  sidebar: { width: 190, minHeight: "100%", backgroundColor: BANNER_DARK, padding: 24 },
-  sidebarName: { fontSize: 17, fontWeight: 700, color: "#ffffff", marginBottom: 14 },
+  // Wide enough that a full email or "linkedin.com/in/username" fits on one
+  // or two wrapped lines rather than overflowing the coloured box - the
+  // first version's 190pt was too narrow for real contact info.
+  sidebar: { width: 230, minHeight: "100%", backgroundColor: BANNER_DARK, padding: 20 },
+  sidebarName: { fontSize: 16, fontWeight: 700, color: "#ffffff", marginBottom: 14 },
   sidebarSectionTitle: { fontSize: 9, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1.5, color: "#93c5fd", marginTop: 16, marginBottom: 6 },
-  sidebarText: { color: "#e2e8f0", marginBottom: 3, lineHeight: 1.4 },
-  sidebarLink: { color: "#93c5fd", textDecoration: "none", marginBottom: 3 },
-  sidebarSkill: { color: "#e2e8f0", marginBottom: 2 },
-  main: { flex: 1, padding: 32 },
+  // wordBreak so an unbroken long string (a URL, a long email) wraps
+  // inside the column instead of running past its edge.
+  sidebarText: { color: "#e2e8f0", marginBottom: 4, lineHeight: 1.4, fontSize: 9, wordBreak: "break-all" },
+  sidebarLink: { color: "#93c5fd", textDecoration: "none", marginBottom: 4, fontSize: 9, wordBreak: "break-all" },
+  sidebarSkill: { color: "#e2e8f0", marginBottom: 3, fontSize: 9, wordBreak: "break-all" },
+  main: { flex: 1, padding: 28 },
   sectionTitleRow: { flexDirection: "row", alignItems: "center", gap: 6, marginTop: 14, marginBottom: 6 },
   sectionTitleBar: { width: 3, height: 10, backgroundColor: BANNER_DARK },
   sectionTitle: { fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1, color: "#1a1a1a" },

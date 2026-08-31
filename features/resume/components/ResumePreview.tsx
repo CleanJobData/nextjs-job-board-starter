@@ -149,12 +149,18 @@ function LinearPreview({
       {template === "banner" ? (
         <div className="-mx-6 -mt-6 mb-4 px-6 py-6 rounded-t-lg" style={{ backgroundColor: BANNER_DARK }}>
           {contact.name && <Typography variant="h3" className="text-white">{contact.name}</Typography>}
-          <div className="mt-2 flex flex-col gap-0.5 text-sm" style={{ color: "#cbd5e1" }}>
-            {plainContact.map((c, i) => (
-              <span key={i}>{c}</span>
-            ))}
-            <ContactLinks links={contact.links} className="text-sky-300 hover:underline" />
-          </div>
+          {plainContact.length > 0 && (
+            <div className="mt-2 flex flex-col gap-0.5 text-sm" style={{ color: "#cbd5e1" }}>
+              {plainContact.map((c, i) => (
+                <span key={i}>{c}</span>
+              ))}
+            </div>
+          )}
+          {contact.links.length > 0 && (
+            <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
+              <ContactLinks links={contact.links} className="text-sky-300 hover:underline" />
+            </div>
+          )}
         </div>
       ) : (
         <div className={template === "executive" ? "text-center" : "text-left"}>
@@ -166,7 +172,7 @@ function LinearPreview({
               {contact.name}
             </Typography>
           )}
-          {(plainContact.length > 0 || contact.links.length > 0) && (
+          {plainContact.length > 0 && (
             <div
               className={`mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted-foreground ${
                 template === "executive" ? "justify-center" : ""
@@ -175,6 +181,14 @@ function LinearPreview({
               {plainContact.map((c, i) => (
                 <span key={i}>{c}</span>
               ))}
+            </div>
+          )}
+          {contact.links.length > 0 && (
+            <div
+              className={`mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm ${
+                template === "executive" ? "justify-center" : ""
+              }`}
+            >
               <ContactLinks links={contact.links} />
             </div>
           )}
@@ -321,23 +335,26 @@ function SidebarPreview({ content }: { content: ResumeContent }) {
 
   return (
     <div className="flex text-sm -m-6 rounded-lg overflow-hidden border border-border">
-      <aside className="w-48 shrink-0 p-5 space-y-4" style={{ backgroundColor: BANNER_DARK, color: "#e2e8f0" }}>
-        {contact.name && <Typography variant="h4" className="text-white">{contact.name}</Typography>}
+      <aside
+        className="w-64 shrink-0 min-w-0 p-5 space-y-4 text-xs"
+        style={{ backgroundColor: BANNER_DARK, color: "#e2e8f0" }}
+      >
+        {contact.name && <Typography variant="h4" className="text-white break-words">{contact.name}</Typography>}
 
-        <div>
+        <div className="min-w-0">
           <Typography variant="overline" className="text-sky-300">Contact</Typography>
-          <div className="mt-1 flex flex-col gap-1">
+          <div className="mt-1 flex flex-col gap-1.5 break-words">
             {plainContact.map((c, i) => (
               <span key={i}>{c}</span>
             ))}
-            <ContactLinks links={contact.links} className="text-sky-300 hover:underline break-words" />
+            <ContactLinks links={contact.links} className="text-sky-300 hover:underline break-all" />
           </div>
         </div>
 
         {skills.length > 0 && (
-          <div>
+          <div className="min-w-0">
             <Typography variant="overline" className="text-sky-300">Skills</Typography>
-            <div className="mt-1 flex flex-col gap-1">
+            <div className="mt-1 flex flex-col gap-1.5 break-words">
               {skills.map((s, i) => (
                 <span key={i}>{s}</span>
               ))}
@@ -346,9 +363,9 @@ function SidebarPreview({ content }: { content: ResumeContent }) {
         )}
 
         {education.length > 0 && (
-          <div>
+          <div className="min-w-0">
             <Typography variant="overline" className="text-sky-300">Education</Typography>
-            <div className="mt-1 space-y-2">
+            <div className="mt-1 space-y-2 break-words">
               {education.map((ed, i) => (
                 <div key={i}>
                   <div>{ed.school ?? "Untitled school"}</div>
