@@ -14,37 +14,69 @@ export type { ResumeTemplate } from "./templates";
  * available. The tradeoff is a small, print-oriented style API (this
  * StyleSheet, not real CSS).
  *
- * Only Helvetica (a built-in PDF standard font, no embedding/registration
- * needed) is used across every template - lib/ats.ts's own font-sprawl and
- * encoding checks exist because non-standard/unembedded fonts are exactly
- * what breaks text extraction, so a "template" system that introduced font
- * variety would be fighting the app's own advice. Templates differ in
- * layout composition and color only. See templates.ts for why the layout
- * itself stays single-column across all of them.
+ * Only the PDF "standard 14" fonts are used (Helvetica, Times-Roman) - no
+ * registration/embedding needed, and both extract text identically well.
+ * lib/ats.ts's font-sprawl/encoding checks exist because non-standard or
+ * unembedded fonts are what breaks extraction, not font CHOICE among the
+ * standard set, so switching typeface between templates is safe. See
+ * templates.ts for why layout structure (single column, reading order)
+ * doesn't vary between templates even though everything else does.
  */
-const ACCENT = { modern: "#0f766e" };
+const ACCENT = "#0f766e";
 
-type SectionTitleStyle = "underline" | "accent-bar" | "plain-rule";
+type SkillsStyle = "pill-filled" | "pill-outline" | "plain-list";
+type SectionTitleStyle = "underline" | "accent-bar" | "centered-rule";
 
 const TEMPLATE_CONFIG: Record<
   ResumeTemplate,
-  { headerAlign: "left" | "center"; sectionTitleStyle: SectionTitleStyle; accent: string }
+  {
+    fontFamily: "Helvetica" | "Times-Roman";
+    headerAlign: "left" | "center";
+    nameUppercase: boolean;
+    sectionTitleStyle: SectionTitleStyle;
+    skillsStyle: SkillsStyle;
+    accent: string;
+  }
 > = {
-  classic: { headerAlign: "left", sectionTitleStyle: "underline", accent: "#1a1a1a" },
-  modern: { headerAlign: "center", sectionTitleStyle: "accent-bar", accent: ACCENT.modern },
-  minimal: { headerAlign: "left", sectionTitleStyle: "plain-rule", accent: "#1a1a1a" },
+  classic: {
+    fontFamily: "Helvetica",
+    headerAlign: "left",
+    nameUppercase: false,
+    sectionTitleStyle: "underline",
+    skillsStyle: "pill-filled",
+    accent: "#1a1a1a",
+  },
+  modern: {
+    fontFamily: "Helvetica",
+    headerAlign: "center",
+    nameUppercase: false,
+    sectionTitleStyle: "accent-bar",
+    skillsStyle: "pill-outline",
+    accent: ACCENT,
+  },
+  executive: {
+    fontFamily: "Times-Roman",
+    headerAlign: "center",
+    nameUppercase: true,
+    sectionTitleStyle: "centered-rule",
+    skillsStyle: "plain-list",
+    accent: "#1a1a1a",
+  },
 };
 
 function buildStyles(template: ResumeTemplate) {
   const cfg = TEMPLATE_CONFIG[template];
-  const link = template === "modern" ? cfg.accent : "#2563eb";
+  const link = template === "modern" ? cfg.accent : template === "executive" ? "#1a1a1a" : "#2563eb";
+  const bold = 700 as const;
 
   return StyleSheet.create({
-    page: { padding: 40, fontSize: 10, fontFamily: "Helvetica", color: "#1a1a1a" },
-    header: template === "minimal" ? { marginBottom: 20 } : { marginBottom: 16 },
+    page: { padding: 40, fontSize: 10, fontFamily: cfg.fontFamily, color: "#1a1a1a" },
+    header: { marginBottom: template === "executive" ? 22 : 16, alignItems: cfg.headerAlign === "center" ? "center" : "flex-start" },
     name: {
-      fontSize: template === "minimal" ? 22 : 20,
-      fontWeight: template === "minimal" ? 400 : 700,
+      fontSize: template === "executive" ? 22 : 20,
+      fontWeight: template === "executive" ? 400 : bold,
+      letterSpacing: cfg.nameUppercase ? 3 : 0,
+      textTransform: cfg.nameUppercase ? "uppercase" : "none",
       marginBottom: 2,
       color: cfg.accent,
       textAlign: cfg.headerAlign,
@@ -58,25 +90,34 @@ function buildStyles(template: ResumeTemplate) {
     },
     headerRule:
       template === "modern"
-        ? { height: 1.5, backgroundColor: cfg.accent, marginTop: 10, opacity: 0.5 }
-        : { height: 0 },
-    sectionTitleRow: { flexDirection: "row", alignItems: "center", gap: 6, marginTop: 14, marginBottom: 6 },
+        ? { height: 1.5, backgroundColor: cfg.accent, marginTop: 10, width: "100%", opacity: 0.5 }
+        : template === "executive"
+          ? { height: 0.5, backgroundColor: "#999999", marginTop: 10, width: "100%" }
+          : { height: 0 },
+    sectionTitleRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: cfg.headerAlign === "center" ? "center" : "flex-start",
+      gap: 6,
+      marginTop: 14,
+      marginBottom: 6,
+    },
     sectionTitleBar: { width: 3, height: 10, backgroundColor: cfg.accent },
     sectionTitle: {
-      fontSize: template === "minimal" ? 12 : 11,
-      fontWeight: 700,
-      textTransform: template === "minimal" ? "none" : "uppercase",
-      letterSpacing: template === "minimal" ? 0 : 1,
+      fontSize: template === "executive" ? 11 : 11,
+      fontWeight: bold,
+      textTransform: template === "executive" ? "none" : "uppercase",
+      letterSpacing: template === "executive" ? 2 : 1,
       color: cfg.accent,
     },
     sectionTitleUnderline: { borderBottom: "1pt solid #dddddd", paddingBottom: 3, flex: 1 },
-    sectionTitlePlainRule: { borderBottom: "0.5pt solid #eeeeee", paddingBottom: 4, flex: 1 },
-    entry: { marginBottom: template === "minimal" ? 12 : 8 },
+    sectionTitleCenteredRule: { borderTop: "0.5pt solid #cccccc", paddingTop: 6, marginTop: 4 },
+    entry: { marginBottom: template === "executive" ? 11 : 8 },
     entryHeaderRow: { flexDirection: "row", justifyContent: "space-between" },
-    entryTitle: { fontWeight: 700 },
+    entryTitle: { fontWeight: bold },
     entryDates: { color: "#666666" },
-    entrySubtitle: { color: "#444444", marginBottom: 2 },
-    description: { color: "#333333", lineHeight: 1.4 },
+    entrySubtitle: { color: "#444444", marginBottom: 2, fontStyle: template === "executive" ? "italic" : "normal" },
+    description: { color: "#333333", lineHeight: template === "executive" ? 1.6 : 1.4 },
     bulletRow: { flexDirection: "row", marginBottom: 2 },
     // A literal "•" depends on the font's encoding carrying U+2022, which is
     // exactly what was mangling bullets on the way in. Drawing the marker as
@@ -85,21 +126,20 @@ function buildStyles(template: ResumeTemplate) {
     // never does (wrapped lines align under the marker, not the text).
     bulletMarker: { width: 10, color: template === "modern" ? cfg.accent : "#333333" },
     bulletText: { flex: 1, color: "#333333", lineHeight: 1.4 },
-    descriptionHeading: { fontWeight: 700, color: "#1a1a1a", marginTop: 2, marginBottom: 1 },
-    link: { color: link, textDecoration: "none" },
+    descriptionHeading: { fontWeight: bold, color: "#1a1a1a", marginTop: 2, marginBottom: 1 },
+    link: { color: link, textDecoration: template === "executive" ? "underline" : "none" },
     skillsRow: { flexDirection: "row", flexWrap: "wrap", gap: 6 },
+    skillsPlainText: { color: "#333333" },
     skillPill:
-      template === "modern"
-        ? { backgroundColor: "#ecfdf5", color: cfg.accent, borderRadius: 3, paddingVertical: 2, paddingHorizontal: 6 }
-        : template === "minimal"
-          ? { color: "#333333", paddingVertical: 2 }
-          : { backgroundColor: "#f2f2f2", borderRadius: 3, paddingVertical: 2, paddingHorizontal: 6 },
+      cfg.skillsStyle === "pill-outline"
+        ? { border: `0.75pt solid ${cfg.accent}`, color: cfg.accent, borderRadius: 3, paddingVertical: 2, paddingHorizontal: 6 }
+        : { backgroundColor: "#f2f2f2", borderRadius: 3, paddingVertical: 2, paddingHorizontal: 6 },
   });
 }
 
 type Styles = ReturnType<typeof buildStyles>;
 
-/** Renders a section heading per the template's config - underline, accent bar, or a plain thin rule. Always plain top-to-bottom text, never a sidebar or box that would change reading order. */
+/** Renders a section heading per the template's config - underline, accent bar, or a centered rule. Always plain top-to-bottom text, never a sidebar or box that would change reading order. */
 function SectionTitle({ text, styles, sectionTitleStyle }: { text: string; styles: Styles; sectionTitleStyle: SectionTitleStyle }) {
   if (sectionTitleStyle === "accent-bar") {
     return (
@@ -109,9 +149,17 @@ function SectionTitle({ text, styles, sectionTitleStyle }: { text: string; style
       </View>
     );
   }
-  const ruleStyle = sectionTitleStyle === "underline" ? styles.sectionTitleUnderline : styles.sectionTitlePlainRule;
+  if (sectionTitleStyle === "centered-rule") {
+    return (
+      <View style={styles.sectionTitleCenteredRule}>
+        <View style={styles.sectionTitleRow}>
+          <Text style={styles.sectionTitle}>{text}</Text>
+        </View>
+      </View>
+    );
+  }
   return (
-    <View style={[styles.sectionTitleRow, ruleStyle]}>
+    <View style={[styles.sectionTitleRow, styles.sectionTitleUnderline]}>
       <Text style={styles.sectionTitle}>{text}</Text>
     </View>
   );
@@ -202,7 +250,7 @@ export function ResumePdfDocument({
               })}
             </View>
           )}
-          {template === "modern" && <View style={styles.headerRule} />}
+          {template !== "classic" && <View style={styles.headerRule} />}
         </View>
 
         {summary && (
@@ -258,13 +306,17 @@ export function ResumePdfDocument({
         {skills.length > 0 && (
           <View>
             {title("Skills")}
-            <View style={styles.skillsRow}>
-              {skills.map((s, i) => (
-                <Text key={i} style={styles.skillPill}>
-                  {template === "minimal" && i < skills.length - 1 ? `${s} ·` : s}
-                </Text>
-              ))}
-            </View>
+            {cfg.skillsStyle === "plain-list" ? (
+              <Text style={styles.skillsPlainText}>{skills.join("  •  ")}</Text>
+            ) : (
+              <View style={styles.skillsRow}>
+                {skills.map((s, i) => (
+                  <Text key={i} style={styles.skillPill}>
+                    {s}
+                  </Text>
+                ))}
+              </View>
+            )}
           </View>
         )}
 

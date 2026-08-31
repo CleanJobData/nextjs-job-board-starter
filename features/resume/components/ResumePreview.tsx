@@ -105,17 +105,18 @@ export function ResumePreview({
   const { contact, summary, skills, experience, education, projects = [], additionalSections = [] } = content;
   const plainContact = [contact.email, contact.phone, contact.location].filter(Boolean) as string[];
   const accentStyle = template === "modern" ? { color: MODERN_ACCENT } : undefined;
-  const sectionTitleClass = template === "minimal" ? "normal-case tracking-normal text-foreground" : undefined;
-  const headerAlign = template === "modern" ? "text-center" : "text-left";
+  const sectionTitleClass = template === "executive" ? "normal-case tracking-normal text-foreground" : undefined;
+  const headerAlign = template === "classic" ? "text-left" : "text-center";
+  const serif = template === "executive" ? "font-serif" : undefined;
 
   return (
-    <div className="space-y-6 text-sm">
+    <div className={`space-y-6 text-sm ${serif ?? ""}`}>
       <div className={headerAlign}>
         {contact.name && (
           <Typography
             variant="h3"
             style={accentStyle}
-            className={template === "minimal" ? "font-normal" : undefined}
+            className={template === "executive" ? "font-normal uppercase tracking-[0.2em]" : undefined}
           >
             {contact.name}
           </Typography>
@@ -123,7 +124,7 @@ export function ResumePreview({
         {(plainContact.length > 0 || contact.links.length > 0) && (
           <div
             className={`mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted-foreground ${
-              template === "modern" ? "justify-center" : ""
+              template !== "classic" ? "justify-center" : ""
             }`}
           >
             {plainContact.map((c, i) => (
@@ -211,13 +212,27 @@ export function ResumePreview({
       {skills.length > 0 && (
         <section>
           <Typography variant="overline" className={`mb-2 ${sectionTitleClass ?? ""}`} style={accentStyle}>Skills</Typography>
-          <div className="flex flex-wrap gap-1.5">
-            {skills.map((s, i) => (
-              <span key={i} className="rounded-md bg-muted px-2 py-0.5 text-xs">
-                {s}
-              </span>
-            ))}
-          </div>
+          {template === "executive" ? (
+            <Typography variant="muted">{skills.join("  •  ")}</Typography>
+          ) : (
+            <div className="flex flex-wrap gap-1.5">
+              {skills.map((s, i) =>
+                template === "modern" ? (
+                  <span
+                    key={i}
+                    className="rounded-md border px-2 py-0.5 text-xs"
+                    style={{ borderColor: MODERN_ACCENT, color: MODERN_ACCENT }}
+                  >
+                    {s}
+                  </span>
+                ) : (
+                  <span key={i} className="rounded-md bg-muted px-2 py-0.5 text-xs">
+                    {s}
+                  </span>
+                )
+              )}
+            </div>
+          )}
         </section>
       )}
 
