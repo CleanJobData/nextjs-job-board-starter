@@ -12,19 +12,23 @@ import { updateResume } from "../actions/resumes";
 import { parseLinkLine } from "../lib/markdown";
 import { MarkdownHelp } from "./MarkdownHelp";
 import { ResumePreview } from "./ResumePreview";
+import { RESUME_TEMPLATES, type ResumeTemplate } from "../lib/templates";
 
 /** Every parsed field is editable here by design - the parser is a best-effort head start (see lib/parse.ts), so the user always gets the final say. */
 export function ResumeEditor({
   id,
   initialTitle,
   initialContent,
+  initialTemplate = "classic",
 }: {
   id: string;
   initialTitle: string;
   initialContent: ResumeContent;
+  initialTemplate?: ResumeTemplate;
 }) {
   const router = useRouter();
   const [title, setTitle] = React.useState(initialTitle);
+  const [template, setTemplate] = React.useState<ResumeTemplate>(initialTemplate);
   // Defensive defaults, not just types: rows saved before `projects`/
   // `additionalSections` existed are still real JSONB in the DB with those
   // keys simply absent, and there's no migration step for a JSONB column.
@@ -36,7 +40,9 @@ export function ResumeEditor({
   const [pending, startTransition] = React.useTransition();
 
   const dirty =
-    title !== initialTitle || JSON.stringify(content) !== JSON.stringify(initialContent);
+    title !== initialTitle ||
+    template !== initialTemplate ||
+    JSON.stringify(content) !== JSON.stringify(initialContent);
 
   function setContact<K extends keyof ResumeContent["contact"]>(
     key: K,
@@ -47,7 +53,7 @@ export function ResumeEditor({
 
   function save() {
     startTransition(async () => {
-      await updateResume({ id, title, content });
+      await updateResume({ id, title, content, template });
       router.push(`/resume/${id}`);
       router.refresh();
     });
@@ -60,6 +66,30 @@ export function ResumeEditor({
         <label className="text-sm font-medium">Resume name</label>
         <Input value={title} onChange={(e) => setTitle(e.target.value)} disabled={pending} />
       </div>
+
+      <section className="space-y-3">
+        <Typography variant="overline">Template</Typography>
+        <div className="grid grid-cols-2 gap-3">
+          {RESUME_TEMPLATES.map((t) => (
+            <button
+              key={t.id}
+              type="button"
+              disabled={pending}
+              onClick={() => setTemplate(t.id)}
+              className={`rounded-lg border p-3 text-left transition-colors ${
+                template === t.id
+                  ? "border-primary bg-primary/5"
+                  : "border-border hover:border-foreground/30"
+              }`}
+            >
+              <Typography className="font-semibold">{t.label}</Typography>
+              <Typography variant="small" className="text-muted-foreground">
+                {t.description}
+              </Typography>
+            </button>
+          ))}
+        </div>
+      </section>
 
       <section className="space-y-3">
         <Typography variant="overline">Contact</Typography>
@@ -486,7 +516,7 @@ export function ResumeEditor({
     <div className="lg:sticky lg:top-6 space-y-3">
       <Typography variant="overline">Live preview</Typography>
       <div className="rounded-lg border border-border p-6 max-h-[calc(100vh-8rem)] overflow-y-auto">
-        <ResumePreview content={content} />
+        <ResumePreview content={content} template={template} />
       </div>
     </div>
     </div>

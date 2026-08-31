@@ -148,7 +148,12 @@ export async function createResume(input: { title: string }) {
   return created;
 }
 
-export async function updateResume(input: { id: string; title?: string; content?: ResumeContent }) {
+export async function updateResume(input: {
+  id: string;
+  title?: string;
+  content?: ResumeContent;
+  template?: "classic" | "modern";
+}) {
   const userId = await requireUserId();
   await requireOwnedResume(userId, input.id);
   const db = requireDb();
@@ -158,6 +163,7 @@ export async function updateResume(input: { id: string; title?: string; content?
     .set({
       ...(input.title !== undefined ? { title: input.title } : {}),
       ...(input.content !== undefined ? { content: input.content } : {}),
+      ...(input.template !== undefined ? { template: input.template } : {}),
       updatedAt: new Date(),
     })
     .where(eq(resumes.id, input.id));

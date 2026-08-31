@@ -21,7 +21,12 @@ export default async function ResumeEditPage({ id }: { id: string }) {
         </Typography>
       </div>
 
-      <ResumeEditor id={row.id} initialTitle={row.title} initialContent={row.content} />
+      <ResumeEditor
+        id={row.id}
+        initialTitle={row.title}
+        initialContent={row.content}
+        initialTemplate={row.template}
+      />
     </PageContainer>
   );
 }

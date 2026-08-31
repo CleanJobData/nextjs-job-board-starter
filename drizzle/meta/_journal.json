@@ -99,6 +99,13 @@
       "when": 1788098605282,
       "tag": "0013_amused_nick_fury",
       "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1788146629945,
+      "tag": "0014_add_resume_template",
+      "breakpoints": true
     }
   ]
 }

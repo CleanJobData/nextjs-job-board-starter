@@ -48,7 +48,7 @@ export default async function ResumeDetailPage({ id }: { id: string }) {
       </div>
 
       <div className="rounded-lg border border-border p-6">
-        <ResumePreview content={row.content} />
+        <ResumePreview content={row.content} template={row.template} />
       </div>
 
       {row.atsReport && (

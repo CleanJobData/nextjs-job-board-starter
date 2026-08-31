@@ -32,7 +32,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     .limit(1);
   if (!row) return NextResponse.json({ error: "Resume not found." }, { status: 404 });
 
-  const buffer = await renderToBuffer(<ResumePdfDocument content={row.content} />);
+  const buffer = await renderToBuffer(<ResumePdfDocument content={row.content} template={row.template} />);
   const filename = `${row.title.replace(/[^a-z0-9-_ ]/gi, "").trim() || "resume"}.pdf`;
 
   return new NextResponse(new Uint8Array(buffer), {
