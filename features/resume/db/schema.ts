@@ -1,6 +1,7 @@
 import { pgTable, text, timestamp, boolean, jsonb, index } from "drizzle-orm/pg-core";
 import { users } from "@/features/auth/db/schema";
 import type { AtsReport } from "../lib/ats";
+import type { ResumeTemplate } from "../lib/templates";
 
 /** The structured shape both parsing and the builder produce - see lib/parse.ts. */
 export type ResumeContact = {
@@ -94,7 +95,7 @@ export const resumes = pgTable(
     /** Latest ATS analysis (features/resume/lib/ats.ts). Null for resumes built in-app, which have no uploaded PDF to analyse. */
     atsReport: jsonb("atsReport").$type<AtsReport | null>(),
     /** Which PDF/preview layout to render this resume with - see lib/pdf.tsx's RESUME_TEMPLATES. */
-    template: text("template").$type<"classic" | "modern">().notNull().default("classic"),
+    template: text("template").$type<ResumeTemplate>().notNull().default("classic"),
     isDefault: boolean("isDefault").notNull().default(false),
     createdAt: timestamp("createdAt", { mode: "date", withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp("updatedAt", { mode: "date", withTimezone: true }).notNull().defaultNow(),

@@ -12,33 +12,66 @@ export type { ResumeTemplate } from "./templates";
  * process to boot, which matters for a starter template that has to run
  * on serverless/edge-friendly hosts without assuming a Chromium binary is
  * available. The tradeoff is a small, print-oriented style API (this
- * StyleSheet, not real CSS) - acceptable for a couple of resume layouts.
- * The template list/type itself lives in ./templates.ts, not here - see
- * that file's comment for why.
+ * StyleSheet, not real CSS).
+ *
+ * Only Helvetica (a built-in PDF standard font, no embedding/registration
+ * needed) is used across every template - lib/ats.ts's own font-sprawl and
+ * encoding checks exist because non-standard/unembedded fonts are exactly
+ * what breaks text extraction, so a "template" system that introduced font
+ * variety would be fighting the app's own advice. Templates differ in
+ * layout composition and color only. See templates.ts for why the layout
+ * itself stays single-column across all of them.
  */
-const MODERN_ACCENT = "#0f766e";
+const ACCENT = { modern: "#0f766e" };
 
-/** One stylesheet per template - the two layouts differ only in a few colour/border knobs, not structure, so this stays one function rather than two near-duplicate files. */
+type SectionTitleStyle = "underline" | "accent-bar" | "plain-rule";
+
+const TEMPLATE_CONFIG: Record<
+  ResumeTemplate,
+  { headerAlign: "left" | "center"; sectionTitleStyle: SectionTitleStyle; accent: string }
+> = {
+  classic: { headerAlign: "left", sectionTitleStyle: "underline", accent: "#1a1a1a" },
+  modern: { headerAlign: "center", sectionTitleStyle: "accent-bar", accent: ACCENT.modern },
+  minimal: { headerAlign: "left", sectionTitleStyle: "plain-rule", accent: "#1a1a1a" },
+};
+
 function buildStyles(template: ResumeTemplate) {
-  const accent = template === "modern" ? MODERN_ACCENT : "#1a1a1a";
-  const link = template === "modern" ? MODERN_ACCENT : "#2563eb";
+  const cfg = TEMPLATE_CONFIG[template];
+  const link = template === "modern" ? cfg.accent : "#2563eb";
 
   return StyleSheet.create({
     page: { padding: 40, fontSize: 10, fontFamily: "Helvetica", color: "#1a1a1a" },
-    name: { fontSize: 20, fontWeight: 700, marginBottom: 2, color: accent },
-    contactRow: { flexDirection: "row", flexWrap: "wrap", gap: 8, color: "#555555", marginBottom: 16 },
-    sectionTitle: {
-      fontSize: 11,
-      fontWeight: 700,
-      textTransform: "uppercase",
-      letterSpacing: 1,
-      marginTop: 14,
-      marginBottom: 6,
-      color: template === "modern" ? accent : "#1a1a1a",
-      borderBottom: template === "modern" ? `1.5pt solid ${accent}` : "1pt solid #dddddd",
-      paddingBottom: 3,
+    header: template === "minimal" ? { marginBottom: 20 } : { marginBottom: 16 },
+    name: {
+      fontSize: template === "minimal" ? 22 : 20,
+      fontWeight: template === "minimal" ? 400 : 700,
+      marginBottom: 2,
+      color: cfg.accent,
+      textAlign: cfg.headerAlign,
     },
-    entry: { marginBottom: 8 },
+    contactRow: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      justifyContent: cfg.headerAlign === "center" ? "center" : "flex-start",
+      gap: 8,
+      color: "#555555",
+    },
+    headerRule:
+      template === "modern"
+        ? { height: 1.5, backgroundColor: cfg.accent, marginTop: 10, opacity: 0.5 }
+        : { height: 0 },
+    sectionTitleRow: { flexDirection: "row", alignItems: "center", gap: 6, marginTop: 14, marginBottom: 6 },
+    sectionTitleBar: { width: 3, height: 10, backgroundColor: cfg.accent },
+    sectionTitle: {
+      fontSize: template === "minimal" ? 12 : 11,
+      fontWeight: 700,
+      textTransform: template === "minimal" ? "none" : "uppercase",
+      letterSpacing: template === "minimal" ? 0 : 1,
+      color: cfg.accent,
+    },
+    sectionTitleUnderline: { borderBottom: "1pt solid #dddddd", paddingBottom: 3, flex: 1 },
+    sectionTitlePlainRule: { borderBottom: "0.5pt solid #eeeeee", paddingBottom: 4, flex: 1 },
+    entry: { marginBottom: template === "minimal" ? 12 : 8 },
     entryHeaderRow: { flexDirection: "row", justifyContent: "space-between" },
     entryTitle: { fontWeight: 700 },
     entryDates: { color: "#666666" },
@@ -50,19 +83,39 @@ function buildStyles(template: ResumeTemplate) {
     // its own Text in a fixed-width column sidesteps the glyph question and
     // gives real hanging indentation, which a "• " prefix inside the text
     // never does (wrapped lines align under the marker, not the text).
-    bulletMarker: { width: 10, color: template === "modern" ? accent : "#333333" },
+    bulletMarker: { width: 10, color: template === "modern" ? cfg.accent : "#333333" },
     bulletText: { flex: 1, color: "#333333", lineHeight: 1.4 },
     descriptionHeading: { fontWeight: 700, color: "#1a1a1a", marginTop: 2, marginBottom: 1 },
     link: { color: link, textDecoration: "none" },
     skillsRow: { flexDirection: "row", flexWrap: "wrap", gap: 6 },
     skillPill:
       template === "modern"
-        ? { backgroundColor: "#ecfdf5", color: accent, borderRadius: 3, paddingVertical: 2, paddingHorizontal: 6 }
-        : { backgroundColor: "#f2f2f2", borderRadius: 3, paddingVertical: 2, paddingHorizontal: 6 },
+        ? { backgroundColor: "#ecfdf5", color: cfg.accent, borderRadius: 3, paddingVertical: 2, paddingHorizontal: 6 }
+        : template === "minimal"
+          ? { color: "#333333", paddingVertical: 2 }
+          : { backgroundColor: "#f2f2f2", borderRadius: 3, paddingVertical: 2, paddingHorizontal: 6 },
   });
 }
 
 type Styles = ReturnType<typeof buildStyles>;
+
+/** Renders a section heading per the template's config - underline, accent bar, or a plain thin rule. Always plain top-to-bottom text, never a sidebar or box that would change reading order. */
+function SectionTitle({ text, styles, sectionTitleStyle }: { text: string; styles: Styles; sectionTitleStyle: SectionTitleStyle }) {
+  if (sectionTitleStyle === "accent-bar") {
+    return (
+      <View style={styles.sectionTitleRow}>
+        <View style={styles.sectionTitleBar} />
+        <Text style={styles.sectionTitle}>{text}</Text>
+      </View>
+    );
+  }
+  const ruleStyle = sectionTitleStyle === "underline" ? styles.sectionTitleUnderline : styles.sectionTitlePlainRule;
+  return (
+    <View style={[styles.sectionTitleRow, ruleStyle]}>
+      <Text style={styles.sectionTitle}>{text}</Text>
+    </View>
+  );
+}
 
 /** Renders one line's inline segments - plain runs and `[label](url)` links - as siblings inside a parent Text. */
 function Segments({ segments, styles }: { segments: MarkdownSegment[]; styles: Styles }) {
@@ -121,40 +174,47 @@ export function ResumePdfDocument({
   content: ResumeContent;
   template?: ResumeTemplate;
 }) {
+  const cfg = TEMPLATE_CONFIG[template];
   const styles = buildStyles(template);
   const { contact, summary, skills, experience, education, projects = [], additionalSections = [] } = content;
   const plainContact = [contact.email, contact.phone, contact.location].filter(Boolean) as string[];
+  const title = (text: string) => (
+    <SectionTitle text={text} styles={styles} sectionTitleStyle={cfg.sectionTitleStyle} />
+  );
 
   return (
     <Document>
       <Page size="LETTER" style={styles.page}>
-        {contact.name && <Text style={styles.name}>{contact.name}</Text>}
-        {(plainContact.length > 0 || contact.links.length > 0) && (
-          <View style={styles.contactRow}>
-            {plainContact.map((c, i) => (
-              <Text key={`c-${i}`}>{c}</Text>
-            ))}
-            {contact.links.map((l, i) => {
-              const { label, href } = parseLinkLine(l);
-              return (
-                <Link key={`l-${i}`} src={href} style={styles.link}>
-                  {label}
-                </Link>
-              );
-            })}
-          </View>
-        )}
+        <View style={styles.header}>
+          {contact.name && <Text style={styles.name}>{contact.name}</Text>}
+          {(plainContact.length > 0 || contact.links.length > 0) && (
+            <View style={styles.contactRow}>
+              {plainContact.map((c, i) => (
+                <Text key={`c-${i}`}>{c}</Text>
+              ))}
+              {contact.links.map((l, i) => {
+                const { label, href } = parseLinkLine(l);
+                return (
+                  <Link key={`l-${i}`} src={href} style={styles.link}>
+                    {label}
+                  </Link>
+                );
+              })}
+            </View>
+          )}
+          {template === "modern" && <View style={styles.headerRule} />}
+        </View>
 
         {summary && (
           <View>
-            <Text style={styles.sectionTitle}>Summary</Text>
+            {title("Summary")}
             <Description text={summary} styles={styles} />
           </View>
         )}
 
         {experience.length > 0 && (
           <View>
-            <Text style={styles.sectionTitle}>Experience</Text>
+            {title("Experience")}
             {experience.map((exp, i) => (
               <View key={i} style={styles.entry} wrap={false}>
                 <View style={styles.entryHeaderRow}>
@@ -170,7 +230,7 @@ export function ResumePdfDocument({
 
         {education.length > 0 && (
           <View>
-            <Text style={styles.sectionTitle}>Education</Text>
+            {title("Education")}
             {education.map((ed, i) => (
               <View key={i} style={styles.entry} wrap={false}>
                 <View style={styles.entryHeaderRow}>
@@ -185,7 +245,7 @@ export function ResumePdfDocument({
 
         {projects.length > 0 && (
           <View>
-            <Text style={styles.sectionTitle}>Projects</Text>
+            {title("Projects")}
             {projects.map((pr, i) => (
               <View key={i} style={styles.entry} wrap={false}>
                 <Text style={styles.entryTitle}>{pr.name ?? "Untitled project"}</Text>
@@ -197,11 +257,11 @@ export function ResumePdfDocument({
 
         {skills.length > 0 && (
           <View>
-            <Text style={styles.sectionTitle}>Skills</Text>
+            {title("Skills")}
             <View style={styles.skillsRow}>
               {skills.map((s, i) => (
                 <Text key={i} style={styles.skillPill}>
-                  {s}
+                  {template === "minimal" && i < skills.length - 1 ? `${s} ·` : s}
                 </Text>
               ))}
             </View>
@@ -210,7 +270,7 @@ export function ResumePdfDocument({
 
         {additionalSections.map((s, i) => (
           <View key={i} wrap={false}>
-            <Text style={styles.sectionTitle}>{s.heading}</Text>
+            {title(s.heading)}
             <Description text={s.content} styles={styles} />
           </View>
         ))}

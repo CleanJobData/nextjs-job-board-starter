@@ -2,6 +2,7 @@ import * as React from "react";
 import { Typography } from "@/components/ui/Typography";
 import type { ResumeContent } from "../db/schema";
 import { parseMarkdown, parseLinkLine, type MarkdownSegment } from "../lib/markdown";
+import type { ResumeTemplate } from "../lib/templates";
 
 /**
  * Read-only formatted rendering of a resume's structured content - the
@@ -99,22 +100,32 @@ export function ResumePreview({
   template = "classic",
 }: {
   content: ResumeContent;
-  template?: "classic" | "modern";
+  template?: ResumeTemplate;
 }) {
   const { contact, summary, skills, experience, education, projects = [], additionalSections = [] } = content;
   const plainContact = [contact.email, contact.phone, contact.location].filter(Boolean) as string[];
   const accentStyle = template === "modern" ? { color: MODERN_ACCENT } : undefined;
+  const sectionTitleClass = template === "minimal" ? "normal-case tracking-normal text-foreground" : undefined;
+  const headerAlign = template === "modern" ? "text-center" : "text-left";
 
   return (
     <div className="space-y-6 text-sm">
-      <div>
+      <div className={headerAlign}>
         {contact.name && (
-          <Typography variant="h3" style={accentStyle}>
+          <Typography
+            variant="h3"
+            style={accentStyle}
+            className={template === "minimal" ? "font-normal" : undefined}
+          >
             {contact.name}
           </Typography>
         )}
         {(plainContact.length > 0 || contact.links.length > 0) && (
-          <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted-foreground">
+          <div
+            className={`mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted-foreground ${
+              template === "modern" ? "justify-center" : ""
+            }`}
+          >
             {plainContact.map((c, i) => (
               <span key={i}>{c}</span>
             ))}
@@ -125,14 +136,14 @@ export function ResumePreview({
 
       {summary && (
         <section>
-          <Typography variant="overline" className="mb-2" style={accentStyle}>Summary</Typography>
+          <Typography variant="overline" className={`mb-2 ${sectionTitleClass ?? ""}`} style={accentStyle}>Summary</Typography>
           <Description text={summary} />
         </section>
       )}
 
       {experience.length > 0 && (
         <section className="space-y-3">
-          <Typography variant="overline" style={accentStyle}>Experience</Typography>
+          <Typography variant="overline" className={sectionTitleClass} style={accentStyle}>Experience</Typography>
           {experience.map((exp, i) => (
             <div key={i}>
               <div className="flex items-baseline justify-between gap-3">
@@ -160,7 +171,7 @@ export function ResumePreview({
 
       {education.length > 0 && (
         <section className="space-y-3">
-          <Typography variant="overline" style={accentStyle}>Education</Typography>
+          <Typography variant="overline" className={sectionTitleClass} style={accentStyle}>Education</Typography>
           {education.map((ed, i) => (
             <div key={i}>
               <div className="flex items-baseline justify-between gap-3">
@@ -183,7 +194,7 @@ export function ResumePreview({
 
       {projects.length > 0 && (
         <section className="space-y-3">
-          <Typography variant="overline" style={accentStyle}>Projects</Typography>
+          <Typography variant="overline" className={sectionTitleClass} style={accentStyle}>Projects</Typography>
           {projects.map((pr, i) => (
             <div key={i}>
               <Typography className="font-semibold">{pr.name ?? "Untitled project"}</Typography>
@@ -199,7 +210,7 @@ export function ResumePreview({
 
       {skills.length > 0 && (
         <section>
-          <Typography variant="overline" className="mb-2" style={accentStyle}>Skills</Typography>
+          <Typography variant="overline" className={`mb-2 ${sectionTitleClass ?? ""}`} style={accentStyle}>Skills</Typography>
           <div className="flex flex-wrap gap-1.5">
             {skills.map((s, i) => (
               <span key={i} className="rounded-md bg-muted px-2 py-0.5 text-xs">
@@ -212,7 +223,7 @@ export function ResumePreview({
 
       {additionalSections.map((s, i) => (
         <section key={i} className="space-y-2">
-          <Typography variant="overline" style={accentStyle}>{s.heading}</Typography>
+          <Typography variant="overline" className={sectionTitleClass} style={accentStyle}>{s.heading}</Typography>
           <Description text={s.content} />
         </section>
       ))}

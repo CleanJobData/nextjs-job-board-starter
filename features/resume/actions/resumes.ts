@@ -13,6 +13,7 @@ import { emptyResumeContent, parseResumeText } from "../lib/parse";
 import { extractPdfContent } from "../lib/extract";
 import { analyseAts, type AtsReport } from "../lib/ats";
 import { parseResumeWithAi } from "../lib/ai-parse";
+import type { ResumeTemplate } from "../lib/templates";
 
 const RESUME_PATH = "/resume";
 
@@ -152,7 +153,7 @@ export async function updateResume(input: {
   id: string;
   title?: string;
   content?: ResumeContent;
-  template?: "classic" | "modern";
+  template?: ResumeTemplate;
 }) {
   const userId = await requireUserId();
   await requireOwnedResume(userId, input.id);
