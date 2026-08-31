@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
-import { FaPlus, FaTrash } from "react-icons/fa6";
+import { FaPlus, FaTrash, FaTriangleExclamation } from "react-icons/fa6";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Textarea } from "@/components/ui/Textarea";
@@ -82,10 +82,21 @@ export function ResumeEditor({
                   : "border-border hover:border-foreground/30"
               }`}
             >
-              <Typography className="font-semibold">{t.label}</Typography>
+              <div className="flex items-center gap-1.5">
+                <Typography className="font-semibold">{t.label}</Typography>
+                {!t.atsSafe && (
+                  <FaTriangleExclamation className="h-3 w-3 text-warning" title="Not reliably ATS-safe" />
+                )}
+              </div>
               <Typography variant="small" className="text-muted-foreground">
                 {t.description}
               </Typography>
+              {!t.atsSafe && (
+                <Typography variant="small" className="mt-1 text-warning">
+                  Two-column layout - many ATS parsers scramble this. Use for direct human review, not blind
+                  online applications.
+                </Typography>
+              )}
             </button>
           ))}
         </div>
