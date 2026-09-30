@@ -29,7 +29,7 @@ const fontVariableByChoice: Record<typeof themeConfig.font, string> = {
 };
 
 const siteName = process.env.NEXT_PUBLIC_SITE_NAME || "CleanJobData";
-const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3450";
 
 export const metadata: Metadata = {
   metadataBase: new URL(appUrl),

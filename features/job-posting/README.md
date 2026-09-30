@@ -37,8 +37,9 @@ No new tables - reuses the existing `companies` and `jobs` tables
 - `jobs.status` / `jobs.requiresVerification` (added in phase 1's
   foundation commit) are what this feature actually sets:
   `createJobPosting()` always inserts `status: "pending"`,
-  `requiresVerification: true`. Only an admin (phase 3, not built yet) can
-  ever flip `status` to `"approved"`/`"rejected"`.
+  `requiresVerification: true`. Only an admin can flip `status` to
+  `"approved"`/`"rejected"` (`/admin/postings` - see "Known limitations"
+  below).
 - `jobs.expiresAt` stays `NOT NULL`; posted jobs get `now() + 90 days` at
   insert time (`POSTED_JOB_TTL_DAYS` in `actions/job-postings.ts`) rather
   than the column being made nullable - every existing consumer of
@@ -48,8 +49,8 @@ No new tables - reuses the existing `companies` and `jobs` tables
   timestamp) that don't apply to a posted job.
 - `companies.ownerId` is set to the creating user's id at company-creation
   time. Claiming an existing (CleanJobData-ingested) company profile - i.e.
-  setting `ownerId` on a `source: "cleanjobdata"` row - is **not** built
-  here; it's admin-gated and left for phase 3.
+  setting `ownerId` on a `source: "cleanjobdata"` row - is **not** built;
+  see "Known limitations" below.
 
 ## Public visibility
 
@@ -73,10 +74,17 @@ correctly instead of 404ing against the live API.
   (reusing the column synced jobs already use) - no on-site apply flow, no
   applicant submission storage, no employer-facing applicant review.
 - **No claim-existing-company flow.** Only brand-new "posted" companies can
-  be created here.
-- **No admin moderation UI yet.** Every posting sits at `status: "pending"`
-  until phase 3 builds the approve/reject dashboard. There is currently no
-  way to move a posting to `"approved"` except manually, in the DB.
+  be created here - claiming an existing CleanJobData-ingested company
+  profile (setting `ownerId` on a `source: "cleanjobdata"` row) isn't built.
+  Deliberately deferred: it only matters when a poster's employer already
+  exists in the ingested dataset, and verifying that claim is a real
+  problem worth its own pass rather than a quick add.
+- **Moderation exists** - `/admin/postings` has working approve/reject
+  actions (`features/admin/actions/postings.ts`'s `approvePosting()`/
+  `rejectPosting()`, surfaced in `PostingRow.tsx`) once `admin.enabled` is
+  on and the acting user has `users.role = "admin"` (see `features/auth/
+  README.md`'s "Admin role" section for bootstrapping one). Every posting
+  still starts at `status: "pending"` until an admin acts on it.
 - A pending/rejected posting is still viewable at its direct `/jobs/[id]`
   link (by design, so a poster can preview/share their own pending
   posting) - it's just excluded from the public search feed. There's no

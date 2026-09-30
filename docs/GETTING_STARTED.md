@@ -38,7 +38,18 @@ The fastest way to get started is using our one-click deploy buttons on the [Tem
    npm run dev
    ```
 
-## 4. Customize Your Board
+## 4. Turn On More Than Job Listings (optional)
+
+The steps above get you a jobs-listing-only board with no database. This
+template also has accounts, resumes, applications tracking, self-service
+job posting, an admin dashboard, and email alerts - each is its own
+switch in `features.config.ts` and needs Postgres (some need one more
+service on top, like file storage or an email provider). See the main
+[README](../README.md)'s "Optional features" table and "Full setup"
+section for the complete walkthrough, or jump straight to a feature's own
+README under `features/<name>/README.md`.
+
+## 5. Customize Your Board
 
 ### Branding
 - **Logo**: Replace `public/logo.svg` with your own logo.
@@ -46,10 +57,16 @@ The fastest way to get started is using our one-click deploy buttons on the [Tem
 - **Site Name**: Change `NEXT_PUBLIC_SITE_NAME` in your environment variables.
 
 ### Styling
-The template uses **Tailwind CSS v4**. You can customize the theme by editing `app/globals.css`.
+The template uses **Tailwind CSS v4** with a token-based theming system.
+Edit `theme.config.ts` first (color preset, font, corner radius, spacing
+density, default light/dark mode) - it's designed to be the one file you
+touch for most rebranding. For a fully custom palette beyond the built-in
+presets, set `preset: "custom"` there and edit the token values directly
+in `app/globals.css`. See [docs/ARCHITECTURE.md](ARCHITECTURE.md) for how
+it all fits together.
 
 ### SEO
 Update the metadata in `app/layout.tsx` to match your brand. Make sure to set `NEXT_PUBLIC_APP_URL` in production for correct social previews.
 
-## 5. Need Help?
+## 6. Need Help?
 Check out our [API Documentation](https://api.cleanjobdata.com/docs) or reach out to us at [cleanjobdata.com/support](https://cleanjobdata.com/support).

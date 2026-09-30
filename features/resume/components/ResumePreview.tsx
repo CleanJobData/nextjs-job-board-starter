@@ -2,7 +2,7 @@ import * as React from "react";
 import { Typography } from "@/components/ui/Typography";
 import type { ResumeContent } from "../db/schema";
 import { parseMarkdown, parseLinkLine, type MarkdownSegment } from "../lib/markdown";
-import type { ResumeTemplate } from "../lib/templates";
+import { RESUME_TEMPLATE_COLORS, type ResumeTemplate } from "../lib/templates";
 
 /**
  * Read-only formatted rendering of a resume's structured content - the
@@ -96,8 +96,7 @@ function ContactLinks({ links, className }: { links: string[]; className?: strin
   );
 }
 
-const BANNER_DARK = "#1e293b";
-const ACCENT = "#0f766e";
+const { bannerDark: BANNER_DARK, accent: ACCENT } = RESUME_TEMPLATE_COLORS;
 
 function SectionHeading({
   text,

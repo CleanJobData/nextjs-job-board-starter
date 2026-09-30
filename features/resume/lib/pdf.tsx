@@ -2,7 +2,7 @@ import * as React from "react";
 import { Document, Page, Text, View, Link, StyleSheet } from "@react-pdf/renderer";
 import type { ResumeContent } from "../db/schema";
 import { parseMarkdown, parseLinkLine, type MarkdownSegment } from "./markdown";
-import type { ResumeTemplate } from "./templates";
+import { RESUME_TEMPLATE_COLORS, type ResumeTemplate } from "./templates";
 
 export type { ResumeTemplate } from "./templates";
 
@@ -23,8 +23,7 @@ export type { ResumeTemplate } from "./templates";
  * different (real two columns) rather than a style variant of the other
  * three (always one column).
  */
-const BANNER_DARK = "#1e293b";
-const ACCENT = "#0f766e";
+const { bannerDark: BANNER_DARK, accent: ACCENT } = RESUME_TEMPLATE_COLORS;
 
 type SkillsStyle = "pill-filled" | "pill-outline" | "plain-list";
 type SectionTitleStyle = "underline" | "accent-bar" | "centered-rule";

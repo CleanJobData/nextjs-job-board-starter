@@ -15,7 +15,7 @@ export async function sendVerificationEmail(email: string) {
 
   await db.insert(verificationTokens).values({ identifier: email, token, expires });
 
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3450";
   const verifyUrl = `${appUrl}/verify-email?token=${token}&email=${encodeURIComponent(email)}`;
 
   const { html, text } = await renderEmail(VerifyEmailTemplate({ verifyUrl }));

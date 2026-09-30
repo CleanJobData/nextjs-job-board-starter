@@ -51,7 +51,7 @@ function isDue(frequency: "daily" | "weekly", lastSentAt: Date | null) {
  */
 export async function sendDueJobAlerts(): Promise<{ sent: number; skipped: number }> {
   const db = requireDb();
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3450";
   const settings = await loadSettings();
 
   // Kill switch checked before any work - an operator flipping this during

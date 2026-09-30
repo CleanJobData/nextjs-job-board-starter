@@ -15,6 +15,22 @@
  */
 export type ResumeTemplate = "classic" | "banner" | "executive" | "sidebar";
 
+/**
+ * Colours for the Banner/Sidebar templates' dark blocks - shared here so
+ * lib/pdf.tsx and components/ResumePreview.tsx use the exact same values
+ * instead of each hardcoding their own copy (they used to).
+ *
+ * Deliberately NOT the site's own `--primary`/theme tokens: a resume PDF
+ * gets downloaded and sent to employers, so its template colour shouldn't
+ * shift just because a job board operator picks a different site preset
+ * (see docs/ARCHITECTURE.md's design-tokens section for the site's own
+ * token system and why raw colour literals are otherwise avoided).
+ */
+export const RESUME_TEMPLATE_COLORS = {
+  bannerDark: "#1e293b",
+  accent: "#0f766e",
+} as const;
+
 export const RESUME_TEMPLATES: {
   id: ResumeTemplate;
   label: string;
