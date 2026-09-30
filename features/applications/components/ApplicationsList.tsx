@@ -8,6 +8,6 @@ import type { ApplicationRowData } from "./types";
  * into the page) so the page shim doesn't need to know this feature
  * renders as a board rather than a list.
  */
-export function ApplicationsList({ applications }: { applications: ApplicationRowData[] }) {
-  return <KanbanBoard applications={applications} />;
+export function ApplicationsList({ applications, total }: { applications: ApplicationRowData[]; total: number }) {
+  return <KanbanBoard applications={applications} total={total} />;
 }

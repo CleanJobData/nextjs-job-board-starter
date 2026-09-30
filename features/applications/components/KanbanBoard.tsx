@@ -12,7 +12,7 @@ import {
   useSensor,
   useSensors,
 } from "@dnd-kit/core";
-import { FaClipboardList } from "react-icons/fa6";
+import { FaClipboardList, FaSpinner } from "react-icons/fa6";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Typography } from "@/components/ui/Typography";
@@ -20,7 +20,7 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { cn } from "@/lib/utils";
 import { ApplicationCard, ApplicationCardContent } from "./ApplicationCard";
 import { ApplicationDetailPanel } from "./ApplicationDetailPanel";
-import { updateApplicationStatus, type ApplicationStatus } from "../actions/applications";
+import { updateApplicationStatus, loadMoreApplications, type ApplicationStatus } from "../actions/applications";
 import type { ApplicationRowData } from "./types";
 
 const COLUMNS: { value: ApplicationStatus; label: string }[] = [
@@ -131,11 +131,30 @@ function Column({
  * status change is also available from the detail panel's Listbox, so
  * touch users are never stuck even before they discover press-and-hold.
  */
-export function KanbanBoard({ applications: initial }: { applications: ApplicationRowData[] }) {
+export function KanbanBoard({ applications: initial, total: initialTotal }: { applications: ApplicationRowData[]; total: number }) {
   const [applications, setApplications] = useState(initial);
+  const [total, setTotal] = useState(initialTotal);
   const [activeApp, setActiveApp] = useState<ApplicationRowData | null>(null);
   const [pendingId, setPendingId] = useState<string | null>(null);
   const [activeId, setActiveId] = useState<string | null>(null);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [loadMoreError, setLoadMoreError] = useState<string | null>(null);
+
+  const hasMore = applications.length < total;
+
+  async function handleLoadMore() {
+    if (isLoadingMore || !hasMore) return;
+    setIsLoadingMore(true);
+    setLoadMoreError(null);
+    try {
+      const { data } = await loadMoreApplications(applications.length);
+      setApplications((prev) => [...prev, ...data]);
+    } catch {
+      setLoadMoreError("Failed to load more applications. Please try again.");
+    } finally {
+      setIsLoadingMore(false);
+    }
+  }
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
@@ -166,6 +185,7 @@ export function KanbanBoard({ applications: initial }: { applications: Applicati
   function applyDelete(id: string) {
     setApplications((prev) => prev.filter((a) => a.id !== id));
     setActiveApp((prev) => (prev && prev.id === id ? null : prev));
+    setTotal((t) => Math.max(0, t - 1));
   }
 
   function handleDragStart(event: DragStartEvent) {
@@ -233,6 +253,33 @@ export function KanbanBoard({ applications: initial }: { applications: Applicati
           )}
         </DragOverlay>
       </DndContext>
+      {/* Columns only ever hold what's been loaded so far, not true
+          per-status totals, once pagination is in play - this footer is
+          what tells the user there's more beyond what the board currently
+          shows. */}
+      <div className="mt-4 flex flex-col items-center gap-2">
+        <Typography variant="small" className="text-muted-foreground">
+          Showing {applications.length} of {total} application{total === 1 ? "" : "s"}
+        </Typography>
+        {hasMore && (
+          <>
+            {loadMoreError && (
+              <Typography variant="small" className="text-destructive">
+                {loadMoreError}
+              </Typography>
+            )}
+            <Button variant="outline" onClick={handleLoadMore} disabled={isLoadingMore}>
+              {isLoadingMore ? (
+                <>
+                  <FaSpinner className="h-3.5 w-3.5 mr-2 animate-spin" /> Loading...
+                </>
+              ) : (
+                "Load more"
+              )}
+            </Button>
+          </>
+        )}
+      </div>
       <ApplicationDetailPanel
         application={activeApp}
         onClose={() => setActiveApp(null)}

@@ -53,8 +53,8 @@ export function CompanyForm({ company, onSuccess }: CompanyFormProps) {
       try {
         const shared = {
           name: String(formData.get("name") || ""),
-          description: (formData.get("description") as string) || null,
-          websiteUrl: (formData.get("websiteUrl") as string) || null,
+          description: String(formData.get("description") || ""),
+          websiteUrl: String(formData.get("websiteUrl") || ""),
           industry: (formData.get("industry") as string) || null,
           headquarters: (formData.get("headquarters") as string) || null,
         };
@@ -96,15 +96,26 @@ export function CompanyForm({ company, onSuccess }: CompanyFormProps) {
             <Input name="name" required disabled={pending} defaultValue={company?.name} />
           </div>
           <div className="space-y-1">
-            <label className="text-sm font-medium">Description</label>
-            <Textarea name="description" rows={3} disabled={pending} defaultValue={company?.description ?? undefined} />
+            <label className="text-sm font-medium">
+              Description <span className="text-destructive">*</span>
+            </label>
+            <Textarea
+              name="description"
+              rows={3}
+              required
+              disabled={pending}
+              defaultValue={company?.description ?? undefined}
+            />
           </div>
           <div className="space-y-1">
-            <label className="text-sm font-medium">Website</label>
+            <label className="text-sm font-medium">
+              Website <span className="text-destructive">*</span>
+            </label>
             <Input
               name="websiteUrl"
               type="url"
               placeholder="https://..."
+              required
               disabled={pending}
               defaultValue={company?.websiteUrl ?? undefined}
             />
@@ -120,7 +131,9 @@ export function CompanyForm({ company, onSuccess }: CompanyFormProps) {
             </div>
           </div>
           <div className="space-y-1">
-            <label className="text-sm font-medium">Logo</label>
+            <label className="text-sm font-medium">
+              Logo <span className="text-destructive">*</span>
+            </label>
             {isEdit && company.logo && !removeLogo && (
               <div className="flex items-center gap-3 mb-2">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -146,7 +159,8 @@ export function CompanyForm({ company, onSuccess }: CompanyFormProps) {
               name="logo"
               type="file"
               accept="image/*"
-              disabled={pending || (isEdit && removeLogo)}
+              required={!isEdit || !company?.logo || removeLogo}
+              disabled={pending}
               onChange={() => removeLogo && setRemoveLogo(false)}
               className="w-full text-sm text-muted-foreground file:mr-3 file:rounded-md file:border-0 file:bg-primary file:px-3 file:py-2 file:text-sm file:font-medium file:text-primary-foreground file:cursor-pointer hover:file:opacity-90 disabled:opacity-60 disabled:cursor-not-allowed"
             />

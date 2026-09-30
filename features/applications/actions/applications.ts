@@ -8,6 +8,7 @@ import { checkAccess } from "@/features/authGuard";
 import { jobs } from "@/features/job-sync/db/schema";
 import { getJobById } from "@/jobs/lib/api";
 import { applications } from "../db/schema";
+import { APPLICATIONS_PAGE_SIZE, getUserApplicationsPage } from "../lib/queries";
 
 const APPLICATIONS_PATH = "/applications";
 
@@ -171,6 +172,12 @@ export async function updateApplicationNotes(id: string, notes: string) {
     .where(and(eq(applications.id, id), eq(applications.userId, userId)));
 
   revalidatePath(APPLICATIONS_PATH);
+}
+
+/** Powers KanbanBoard's "Load more" button - see getUserApplicationsPage for why this is paginated at all. */
+export async function loadMoreApplications(offset: number) {
+  const userId = await requireUserId();
+  return getUserApplicationsPage(userId, { limit: APPLICATIONS_PAGE_SIZE, offset });
 }
 
 export async function deleteApplication(id: string) {

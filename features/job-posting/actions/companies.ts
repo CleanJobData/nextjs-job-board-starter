@@ -31,8 +31,8 @@ export async function getMyCompanies() {
 
 export type CreateCompanyInput = {
   name: string;
-  description?: string | null;
-  websiteUrl?: string | null;
+  description: string;
+  websiteUrl: string;
   linkedinUrl?: string | null;
   twitterUrl?: string | null;
   githubUrl?: string | null;
@@ -67,19 +67,25 @@ export async function createCompany(input: CreateCompanyInput) {
   const userId = await requireUserId();
   const db = requireDb();
 
-  let logoUrl: string | null = null;
-  if (input.logo) {
-    const buffer = Buffer.from(await input.logo.arrayBuffer());
-    const contentType = input.logo.type;
-    assertValidUpload({ buffer, contentType });
-    const uploaded = await getStorageAdapter().upload({
-      buffer,
-      filename: input.logo.name,
-      contentType,
-      scope: "company-logos",
-    });
-    logoUrl = uploaded.url;
-  }
+  // Description, website and logo are required for a posted company - a
+  // profile with none of these is indistinguishable from a placeholder to
+  // a job seeker deciding whether to apply, so the form shouldn't let one
+  // through even though the underlying columns are nullable (a
+  // cleanjobdata-ingested company can still legitimately lack any of them).
+  if (!input.description?.trim()) throw new Error("A company description is required.");
+  if (!input.websiteUrl?.trim()) throw new Error("A company website is required.");
+  if (!input.logo) throw new Error("A company logo is required.");
+
+  const buffer = Buffer.from(await input.logo.arrayBuffer());
+  const contentType = input.logo.type;
+  assertValidUpload({ buffer, contentType });
+  const uploaded = await getStorageAdapter().upload({
+    buffer,
+    filename: input.logo.name,
+    contentType,
+    scope: "company-logos",
+  });
+  const logoUrl = uploaded.url;
 
   const [company] = await db
     .insert(companies)
@@ -88,9 +94,9 @@ export async function createCompany(input: CreateCompanyInput) {
       externalId: null,
       ownerId: userId,
       name: input.name,
-      description: input.description ?? null,
+      description: input.description,
       logo: logoUrl,
-      websiteUrl: input.websiteUrl ?? null,
+      websiteUrl: input.websiteUrl,
       linkedinUrl: input.linkedinUrl ?? null,
       twitterUrl: input.twitterUrl ?? null,
       githubUrl: input.githubUrl ?? null,
@@ -157,10 +163,18 @@ export async function updateCompany(input: UpdateCompanyInput) {
     throw new Error("You can only edit a company you own.");
   }
 
+  // Same required fields as createCompany() - a company can't be edited
+  // into a state that's missing them either, including "remove the logo
+  // and don't replace it" leaving no logo at all.
+  if (!input.description?.trim()) throw new Error("A company description is required.");
+  if (!input.websiteUrl?.trim()) throw new Error("A company website is required.");
+  if (input.removeLogo && !input.logo) throw new Error("A company logo is required - upload a new one before removing the current one.");
+  if (!input.logo && !existing.logo) throw new Error("A company logo is required.");
+
   const patch: Partial<typeof companies.$inferInsert> = {
     name: input.name,
-    description: input.description ?? null,
-    websiteUrl: input.websiteUrl ?? null,
+    description: input.description,
+    websiteUrl: input.websiteUrl,
     linkedinUrl: input.linkedinUrl ?? null,
     twitterUrl: input.twitterUrl ?? null,
     githubUrl: input.githubUrl ?? null,

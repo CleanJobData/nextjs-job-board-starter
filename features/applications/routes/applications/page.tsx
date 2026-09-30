@@ -1,7 +1,7 @@
 import { Typography } from "@/components/ui/Typography";
 import { PageContainer } from "@/components/ui/PageContainer";
 import { auth } from "@/features/auth/lib/auth";
-import { getUserApplications } from "../../lib/queries";
+import { getUserApplicationsPage } from "../../lib/queries";
 import { ApplicationsList } from "../../components/ApplicationsList";
 
 export default async function ApplicationsPage() {
@@ -11,7 +11,9 @@ export default async function ApplicationsPage() {
   // so reaching here with no session shouldn't normally happen - this is a
   // defensive fallback, not the primary guard.
   const userId = session?.user?.id;
-  const applications = userId ? await getUserApplications(userId) : [];
+  const { data: applications, total } = userId
+    ? await getUserApplicationsPage(userId)
+    : { data: [], total: 0 };
 
   return (
     <PageContainer size="full">
@@ -21,7 +23,7 @@ export default async function ApplicationsPage() {
           Track the jobs you&apos;ve saved and applied to.
         </Typography>
       </div>
-      <ApplicationsList applications={applications} />
+      <ApplicationsList applications={applications} total={total} />
     </PageContainer>
   );
 }
