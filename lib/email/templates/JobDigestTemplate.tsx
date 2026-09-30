@@ -1,5 +1,6 @@
 import * as React from "react";
 import { Body, Container, Head, Heading, Hr, Html, Link, Preview, Section, Text } from "@react-email/components";
+import { emailBrand } from "./brand";
 
 export type DigestJob = {
   id: string;
@@ -28,35 +29,35 @@ export function JobDigestTemplate({
     <Html>
       <Head />
       <Preview>{`${jobs.length} new job${jobs.length === 1 ? "" : "s"} matching your preferences`}</Preview>
-      <Body style={{ backgroundColor: "#f6f6f6", fontFamily: "Arial, sans-serif", margin: 0, padding: "24px" }}>
-        <Container style={{ backgroundColor: "#ffffff", borderRadius: "8px", padding: "24px", maxWidth: "560px" }}>
-          <Heading style={{ fontSize: "20px", margin: "0 0 4px" }}>
+      <Body style={{ backgroundColor: emailBrand.background, fontFamily: "Arial, sans-serif", margin: 0, padding: "24px" }}>
+        <Container style={{ backgroundColor: emailBrand.surface, borderRadius: "8px", padding: "24px", maxWidth: "560px" }}>
+          <Heading style={{ fontSize: "20px", margin: "0 0 4px", color: emailBrand.foreground }}>
             {jobs.length} new job{jobs.length === 1 ? "" : "s"} for you
           </Heading>
-          <Text style={{ color: "#666666", fontSize: "14px", margin: "0 0 20px" }}>
+          <Text style={{ color: emailBrand.mutedForeground, fontSize: "14px", margin: "0 0 20px" }}>
             Based on the preferences saved to your account.
           </Text>
 
           {jobs.map((job) => (
             <Section key={job.id} style={{ marginBottom: "16px" }}>
-              <Link href={job.url} style={{ color: "#111111", fontSize: "16px", fontWeight: "bold", textDecoration: "none" }}>
+              <Link href={job.url} style={{ color: emailBrand.foreground, fontSize: "16px", fontWeight: "bold", textDecoration: "none" }}>
                 {job.title}
               </Link>
-              <Text style={{ color: "#666666", fontSize: "13px", margin: "2px 0 0" }}>
+              <Text style={{ color: emailBrand.mutedForeground, fontSize: "13px", margin: "2px 0 0" }}>
                 {[job.companyName, job.location].filter(Boolean).join(" - ")}
               </Text>
             </Section>
           ))}
 
-          <Hr style={{ borderColor: "#eeeeee", margin: "20px 0" }} />
+          <Hr style={{ borderColor: emailBrand.border, margin: "20px 0" }} />
 
           <Text style={{ fontSize: "13px", margin: "0 0 8px" }}>
-            <Link href={browseUrl} style={{ color: "#10b981" }}>
+            <Link href={browseUrl} style={{ color: emailBrand.primary }}>
               Browse all jobs
             </Link>
           </Text>
-          <Text style={{ color: "#999999", fontSize: "12px", margin: 0 }}>
-            <Link href={preferencesUrl} style={{ color: "#999999" }}>
+          <Text style={{ color: emailBrand.mutedForeground, fontSize: "12px", margin: 0 }}>
+            <Link href={preferencesUrl} style={{ color: emailBrand.mutedForeground }}>
               Update your preferences or turn these emails off
             </Link>
           </Text>

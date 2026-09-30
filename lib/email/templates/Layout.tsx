@@ -35,7 +35,7 @@ export function EmailLayout({
           </Text>
           <Section
             style={{
-              backgroundColor: "#ffffff",
+              backgroundColor: emailBrand.surface,
               border: `1px solid ${emailBrand.border}`,
               borderRadius: 12,
               padding: 24,

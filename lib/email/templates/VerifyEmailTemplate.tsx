@@ -12,7 +12,7 @@ export function VerifyEmailTemplate({ verifyUrl }: { verifyUrl: string }) {
         href={verifyUrl}
         style={{
           backgroundColor: emailBrand.primary,
-          color: "#ffffff",
+          color: emailBrand.onPrimary,
           padding: "12px 20px",
           borderRadius: 8,
           fontWeight: 600,

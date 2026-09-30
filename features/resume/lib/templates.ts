@@ -29,6 +29,12 @@ export type ResumeTemplate = "classic" | "banner" | "executive" | "sidebar";
 export const RESUME_TEMPLATE_COLORS = {
   bannerDark: "#1e293b",
   accent: "#0f766e",
+  /** Secondary text (contact details, skills) on top of `bannerDark`. */
+  mutedOnDark: "#cbd5e1",
+  /** Body text on top of `bannerDark` in the Sidebar template's aside. */
+  textOnDark: "#e2e8f0",
+  /** Links/section labels on top of `bannerDark`. */
+  linkOnDark: "#93c5fd",
 } as const;
 
 export const RESUME_TEMPLATES: {

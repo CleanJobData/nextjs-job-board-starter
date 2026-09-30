@@ -121,6 +121,15 @@ The known, deliberate exceptions, and why each is exempt:
   hardcoded green happens to match the *default* preset's `--primary`,
   so switching presets will make OG images visibly inconsistent with
   the rest of the site - a known limitation, not a bug to chase.
+- **`lib/email/templates/*`** - the transactional/digest HTML emails
+  (`@react-email/components`). Email clients can't reliably read
+  external stylesheets or CSS custom properties either, so these are
+  inline-styled the same way the PDF/OG renderers are. Centralized in
+  `lib/email/templates/brand.ts`'s `emailBrand` constant (mirroring the
+  *default* preset's palette, same caveat as the OG images above about
+  switching presets) - every template imports from it rather than
+  hardcoding its own values, the same "one shared source, not
+  independently re-derived" pattern as `RESUME_TEMPLATE_COLORS`.
 - **`:root`'s `--brand-*` variables** in `app/globals.css` (LinkedIn/
   Twitter/YouTube/Facebook/Instagram colors) - a brand's colour is
   defined by the brand, not by this app's theme, so these are

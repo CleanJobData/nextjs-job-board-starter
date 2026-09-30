@@ -96,7 +96,12 @@ function ContactLinks({ links, className }: { links: string[]; className?: strin
   );
 }
 
-const { bannerDark: BANNER_DARK, accent: ACCENT } = RESUME_TEMPLATE_COLORS;
+const {
+  bannerDark: BANNER_DARK,
+  accent: ACCENT,
+  mutedOnDark: MUTED_ON_DARK,
+  textOnDark: TEXT_ON_DARK,
+} = RESUME_TEMPLATE_COLORS;
 
 function SectionHeading({
   text,
@@ -149,7 +154,7 @@ function LinearPreview({
         <div className="-mx-6 -mt-6 mb-4 px-6 py-6 rounded-t-lg" style={{ backgroundColor: BANNER_DARK }}>
           {contact.name && <Typography variant="h3" className="text-white">{contact.name}</Typography>}
           {plainContact.length > 0 && (
-            <div className="mt-2 flex flex-col gap-0.5 text-sm" style={{ color: "#cbd5e1" }}>
+            <div className="mt-2 flex flex-col gap-0.5 text-sm" style={{ color: MUTED_ON_DARK }}>
               {plainContact.map((c, i) => (
                 <span key={i}>{c}</span>
               ))}
@@ -336,7 +341,7 @@ function SidebarPreview({ content }: { content: ResumeContent }) {
     <div className="flex text-sm -m-6 rounded-lg overflow-hidden border border-border">
       <aside
         className="w-64 shrink-0 min-w-0 p-5 space-y-4 text-xs"
-        style={{ backgroundColor: BANNER_DARK, color: "#e2e8f0" }}
+        style={{ backgroundColor: BANNER_DARK, color: TEXT_ON_DARK }}
       >
         {contact.name && <Typography variant="h4" className="text-white break-words">{contact.name}</Typography>}
 

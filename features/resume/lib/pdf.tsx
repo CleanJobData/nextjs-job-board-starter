@@ -23,7 +23,13 @@ export type { ResumeTemplate } from "./templates";
  * different (real two columns) rather than a style variant of the other
  * three (always one column).
  */
-const { bannerDark: BANNER_DARK, accent: ACCENT } = RESUME_TEMPLATE_COLORS;
+const {
+  bannerDark: BANNER_DARK,
+  accent: ACCENT,
+  mutedOnDark: MUTED_ON_DARK,
+  textOnDark: TEXT_ON_DARK,
+  linkOnDark: LINK_ON_DARK,
+} = RESUME_TEMPLATE_COLORS;
 
 type SkillsStyle = "pill-filled" | "pill-outline" | "plain-list";
 type SectionTitleStyle = "underline" | "accent-bar" | "centered-rule";
@@ -83,9 +89,9 @@ function buildStyles(template: "classic" | "banner" | "executive") {
     banner: { backgroundColor: BANNER_DARK, paddingVertical: 28, paddingHorizontal: 40 },
     bannerName: { fontSize: 22, fontWeight: bold, color: "#ffffff", marginBottom: 8 },
     bannerContactCol: { flexDirection: "column", gap: 3 },
-    bannerContactText: { color: "#cbd5e1", fontSize: 10 },
+    bannerContactText: { color: MUTED_ON_DARK, fontSize: 10 },
     bannerLinkRow: { flexDirection: "row", flexWrap: "wrap", gap: 10, marginTop: 6 },
-    bannerLink: { color: "#93c5fd", textDecoration: "none" },
+    bannerLink: { color: LINK_ON_DARK, textDecoration: "none" },
     linksRow: {
       flexDirection: "row",
       flexWrap: "wrap",
@@ -380,12 +386,12 @@ const sidebarStyles = StyleSheet.create({
   // first version's 190pt was too narrow for real contact info.
   sidebar: { width: 230, minHeight: "100%", backgroundColor: BANNER_DARK, padding: 20 },
   sidebarName: { fontSize: 16, fontWeight: 700, color: "#ffffff", marginBottom: 14 },
-  sidebarSectionTitle: { fontSize: 9, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1.5, color: "#93c5fd", marginTop: 16, marginBottom: 6 },
+  sidebarSectionTitle: { fontSize: 9, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1.5, color: LINK_ON_DARK, marginTop: 16, marginBottom: 6 },
   // wordBreak so an unbroken long string (a URL, a long email) wraps
   // inside the column instead of running past its edge.
-  sidebarText: { color: "#e2e8f0", marginBottom: 4, lineHeight: 1.4, fontSize: 9, wordBreak: "break-all" },
-  sidebarLink: { color: "#93c5fd", textDecoration: "none", marginBottom: 4, fontSize: 9, wordBreak: "break-all" },
-  sidebarSkill: { color: "#e2e8f0", marginBottom: 3, fontSize: 9, wordBreak: "break-all" },
+  sidebarText: { color: TEXT_ON_DARK, marginBottom: 4, lineHeight: 1.4, fontSize: 9, wordBreak: "break-all" },
+  sidebarLink: { color: LINK_ON_DARK, textDecoration: "none", marginBottom: 4, fontSize: 9, wordBreak: "break-all" },
+  sidebarSkill: { color: TEXT_ON_DARK, marginBottom: 3, fontSize: 9, wordBreak: "break-all" },
   main: { flex: 1, padding: 28 },
   sectionTitleRow: { flexDirection: "row", alignItems: "center", gap: 6, marginTop: 14, marginBottom: 6 },
   sectionTitleBar: { width: 3, height: 10, backgroundColor: BANNER_DARK },

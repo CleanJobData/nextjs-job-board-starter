@@ -12,4 +12,8 @@ export const emailBrand = {
   mutedForeground: "#78716c",
   background: "#faf7f2",
   border: "#f0ede8",
+  /** Card/container background - distinct from `background` (the page behind it). */
+  surface: "#ffffff",
+  /** Text/icon color on top of a `primary`-colored surface, e.g. a button label. */
+  onPrimary: "#ffffff",
 };
