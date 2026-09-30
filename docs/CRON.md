@@ -12,22 +12,32 @@ as you like; each registered task self-throttles on its own cadence and
 just no-ops if it isn't due yet.
 
 **`job-sync.config.ts` (`incrementalSyncIntervalHours` etc.) is the only
-place actual sync/task frequency is controlled.** The scheduler below
-exists purely to guarantee the endpoint gets pinged - it's set to a fixed
-15-minute floor, deliberately much shorter than any real task interval,
-so the app's own self-throttle is always what decides when work actually
-happens. Don't try to "tune" the scheduler's cadence to match a task's
-interval - that's exactly the trap that leads to two numbers (the
-external schedule and the config) quietly drifting apart, with no clear
-signal when they do. Change `job-sync.config.ts`, leave the scheduler
-alone.
+place you ever hand-edit sync/task frequency.** GitHub Actions' schedule
+has to be a static cron expression GitHub itself evaluates - it can't
+read a TypeScript file at trigger time - so instead of hand-picking a
+second number and hoping it stays in sync, `.github/workflows/cron.yml`'s
+schedule is **generated from `job-sync.config.ts`** by
+`scripts/sync-cron-schedule.ts`. There is exactly one place you type an
+interval; the workflow file is a build artifact of it, not a second
+decision.
 
 ## 0. Already shipped: `.github/workflows/cron.yml`
 
 This repo includes a working GitHub Actions workflow out of the box,
-firing every 15 minutes. You only need to add the two secrets below for
-it to start working - you should not need to edit the workflow file
-itself.
+its schedule already generated to match `job-sync.config.ts`'s current
+defaults (every 1h, the fastest of the three registered tasks). You only
+need to add the two secrets below for it to start working.
+
+**Whenever you change `job-sync.config.ts`'s `*IntervalHours` fields**,
+regenerate the workflow and commit the result:
+
+```
+npm run cron:sync
+```
+
+Don't hand-edit the `cron:` line in `.github/workflows/cron.yml` - the
+next `npm run cron:sync` would just overwrite it, and until then it'd be
+a second, wrong number sitting next to the real one.
 
 ## 1. Set `CRON_SECRET`
 
@@ -47,12 +57,7 @@ a 401.
 `.github/workflows/cron.yml` (shipped, see step 0) is the default and
 the recommended path for most deployments - you likely don't need
 anything below this. The alternatives exist for cases GitHub Actions
-doesn't fit (no GitHub repo, want everything on one platform, etc). All
-of them work identically from the endpoint's point of view; whichever
-one you pick, set it to a fixed, frequent interval (5-15 minutes) and
-leave it alone - see the note in section 1 above. None of these need
-tuning to "your" cadence; `job-sync.config.ts` is the only file that
-does.
+doesn't fit (no GitHub repo, want everything on one platform, etc).
 
 ### Vercel Cron
 
@@ -62,46 +67,47 @@ rather not use the shipped GitHub Actions workflow. Add to `vercel.json`:
 ```json
 {
   "crons": [
-    { "path": "/api/cron", "schedule": "*/15 * * * *" }
+    { "path": "/api/cron", "schedule": "0 * * * *" }
   ]
 }
 ```
 
-Note Vercel's free/Hobby plan limits Cron Jobs to once a day, which is
-too infrequent for this floor-trigger approach to work as intended -
-this option needs a paid plan. Also, Vercel Cron sends its own trigger,
-not your `CRON_SECRET` header, by default - either configure a [custom
-header via Vercel's cron protection](https://vercel.com/docs/cron-jobs/security)
-matching what this route expects, or adjust the route to also accept
-Vercel's `x-vercel-cron-signature` verification if you go this route.
-The plain `Authorization: Bearer` check as shipped assumes you're
-calling it yourself (GitHub Actions, crontab) rather than relying on
-Vercel's own cron auth - adapt as needed if you pick this option.
+Keep this schedule matched to `job-sync.config.ts` by hand if you use
+this option - `npm run cron:sync` only generates the GitHub Actions
+workflow today, not `vercel.json` (open an issue/PR if you want that
+added). Note Vercel's free/Hobby plan limits Cron Jobs to once a day,
+which is too infrequent to catch an hourly `incrementalSyncIntervalHours`
+- this option needs a paid plan for the default config. Also, Vercel
+Cron sends its own trigger, not your `CRON_SECRET` header, by default -
+either configure a [custom header via Vercel's cron
+protection](https://vercel.com/docs/cron-jobs/security) matching what
+this route expects, or adjust the route to also accept Vercel's
+`x-vercel-cron-signature` verification if you go this route. The plain
+`Authorization: Bearer` check as shipped assumes you're calling it
+yourself (GitHub Actions, crontab) rather than relying on Vercel's own
+cron auth - adapt as needed if you pick this option.
 
 ### Self-hosted crontab
 
-If you're running the app on your own always-on server:
+If you're running the app on your own always-on server, mirror
+`job-sync.config.ts`'s fastest interval yourself (same caveat as Vercel
+Cron above - this isn't generated):
 
 ```
-*/15 * * * * curl -sf -X POST https://yourapp.com/api/cron -H "Authorization: Bearer $CRON_SECRET"
+0 * * * * curl -sf -X POST https://yourapp.com/api/cron -H "Authorization: Bearer $CRON_SECRET"
 ```
 
 ### `node-cron` (self-hosted only, not the shipped default)
 
-An in-process alternative to an external scheduler - only viable if
-you're self-hosting on an always-on Node process (it does nothing on
-serverless platforms, since there's no persistent process to hold its
-timer). Not included by default since this template has to work on both
-serverless and self-hosted deployments, but if you're self-hosting and
-want one less moving part than an external scheduler, you could add it
-yourself and have it call the same `syncJobs`-equivalent logic directly
-in-process rather than over HTTP. Note this doesn't actually need the
-"frequent floor" pattern the HTTP-based options above use - since it's
-your own code, you could call `runIncrementalSync()` etc. directly on
-`job-sync.config.ts`'s real interval instead of polling - but then
-you're back to one config, not zero, and you've traded "one file to
-edit" for "no external scheduler," which is a different tradeoff than
-this doc's default assumes.
+An in-process alternative to an external scheduler entirely - only
+viable if you're self-hosting on an always-on Node process (it does
+nothing on serverless platforms, since there's no persistent process to
+hold its timer). Not included by default since this template has to
+work on both serverless and self-hosted deployments. If you're self-
+hosting and want to remove the scheduler-file question entirely, this is
+how: call `runIncrementalSync()` etc. directly, in-process, reading
+`job-sync.config.ts`'s intervals straight from code with no YAML/cron
+expression involved at all.
 
 ## 3. Verify it's working
 

@@ -1,17 +1,16 @@
 name: Scheduled sync
 
-# Fires every 15 minutes, unconditionally - deliberately NOT tuned to
-# match job-sync.config.ts's intervals (incrementalSyncIntervalHours etc).
-# This file exists to guarantee /api/cron gets pinged often enough that
-# every registered task's own self-throttle is always the thing that
-# decides actual cadence - not this schedule. That's what makes
-# job-sync.config.ts the single place to change how often things run:
-# editing THIS file's cron expression doesn't control frequency, it just
-# has to stay "frequent enough" (well under the shortest interval anyone
-# would reasonably configure). See docs/CRON.md.
+# The schedule below is GENERATED from job-sync.config.ts, not hand-set -
+# do not edit the cron expression directly. Change
+# job-sync.config.ts's *IntervalHours fields instead, then run:
+#
+#   npx tsx scripts/sync-cron-schedule.ts
+#
+# and commit the result. That script is the only thing that should ever
+# touch the line below. See docs/CRON.md.
 on:
   schedule:
-    - cron: "*/15 * * * *"
+    - cron: "0 * * * *"
   workflow_dispatch: # lets you trigger it manually from the Actions tab too
 
 jobs:

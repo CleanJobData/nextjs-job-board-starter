@@ -33,7 +33,7 @@ export function SyncStatusSection({ statuses }: { statuses: SyncKindStatus[] }) 
               <Typography
                 variant="small"
                 className="text-muted-foreground"
-                title="The minimum gap between runs, set in job-sync.config.ts - not a guaranteed schedule. Actual cadence also depends on your external scheduler (see docs/CRON.md) still being set up and running."
+                title="Set in job-sync.config.ts. The shipped scheduler (.github/workflows/cron.yml) is generated to match this via `npm run cron:sync` - if you edited this value without regenerating, or use a different scheduler you haven't kept in sync, actual runs may be less frequent than this. See docs/CRON.md."
               >
                 min. every {s.intervalHours}h
               </Typography>
