@@ -36,12 +36,14 @@ export default async function PreferencesPage() {
         </Typography>
       </div>
 
-      <PreferencesEditor initial={initial} />
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+        <PreferencesEditor initial={initial} />
 
-      <AlertSettings
-        initialEnabled={settings?.alert?.enabled ?? false}
-        initialFrequency={settings?.alert?.frequency ?? "weekly"}
-      />
+        <AlertSettings
+          initialEnabled={settings?.alert?.enabled ?? false}
+          initialFrequency={settings?.alert?.frequency ?? "weekly"}
+        />
+      </div>
     </PageContainer>
   );
 }
