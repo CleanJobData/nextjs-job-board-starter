@@ -10,10 +10,18 @@ interface JobGridProps {
   emptyState?: React.ReactNode;
 }
 
+/**
+ * Despite the name (kept to avoid touching every caller), this renders one
+ * dense list panel, not a grid of cards - see JobCard.tsx's doc comment.
+ * The list itself is the "card": one rounded/bordered panel with a
+ * hairline divider between rows, so scanning many results reads as one
+ * continuous list top-to-bottom instead of a 2D grid the eye has to jump
+ * around.
+ */
 export function JobGrid({ jobs, isLoading, emptyState }: JobGridProps) {
   if (isLoading && jobs.length === 0) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+      <div className="rounded-xl border border-border divide-y divide-border overflow-hidden">
         {Array.from({ length: 6 }).map((_, i) => (
           <JobCardSkeleton key={i} />
         ))}
@@ -29,7 +37,7 @@ export function JobGrid({ jobs, isLoading, emptyState }: JobGridProps) {
             No jobs found
           </Typography>
           <Typography variant="p" className="text-muted-foreground mt-2">
-            Try adjusting your filters to find what you're looking for.
+            Try adjusting your filters to find what you&apos;re looking for.
           </Typography>
         </div>
       )
@@ -37,19 +45,12 @@ export function JobGrid({ jobs, isLoading, emptyState }: JobGridProps) {
   }
 
   return (
-    <div className="space-y-8">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-        {jobs.map((job) => (
-          <JobCard key={job.id} job={job} />
-        ))}
-        {isLoading && (
-          <>
-            {Array.from({ length: 3 }).map((_, i) => (
-              <JobCardSkeleton key={`loading-${i}`} />
-            ))}
-          </>
-        )}
-      </div>
+    <div className="rounded-xl border border-border divide-y divide-border overflow-hidden">
+      {jobs.map((job) => (
+        <JobCard key={job.id} job={job} />
+      ))}
+      {isLoading &&
+        Array.from({ length: 3 }).map((_, i) => <JobCardSkeleton key={`loading-${i}`} />)}
     </div>
   );
 }

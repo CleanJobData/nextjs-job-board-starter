@@ -1,9 +1,8 @@
 import * as React from "react";
 import Link from "next/link";
-import { FaLocationDot, FaGlobe, FaDollarSign, FaClock } from "react-icons/fa6";
+import { FaGlobe } from "react-icons/fa6";
 import { CompanyLogo } from "@/jobs/components/CompanyLogo";
 import { Job } from "@/lib/api/types";
-import { Card, CardContent } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Typography } from "@/components/ui/Typography";
 import { clampLocationLabel } from "@/lib/clampLocation";
@@ -14,28 +13,13 @@ interface JobCardProps {
   job: Job;
 }
 
-/** One metadata item - fixed icon box so every row aligns on the same axis regardless of which glyph it uses. */
-function Meta({
-  icon: Icon,
-  children,
-  accent,
-}: {
-  icon: React.ComponentType<{ className?: string }>;
-  children: React.ReactNode;
-  accent?: boolean;
-}) {
-  return (
-    // min-w-0 on both the row and the label: a flex item won't shrink below
-    // its content width by default, so `truncate` alone silently does
-    // nothing and long values (a full "City, Region, Country" location, a
-    // wide salary range) overflow the card instead of ellipsing.
-    <div
-      className={`flex items-center gap-2 min-w-0 ${accent ? "text-primary" : "text-muted-foreground"}`}
-    >
-      <Icon className="h-3.5 w-3.5 shrink-0" />
-      <span className="truncate min-w-0">{children}</span>
-    </div>
-  );
+/** One inline metadata item, "·"-separated from its neighbours rather than boxed - a job board's list reads as one scannable line of facts, not a grid of icon+label pairs pretending to be a dashboard widget. */
+function MetaItem({ children, accent }: { children: React.ReactNode; accent?: boolean }) {
+  return <span className={accent ? "text-primary font-medium" : undefined}>{children}</span>;
+}
+
+function Dot() {
+  return <span className="text-border select-none">·</span>;
 }
 
 export function JobCard({ job }: JobCardProps) {
@@ -53,58 +37,75 @@ export function JobCard({ job }: JobCardProps) {
     return null;
   }, [job.salary_text, job.salary_min, job.salary_max, job.salary_currency]);
 
+  const metaItems: React.ReactNode[] = [];
+  if (locationLabel) metaItems.push(<MetaItem key="loc">{locationLabel}</MetaItem>);
+  if (job.has_remote) {
+    metaItems.push(
+      <MetaItem key="remote" accent>
+        <FaGlobe className="inline h-3 w-3 -mt-0.5 mr-1" />
+        Remote
+      </MetaItem>
+    );
+  }
+  if (salaryDisplay) metaItems.push(<MetaItem key="salary" accent>{salaryDisplay}</MetaItem>);
+  if (addedAgo) metaItems.push(<MetaItem key="ago">{addedAgo}</MetaItem>);
+
   return (
-    <Link href={`/jobs/${job.id}`} scroll={false} className="block group h-full">
-      {/* Quiet border-tint hover, matching ApplicationCard/JobPostingsList -
-          not a shadow+scale animation. The title tinting to primary is the
-          real "this is clickable" signal. */}
-      <Card className="h-full flex flex-col transition-colors hover:border-primary/50">
-        <CardContent className="p-4 sm:p-5 flex flex-col flex-1 gap-4">
-          <div className="flex items-start gap-3">
-            <CompanyLogo
-              src={job.company?.logo}
-              fallbackIcon="briefcase"
-              className="h-11 w-11 rounded-lg bg-muted border border-border shrink-0"
-              imageClassName="rounded-lg p-1"
-              iconClassName="h-4 w-4 text-muted-foreground"
-            />
-            <div className="min-w-0 flex-1 space-y-0.5">
-              {/* Title leads, company follows - the job is what someone is
-                  scanning for. This used to be inverted, with the company
-                  name set in tiny uppercase letter-spaced text above a
-                  bolder title, which read as a label stuck on a heading.
-                  break-words so a single very long unbroken token (some
-                  titles are one long hyphen-free string) wraps instead of
-                  pushing the card's layout wider than its column. */}
-              <Typography
-                variant="large"
-                className="line-clamp-2 leading-snug break-words group-hover:text-primary transition-colors"
-              >
+    // A full-bleed row, not a boxed card: no per-item border/shadow/radius -
+    // JobGrid.tsx wraps the whole list in ONE panel, and rows are separated
+    // by a hairline divider + a quiet background tint on hover, the way an
+    // actual list of results reads (LinkedIn/Indeed/Wellfound) rather than
+    // a grid of dashboard widgets that happen to contain job data.
+    <Link href={`/jobs/${job.id}`} scroll={false} className="group block">
+      <div className="flex items-start gap-3 sm:gap-4 px-4 sm:px-5 py-4 transition-colors hover:bg-muted/50">
+        <CompanyLogo
+          src={job.company?.logo}
+          fallbackIcon="briefcase"
+          className="h-10 w-10 rounded-lg bg-muted border border-border shrink-0"
+          imageClassName="rounded-lg p-1"
+          iconClassName="h-4 w-4 text-muted-foreground"
+        />
+
+        <div className="min-w-0 flex-1">
+          <div className="flex items-start justify-between gap-3">
+            <div className="min-w-0">
+              <Typography className="font-semibold leading-snug truncate group-hover:text-primary transition-colors">
                 {job.title}
               </Typography>
               <Typography variant="small" className="text-muted-foreground truncate">
                 {job.company?.name || "Unknown Company"}
               </Typography>
             </div>
+
+            {(job.experience_level || job.employment_type) && (
+              <div className="hidden sm:flex flex-wrap justify-end gap-1.5 shrink-0">
+                {job.experience_level && (
+                  <Badge variant="secondary" className="capitalize font-medium">
+                    {job.experience_level.toLowerCase()}
+                  </Badge>
+                )}
+                {job.employment_type && (
+                  <Badge variant="outline" className="capitalize font-medium">
+                    {job.employment_type.replace(/_/g, " ")}
+                  </Badge>
+                )}
+              </div>
+            )}
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2 text-sm">
-            <Meta icon={FaLocationDot}>{locationLabel}</Meta>
-            {salaryDisplay && (
-              <Meta icon={FaDollarSign} accent>
-                {salaryDisplay}
-              </Meta>
-            )}
-            <Meta icon={FaClock}>{addedAgo}</Meta>
-            {job.has_remote && (
-              <Meta icon={FaGlobe} accent>
-                Remote
-              </Meta>
-            )}
-          </div>
+          {metaItems.length > 0 && (
+            <div className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted-foreground">
+              {metaItems.map((item, i) => (
+                <React.Fragment key={i}>
+                  {i > 0 && <Dot />}
+                  {item}
+                </React.Fragment>
+              ))}
+            </div>
+          )}
 
           {(job.experience_level || job.employment_type) && (
-            <div className="flex flex-wrap gap-2 mt-auto pt-1">
+            <div className="mt-2 flex flex-wrap gap-1.5 sm:hidden">
               {job.experience_level && (
                 <Badge variant="secondary" className="capitalize font-medium">
                   {job.experience_level.toLowerCase()}
@@ -117,8 +118,8 @@ export function JobCard({ job }: JobCardProps) {
               )}
             </div>
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </Link>
   );
 }
