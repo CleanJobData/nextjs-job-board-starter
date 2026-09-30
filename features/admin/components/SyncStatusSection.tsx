@@ -30,8 +30,12 @@ export function SyncStatusSection({ statuses }: { statuses: SyncKindStatus[] }) 
           <div className="flex items-center justify-between gap-4 mb-3 flex-wrap">
             <Typography variant="h3">{KIND_LABEL[s.kind]}</Typography>
             <div className="flex items-center gap-2">
-              <Typography variant="small" className="text-muted-foreground">
-                every {s.intervalHours}h
+              <Typography
+                variant="small"
+                className="text-muted-foreground"
+                title="The minimum gap between runs, set in job-sync.config.ts - not a guaranteed schedule. Actual cadence also depends on your external scheduler (see docs/CRON.md) still being set up and running."
+              >
+                min. every {s.intervalHours}h
               </Typography>
               <Badge variant={s.isDue ? "secondary" : "outline"}>{s.isDue ? "Due" : "Not due"}</Badge>
             </div>

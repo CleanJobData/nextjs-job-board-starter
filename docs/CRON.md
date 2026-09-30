@@ -11,6 +11,24 @@ to call it**. It's secret-header-authenticated and safe to call as often
 as you like; each registered task self-throttles on its own cadence and
 just no-ops if it isn't due yet.
 
+**`job-sync.config.ts` (`incrementalSyncIntervalHours` etc.) is the only
+place actual sync/task frequency is controlled.** The scheduler below
+exists purely to guarantee the endpoint gets pinged - it's set to a fixed
+15-minute floor, deliberately much shorter than any real task interval,
+so the app's own self-throttle is always what decides when work actually
+happens. Don't try to "tune" the scheduler's cadence to match a task's
+interval - that's exactly the trap that leads to two numbers (the
+external schedule and the config) quietly drifting apart, with no clear
+signal when they do. Change `job-sync.config.ts`, leave the scheduler
+alone.
+
+## 0. Already shipped: `.github/workflows/cron.yml`
+
+This repo includes a working GitHub Actions workflow out of the box,
+firing every 15 minutes. You only need to add the two secrets below for
+it to start working - you should not need to edit the workflow file
+itself.
+
 ## 1. Set `CRON_SECRET`
 
 Add a random secret to your `.env`/hosting provider's environment
@@ -26,64 +44,46 @@ a 401.
 
 ## 2. Pick a scheduler
 
-Any of these work identically - the endpoint doesn't know or care which
-one calls it.
-
-### GitHub Actions (recommended default)
-
-Works regardless of where the app itself is deployed - Vercel, a VPS,
-anywhere. Add `.github/workflows/cron.yml`:
-
-```yaml
-name: Scheduled sync
-on:
-  schedule:
-    - cron: "0 * * * *"   # every hour - adjust to your fastest registered task's interval
-  workflow_dispatch:        # lets you trigger it manually from the Actions tab too
-
-jobs:
-  trigger-cron:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Call /api/cron
-        run: |
-          curl -sf -X POST "${{ secrets.APP_URL }}/api/cron" \
-            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}"
-```
-
-Add `APP_URL` (e.g. `https://yourapp.com`) and `CRON_SECRET` as repo
-secrets (Settings -> Secrets and variables -> Actions). `-sf` makes curl
-fail the workflow step (visible in the Actions tab) if the endpoint
-returns a non-2xx status - which now genuinely reflects a real task
-failure, not just "nothing was due yet."
+`.github/workflows/cron.yml` (shipped, see step 0) is the default and
+the recommended path for most deployments - you likely don't need
+anything below this. The alternatives exist for cases GitHub Actions
+doesn't fit (no GitHub repo, want everything on one platform, etc). All
+of them work identically from the endpoint's point of view; whichever
+one you pick, set it to a fixed, frequent interval (5-15 minutes) and
+leave it alone - see the note in section 1 above. None of these need
+tuning to "your" cadence; `job-sync.config.ts` is the only file that
+does.
 
 ### Vercel Cron
 
-Only relevant if you're actually deployed on Vercel. Add to `vercel.json`:
+Only relevant if you're actually deployed on Vercel, and only if you'd
+rather not use the shipped GitHub Actions workflow. Add to `vercel.json`:
 
 ```json
 {
   "crons": [
-    { "path": "/api/cron", "schedule": "0 * * * *" }
+    { "path": "/api/cron", "schedule": "*/15 * * * *" }
   ]
 }
 ```
 
-Vercel Cron sends its own trigger, not your `CRON_SECRET` header, by
-default - either configure a [custom header via Vercel's cron
-protection](https://vercel.com/docs/cron-jobs/security) matching what
-this route expects, or adjust the route to also accept Vercel's
-`x-vercel-cron-signature` verification if you go this route. The plain
-`Authorization: Bearer` check as shipped assumes you're calling it
-yourself (GitHub Actions, crontab) rather than relying on Vercel's own
-cron auth - adapt as needed if you pick this option.
+Note Vercel's free/Hobby plan limits Cron Jobs to once a day, which is
+too infrequent for this floor-trigger approach to work as intended -
+this option needs a paid plan. Also, Vercel Cron sends its own trigger,
+not your `CRON_SECRET` header, by default - either configure a [custom
+header via Vercel's cron protection](https://vercel.com/docs/cron-jobs/security)
+matching what this route expects, or adjust the route to also accept
+Vercel's `x-vercel-cron-signature` verification if you go this route.
+The plain `Authorization: Bearer` check as shipped assumes you're
+calling it yourself (GitHub Actions, crontab) rather than relying on
+Vercel's own cron auth - adapt as needed if you pick this option.
 
 ### Self-hosted crontab
 
 If you're running the app on your own always-on server:
 
 ```
-0 * * * * curl -sf -X POST https://yourapp.com/api/cron -H "Authorization: Bearer $CRON_SECRET"
+*/15 * * * * curl -sf -X POST https://yourapp.com/api/cron -H "Authorization: Bearer $CRON_SECRET"
 ```
 
 ### `node-cron` (self-hosted only, not the shipped default)
@@ -95,7 +95,13 @@ timer). Not included by default since this template has to work on both
 serverless and self-hosted deployments, but if you're self-hosting and
 want one less moving part than an external scheduler, you could add it
 yourself and have it call the same `syncJobs`-equivalent logic directly
-in-process rather than over HTTP.
+in-process rather than over HTTP. Note this doesn't actually need the
+"frequent floor" pattern the HTTP-based options above use - since it's
+your own code, you could call `runIncrementalSync()` etc. directly on
+`job-sync.config.ts`'s real interval instead of polling - but then
+you're back to one config, not zero, and you've traded "one file to
+edit" for "no external scheduler," which is a different tradeoff than
+this doc's default assumes.
 
 ## 3. Verify it's working
 
