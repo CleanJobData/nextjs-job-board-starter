@@ -70,9 +70,12 @@ correctly instead of 404ing against the live API.
 
 ## Known limitations (v1)
 
-- **External-URL applications only.** A posting just has `applicationUrl`
-  (reusing the column synced jobs already use) - no on-site apply flow, no
-  applicant submission storage, no employer-facing applicant review.
+- **External-URL applications only, by design, not a gap.** A posting
+  just has `applicationUrl` (reusing the column synced jobs already use)
+  - no on-site apply flow, no applicant submission storage/review inbox.
+  An in-app apply flow is a meaningfully bigger feature (file uploads,
+  an employer-facing ATS-lite review surface, notifications) that isn't
+  planned for this template - deliberately out of scope, not deferred.
 - **No claim-existing-company flow.** Only brand-new "posted" companies can
   be created here - claiming an existing CleanJobData-ingested company
   profile (setting `ownerId` on a `source: "cleanjobdata"` row) isn't built.
