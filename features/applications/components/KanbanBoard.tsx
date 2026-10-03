@@ -68,55 +68,54 @@ function Column({
   const styles = COLUMN_STYLES[status];
 
   return (
-    <div
-      ref={setNodeRef}
-      className={cn(
-        // No independent height/scroll here - a column only ever stretches
-        // to match whichever sibling has the most cards (flex's default
-        // "stretch" among row siblings). That shared natural height is what
-        // KanbanBoard's row scrolls as ONE unit (overflow on the row, not
-        // here) - every column moves together instead of each one having
-        // its own out-of-sync scrollbar.
-        "flex flex-col w-60 shrink-0 rounded-lg border transition-colors",
-        styles.body,
-        isOver && "ring-1 ring-inset ring-foreground/20"
-      )}
-    >
-      {/* rounded-t-lg on the bar itself, not overflow-hidden on the whole
-          column - overflow-hidden would clip a card mid-drag the instant it
-          moves past this column's edge, which is exactly what's supposed to
-          happen when dragging it into a different column. */}
-      <div className={cn("h-1.5 rounded-t-lg shrink-0", styles.bar)} />
-      <div className="flex flex-col gap-3 p-2 flex-1">
-        <div className="flex items-center justify-between px-1.5 pt-1 shrink-0">
-          <Typography variant="small" className={cn("font-semibold", styles.label)}>
-            {label}
-          </Typography>
-          <Typography variant="small" className={cn("font-medium", styles.label, "opacity-60")}>
-            {applications.length}
-          </Typography>
-        </div>
-        {/* flex-1, no overflow here - grows to match the tallest sibling
-            column's natural content height (same stretch as the column
-            itself), so an empty/short column's dashed box still fills that
-            full shared height instead of stopping at a small fixed box. */}
-        <div className="flex flex-col gap-2 flex-1">
-          {applications.length === 0 ? (
-          <div className="flex-1 flex items-center justify-center rounded-lg border border-dashed border-border/70 py-8 text-center">
-            <Typography variant="small" className="text-muted-foreground/70">
-              No applications
+    // Two separate rectangles, Notion/Trello-style: THIS div is the drop
+    // target (dnd-kit's useDroppable ref) and it stretches to match the
+    // row's full height (flex default "stretch" among siblings) - that's
+    // deliberate, so dropping into the empty space below a short column
+    // still registers as dropping into that column. It renders no
+    // background/border of its own, so that extra hit area is invisible.
+    // The VISIBLE box is the nested div below, sized to its own content
+    // only - a 2-card column looks like a 2-card column.
+    <div ref={setNodeRef} className="w-60 shrink-0">
+      <div
+        className={cn(
+          "flex flex-col rounded-lg border transition-colors",
+          styles.body,
+          isOver && "ring-1 ring-inset ring-foreground/20"
+        )}
+      >
+        {/* rounded-t-lg on the bar itself, not overflow-hidden on the whole
+            column - overflow-hidden would clip a card mid-drag the instant
+            it moves past this column's edge, which is exactly what's
+            supposed to happen when dragging it into a different column. */}
+        <div className={cn("h-1.5 rounded-t-lg", styles.bar)} />
+        <div className="flex flex-col gap-3 p-2">
+          <div className="flex items-center justify-between px-1.5 pt-1">
+            <Typography variant="small" className={cn("font-semibold", styles.label)}>
+              {label}
+            </Typography>
+            <Typography variant="small" className={cn("font-medium", styles.label, "opacity-60")}>
+              {applications.length}
             </Typography>
           </div>
-        ) : (
-          applications.map((app) => (
-            <ApplicationCard
-              key={app.id}
-              application={app}
-              pending={pendingId === app.id}
-              onOpen={() => onOpen(app)}
-            />
-          ))
-        )}
+          <div className="flex flex-col gap-2 min-h-[80px]">
+            {applications.length === 0 ? (
+              <div className="rounded-lg border border-dashed border-border/70 py-8 text-center">
+                <Typography variant="small" className="text-muted-foreground/70">
+                  No applications
+                </Typography>
+              </div>
+            ) : (
+              applications.map((app) => (
+                <ApplicationCard
+                  key={app.id}
+                  application={app}
+                  pending={pendingId === app.id}
+                  onOpen={() => onOpen(app)}
+                />
+              ))
+            )}
+          </div>
         </div>
       </div>
     </div>
@@ -239,15 +238,13 @@ export function KanbanBoard({ applications: initial, total: initialTotal }: { ap
         onDragEnd={handleDragEnd}
         autoScroll={false}
       >
-        {/* overflow-auto (both axes) on THIS row, not per-column: columns
-            stretch to match whichever has the most cards (flex default),
-            and once that shared height exceeds max-h, the whole row
-            scrolls as one unit - every column moves together instead of
-            each having its own independent, out-of-sync scrollbar.
-            min-h keeps columns a substantial height even when every
-            column is sparse/empty (plain stretch alone would only
-            equalize them to each other, not to any particular size). */}
-        <div className="flex gap-4 overflow-auto pb-4 -mx-1 px-1 min-h-[420px] max-h-[min(70vh,700px)]">
+        {/* No vertical clamp/scroll here anymore - the row is just as tall
+            as its content (the page itself scrolls if that's ever a lot).
+            Horizontal scroll stays (columns can exceed viewport width) but
+            with the scrollbar itself hidden (scrollbar-none, app/
+            globals.css) - still scrollable by trackpad/drag, just no
+            visible scrollbar chrome. */}
+        <div className="flex gap-4 overflow-x-auto scrollbar-none pb-4 -mx-1 px-1">
           {COLUMNS.map((col) => (
             <Column
               key={col.value}
