@@ -71,7 +71,14 @@ function Column({
     <div
       ref={setNodeRef}
       className={cn(
-        "flex flex-col w-60 shrink-0 rounded-lg border transition-colors",
+        // h-full, not shrink-to-content: the column itself only stretches
+        // to match whichever sibling has the most cards (flex's default
+        // "stretch" among siblings), so the whole board still shrank to
+        // fit content when every column was sparse. h-full against the
+        // fixed-height row below (KanbanBoard's "flex gap-4 h-[...]") is
+        // what actually makes every column, including empty ones, fill
+        // the same real height regardless of card count.
+        "flex flex-col w-60 shrink-0 h-full rounded-lg border transition-colors",
         styles.body,
         isOver && "ring-1 ring-inset ring-foreground/20"
       )}
@@ -80,9 +87,9 @@ function Column({
           column - overflow-hidden would clip a card mid-drag the instant it
           moves past this column's edge, which is exactly what's supposed to
           happen when dragging it into a different column. */}
-      <div className={cn("h-1.5 rounded-t-lg", styles.bar)} />
-      <div className="flex flex-col gap-3 p-2">
-        <div className="flex items-center justify-between px-1.5 pt-1">
+      <div className={cn("h-1.5 rounded-t-lg shrink-0", styles.bar)} />
+      <div className="flex flex-col gap-3 p-2 flex-1 min-h-0">
+        <div className="flex items-center justify-between px-1.5 pt-1 shrink-0">
           <Typography variant="small" className={cn("font-semibold", styles.label)}>
             {label}
           </Typography>
@@ -90,9 +97,14 @@ function Column({
             {applications.length}
           </Typography>
         </div>
-        <div className="flex flex-col gap-2 min-h-[80px]">
+        {/* flex-1 + overflow-y-auto: a column with many cards scrolls
+            internally instead of growing the whole board taller than the
+            fixed row height, and an empty/short column's content area
+            still fills the full column (the empty-state box below is
+            centered within it) instead of stopping at a small fixed box. */}
+        <div className="flex flex-col gap-2 flex-1 min-h-0 overflow-y-auto">
           {applications.length === 0 ? (
-          <div className="rounded-lg border border-dashed border-border/70 py-8 text-center">
+          <div className="flex-1 flex items-center justify-center rounded-lg border border-dashed border-border/70 py-8 text-center">
             <Typography variant="small" className="text-muted-foreground/70">
               No applications
             </Typography>
@@ -229,7 +241,11 @@ export function KanbanBoard({ applications: initial, total: initialTotal }: { ap
         onDragEnd={handleDragEnd}
         autoScroll={false}
       >
-        <div className="flex gap-4 overflow-x-auto pb-4 -mx-1 px-1">
+        {/* Fixed height, not content-driven - see Column's h-full comment.
+            Comfortably tall on desktop but still bounded so a column with
+            many cards scrolls internally rather than pushing the page
+            height around; shrinks on short viewports via the min(). */}
+        <div className="flex gap-4 overflow-x-auto pb-4 -mx-1 px-1 h-[min(70vh,700px)]">
           {COLUMNS.map((col) => (
             <Column
               key={col.value}
