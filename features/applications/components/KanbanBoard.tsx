@@ -71,14 +71,13 @@ function Column({
     <div
       ref={setNodeRef}
       className={cn(
-        // h-full, not shrink-to-content: the column itself only stretches
+        // No independent height/scroll here - a column only ever stretches
         // to match whichever sibling has the most cards (flex's default
-        // "stretch" among siblings), so the whole board still shrank to
-        // fit content when every column was sparse. h-full against the
-        // fixed-height row below (KanbanBoard's "flex gap-4 h-[...]") is
-        // what actually makes every column, including empty ones, fill
-        // the same real height regardless of card count.
-        "flex flex-col w-60 shrink-0 h-full rounded-lg border transition-colors",
+        // "stretch" among row siblings). That shared natural height is what
+        // KanbanBoard's row scrolls as ONE unit (overflow on the row, not
+        // here) - every column moves together instead of each one having
+        // its own out-of-sync scrollbar.
+        "flex flex-col w-60 shrink-0 rounded-lg border transition-colors",
         styles.body,
         isOver && "ring-1 ring-inset ring-foreground/20"
       )}
@@ -88,7 +87,7 @@ function Column({
           moves past this column's edge, which is exactly what's supposed to
           happen when dragging it into a different column. */}
       <div className={cn("h-1.5 rounded-t-lg shrink-0", styles.bar)} />
-      <div className="flex flex-col gap-3 p-2 flex-1 min-h-0">
+      <div className="flex flex-col gap-3 p-2 flex-1">
         <div className="flex items-center justify-between px-1.5 pt-1 shrink-0">
           <Typography variant="small" className={cn("font-semibold", styles.label)}>
             {label}
@@ -97,12 +96,11 @@ function Column({
             {applications.length}
           </Typography>
         </div>
-        {/* flex-1 + overflow-y-auto: a column with many cards scrolls
-            internally instead of growing the whole board taller than the
-            fixed row height, and an empty/short column's content area
-            still fills the full column (the empty-state box below is
-            centered within it) instead of stopping at a small fixed box. */}
-        <div className="flex flex-col gap-2 flex-1 min-h-0 overflow-y-auto">
+        {/* flex-1, no overflow here - grows to match the tallest sibling
+            column's natural content height (same stretch as the column
+            itself), so an empty/short column's dashed box still fills that
+            full shared height instead of stopping at a small fixed box. */}
+        <div className="flex flex-col gap-2 flex-1">
           {applications.length === 0 ? (
           <div className="flex-1 flex items-center justify-center rounded-lg border border-dashed border-border/70 py-8 text-center">
             <Typography variant="small" className="text-muted-foreground/70">
@@ -241,11 +239,15 @@ export function KanbanBoard({ applications: initial, total: initialTotal }: { ap
         onDragEnd={handleDragEnd}
         autoScroll={false}
       >
-        {/* Fixed height, not content-driven - see Column's h-full comment.
-            Comfortably tall on desktop but still bounded so a column with
-            many cards scrolls internally rather than pushing the page
-            height around; shrinks on short viewports via the min(). */}
-        <div className="flex gap-4 overflow-x-auto pb-4 -mx-1 px-1 h-[min(70vh,700px)]">
+        {/* overflow-auto (both axes) on THIS row, not per-column: columns
+            stretch to match whichever has the most cards (flex default),
+            and once that shared height exceeds max-h, the whole row
+            scrolls as one unit - every column moves together instead of
+            each having its own independent, out-of-sync scrollbar.
+            min-h keeps columns a substantial height even when every
+            column is sparse/empty (plain stretch alone would only
+            equalize them to each other, not to any particular size). */}
+        <div className="flex gap-4 overflow-auto pb-4 -mx-1 px-1 min-h-[420px] max-h-[min(70vh,700px)]">
           {COLUMNS.map((col) => (
             <Column
               key={col.value}
