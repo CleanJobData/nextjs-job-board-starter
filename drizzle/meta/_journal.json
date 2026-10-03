@@ -113,6 +113,13 @@
       "when": 1791032820413,
       "tag": "0015_add_job_sync_settings",
       "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "7",
+      "when": 1791034336262,
+      "tag": "0016_add_alert_daily_cap",
+      "breakpoints": true
     }
   ]
 }

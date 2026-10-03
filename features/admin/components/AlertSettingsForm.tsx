@@ -6,15 +6,16 @@ import { Card, CardContent } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
 import { Switch } from "@/components/ui/Switch";
 import { Typography } from "@/components/ui/Typography";
-import { updateAlertSettings, type AlertSettingsInput } from "../actions/alerts";
+import { updateAlertSettings, type AlertSettingsInput, type AlertSettingsView } from "../actions/alerts";
 
-/** Operator controls for how much mail leaves the domain per cron run - see alertSettings' schema doc comment for why these are runtime-editable rather than config-file constants. */
-export function AlertSettingsForm({ initial }: { initial: AlertSettingsInput }) {
-  const [draft, setDraft] = React.useState<AlertSettingsInput>(initial);
+/** Operator controls for how much mail leaves the domain - see alertSettings' schema doc comment for why these are runtime-editable rather than config-file constants. */
+export function AlertSettingsForm({ initial }: { initial: AlertSettingsView }) {
+  const { dailySentCount, ...initialInput } = initial;
+  const [draft, setDraft] = React.useState<AlertSettingsInput>(initialInput);
   const [pending, startTransition] = React.useTransition();
   const [saved, setSaved] = React.useState(false);
 
-  const dirty = JSON.stringify(draft) !== JSON.stringify(initial);
+  const dirty = JSON.stringify(draft) !== JSON.stringify(initialInput);
   const set = <K extends keyof AlertSettingsInput>(k: K, v: AlertSettingsInput[K]) =>
     setDraft((d) => ({ ...d, [k]: v }));
 
@@ -33,7 +34,11 @@ export function AlertSettingsForm({ initial }: { initial: AlertSettingsInput }) 
           <Typography variant="h4">Sending controls</Typography>
           <Typography variant="muted">
             Applied on the next cron run. Lower the batch size or pause entirely if the sending
-            domain starts getting throttled.
+            domain starts getting throttled. The daily cap below defaults low - safe for a brand
+            new sending domain - raise it yourself once you know it&apos;s warmed up.
+          </Typography>
+          <Typography variant="small" className="text-muted-foreground mt-1">
+            Sent today: {dailySentCount} / {initial.maxEmailsPerDay}
           </Typography>
         </div>
 
@@ -43,7 +48,16 @@ export function AlertSettingsForm({ initial }: { initial: AlertSettingsInput }) 
           label="Pause all alert emails"
         />
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="space-y-1">
+            <label className="text-sm font-medium">Max emails per day</label>
+            <Input
+              type="number"
+              value={draft.maxEmailsPerDay}
+              onChange={(e) => set("maxEmailsPerDay", Number(e.target.value))}
+              disabled={pending}
+            />
+          </div>
           <div className="space-y-1">
             <label className="text-sm font-medium">Max emails per run</label>
             <Input

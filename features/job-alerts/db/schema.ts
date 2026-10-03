@@ -47,8 +47,27 @@ export const alertSettings = pgTable("alertSettings", {
   id: text("id").primaryKey().default("global"),
   /** Master kill switch - stops every send without users losing their subscriptions. */
   paused: boolean("paused").notNull().default(false),
-  maxEmailsPerRun: integer("maxEmailsPerRun").notNull().default(50),
+  /**
+   * Per-cron-tick cap. On its own this is NOT "light for a new domain" -
+   * the shipped scheduler ticks every 15 minutes (see docs/CRON.md), so
+   * even a modest per-run number compounds to a large daily ceiling
+   * across ~96 runs/day. maxEmailsPerDay below is the knob that actually
+   * controls total daily volume; this one just bounds how bursty a
+   * single run can be.
+   */
+  maxEmailsPerRun: integer("maxEmailsPerRun").notNull().default(20),
   delayBetweenSendsMs: integer("delayBetweenSendsMs").notNull().default(250),
   maxJobsPerDigest: integer("maxJobsPerDigest").notNull().default(10),
+  /**
+   * The real "go easy on a brand-new sending domain" default - deliberately
+   * conservative (most ESP/deliverability guidance for a cold domain starts
+   * well under 100/day) so a fresh deployment doesn't torch its own sender
+   * reputation in week one. An operator who knows their domain is warmed up
+   * raises this themselves from /admin/alerts.
+   */
+  maxEmailsPerDay: integer("maxEmailsPerDay").notNull().default(20),
+  /** Rolling 24h counter backing maxEmailsPerDay - see send.ts's getEffectiveDailyBudget(). Not meant to be hand-edited; reset automatically once dailyWindowStartedAt is >24h old. */
+  dailySentCount: integer("dailySentCount").notNull().default(0),
+  dailyWindowStartedAt: timestamp("dailyWindowStartedAt", { mode: "date", withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updatedAt", { mode: "date", withTimezone: true }).notNull().defaultNow(),
 });

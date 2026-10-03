@@ -13,8 +13,8 @@ export const jobAlertsFeature: FeaturePlugin = {
     {
       key: "job-alerts:send",
       run: async () => {
-        const { sent, skipped } = await sendDueJobAlerts();
-        return { ok: true, detail: `sent ${sent}, skipped ${skipped}` };
+        const { sent, skipped, failed } = await sendDueJobAlerts();
+        return { ok: true, detail: `sent ${sent}, skipped ${skipped}, failed ${failed}` };
       },
     },
   ],

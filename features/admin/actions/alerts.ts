@@ -66,17 +66,26 @@ export type AlertSettingsInput = {
   maxEmailsPerRun: number;
   delayBetweenSendsMs: number;
   maxJobsPerDigest: number;
+  maxEmailsPerDay: number;
 };
 
-export async function getAlertSettings(): Promise<AlertSettingsInput> {
+export type AlertSettingsView = AlertSettingsInput & {
+  /** Read-only - how much of today's budget is already used, so an operator can see it's working without doing the math themselves. */
+  dailySentCount: number;
+};
+
+export async function getAlertSettings(): Promise<AlertSettingsView> {
   await requireAdmin();
   const db = requireDb();
   const [row] = await db.select().from(alertSettings).limit(1);
+  const windowExpired = row ? Date.now() - row.dailyWindowStartedAt.getTime() >= 24 * 60 * 60 * 1000 : true;
   return {
     paused: row?.paused ?? false,
-    maxEmailsPerRun: row?.maxEmailsPerRun ?? 50,
+    maxEmailsPerRun: row?.maxEmailsPerRun ?? 20,
     delayBetweenSendsMs: row?.delayBetweenSendsMs ?? 250,
     maxJobsPerDigest: row?.maxJobsPerDigest ?? 10,
+    maxEmailsPerDay: row?.maxEmailsPerDay ?? 20,
+    dailySentCount: windowExpired ? 0 : row?.dailySentCount ?? 0,
   };
 }
 
@@ -90,6 +99,7 @@ export async function updateAlertSettings(input: AlertSettingsInput) {
     maxEmailsPerRun: Math.max(1, Math.min(500, Math.round(input.maxEmailsPerRun))),
     delayBetweenSendsMs: Math.max(0, Math.min(10_000, Math.round(input.delayBetweenSendsMs))),
     maxJobsPerDigest: Math.max(1, Math.min(50, Math.round(input.maxJobsPerDigest))),
+    maxEmailsPerDay: Math.max(1, Math.min(5000, Math.round(input.maxEmailsPerDay))),
     updatedAt: new Date(),
   };
   await db.insert(alertSettings).values(row).onConflictDoUpdate({ target: alertSettings.id, set: row });
