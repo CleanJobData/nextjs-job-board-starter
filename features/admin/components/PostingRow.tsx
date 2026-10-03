@@ -64,7 +64,8 @@ export function PostingRow({ posting }: { posting: AdminPostingRow }) {
               href={posting.applicationUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-xs text-muted-foreground hover:text-primary underline break-all"
+              title={posting.applicationUrl}
+              className="block text-xs text-muted-foreground hover:text-primary underline truncate"
             >
               {posting.applicationUrl}
             </a>

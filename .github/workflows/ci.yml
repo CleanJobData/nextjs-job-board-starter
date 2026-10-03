@@ -1,0 +1,35 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  typecheck-lint-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+      - run: npm ci
+      - run: npx tsc --noEmit
+      # Non-blocking for now: `eslint .` across the whole repo currently
+      # surfaces ~49 pre-existing errors in files unrelated to any given
+      # change (not something a new PR caused). Making it a hard gate
+      # today would make CI permanently red before anyone's touched
+      # anything, which trains people to ignore it. Still runs so it's
+      # visible in the log - fix the backlog, then remove
+      # `continue-on-error` so new violations actually block merges.
+      - run: npx eslint .
+        continue-on-error: true
+      # No DATABASE_URL/CLEANJOBDATA_API_KEY/etc. needed here - every env
+      # read in this codebase is lazy (called at request time inside a
+      # route/action, never at module-eval time), and every static route
+      # (sitemap/robots/opengraph-image) has a fallback default. A build
+      # that actually needed real secrets to succeed would mean something
+      # became eager and should be caught here, not papered over with
+      # fake secrets.
+      - run: npm run build

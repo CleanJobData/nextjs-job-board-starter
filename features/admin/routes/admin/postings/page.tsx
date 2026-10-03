@@ -1,9 +1,10 @@
 import Link from "next/link";
 import { Typography } from "@/components/ui/Typography";
+import { Badge } from "@/components/ui/Badge";
 import { PageContainer } from "@/components/ui/PageContainer";
 import { cn } from "@/lib/utils";
-import { listPostingsForAdmin } from "../../../actions/postings";
-import { PostingRow } from "../../../components/PostingRow";
+import { getPostingStatusCounts, listPostingsForAdmin } from "../../../actions/postings";
+import { PostingsList } from "../../../components/PostingsList";
 
 const TABS = [
   { value: "pending", label: "Pending" },
@@ -28,7 +29,10 @@ export default async function AdminPostingsPage({
   const { status: rawStatus } = await searchParams;
   const status: StatusFilter = TABS.some((t) => t.value === rawStatus) ? (rawStatus as StatusFilter) : "pending";
 
-  const postings = await listPostingsForAdmin(status === "all" ? undefined : status);
+  const [{ data: postings, total }, counts] = await Promise.all([
+    listPostingsForAdmin(status === "all" ? undefined : status),
+    getPostingStatusCounts(),
+  ]);
 
   return (
     <PageContainer size="full">
@@ -47,26 +51,21 @@ export default async function AdminPostingsPage({
             key={t.value}
             href={`/admin/postings?status=${t.value}`}
             className={cn(
-              "px-3 py-2 text-sm font-medium border-b-2 -mb-px",
+              "flex items-center gap-1.5 px-3 py-2 text-sm font-medium border-b-2 -mb-px",
               status === t.value
                 ? "border-primary text-foreground"
                 : "border-transparent text-muted-foreground hover:text-foreground"
             )}
           >
             {t.label}
+            {t.value !== "all" && counts[t.value] > 0 && (
+              <Badge variant={t.value === "pending" ? "secondary" : "outline"}>{counts[t.value]}</Badge>
+            )}
           </Link>
         ))}
       </div>
 
-      {postings.length === 0 ? (
-        <Typography className="text-muted-foreground">No postings in this view.</Typography>
-      ) : (
-        <div className="space-y-3">
-          {postings.map((p) => (
-            <PostingRow key={p.id} posting={p} />
-          ))}
-        </div>
-      )}
+      <PostingsList initial={postings} total={total} status={status} />
     </PageContainer>
   );
 }

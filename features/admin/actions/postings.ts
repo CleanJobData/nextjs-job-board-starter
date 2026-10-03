@@ -1,12 +1,13 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { and, desc, eq } from "drizzle-orm";
+import { and, count, desc, eq } from "drizzle-orm";
 import { requireDb } from "@/lib/db/client";
 import { requireAdmin } from "@/features/authGuard";
 import { jobs, companies } from "@/features/job-sync/db/schema";
 
 const ADMIN_POSTINGS_PATH = "/admin/postings";
+const ADMIN_POSTINGS_PAGE_SIZE = 20;
 
 async function requireAdminAccess() {
   const access = await requireAdmin();
@@ -33,29 +34,66 @@ export type AdminPostingRow = {
  * to the current user's own postings). Defaults to "pending" at the call
  * site (the moderation queue page), not here, so this function stays a
  * plain reusable query.
+ *
+ * Paginated (offset/limit, default page size below) - an unbounded
+ * moderation queue was fine at zero postings, not at any real volume.
  */
-export async function listPostingsForAdmin(status?: "pending" | "approved" | "rejected"): Promise<AdminPostingRow[]> {
+export async function listPostingsForAdmin(
+  status?: "pending" | "approved" | "rejected",
+  { limit = ADMIN_POSTINGS_PAGE_SIZE, offset = 0 }: { limit?: number; offset?: number } = {}
+): Promise<{ data: AdminPostingRow[]; total: number }> {
   await requireAdminAccess();
   const db = requireDb();
 
   const conditions = [eq(jobs.source, "posted")];
   if (status) conditions.push(eq(jobs.status, status));
 
-  const rows = await db
-    .select({
-      id: jobs.id,
-      title: jobs.title,
-      companyName: jobs.companyName,
-      applicationUrl: jobs.applicationUrl,
-      status: jobs.status,
-      rejectionReason: jobs.rejectionReason,
-      published: jobs.published,
-    })
-    .from(jobs)
-    .where(and(...conditions))
-    .orderBy(desc(jobs.published));
+  const [rows, totalRows] = await Promise.all([
+    db
+      .select({
+        id: jobs.id,
+        title: jobs.title,
+        companyName: jobs.companyName,
+        applicationUrl: jobs.applicationUrl,
+        status: jobs.status,
+        rejectionReason: jobs.rejectionReason,
+        published: jobs.published,
+      })
+      .from(jobs)
+      .where(and(...conditions))
+      .orderBy(desc(jobs.published))
+      .limit(limit)
+      .offset(offset),
+    db.select({ total: count() }).from(jobs).where(and(...conditions)),
+  ]);
 
-  return rows.map((r) => ({ ...r, published: r.published.toISOString() }));
+  return {
+    data: rows.map((r) => ({ ...r, published: r.published.toISOString() })),
+    total: totalRows[0]?.total ?? 0,
+  };
+}
+
+/** Counts per status, for the moderation queue's tab labels - so "Pending" can show how many actually need attention without fetching every row. */
+export async function getPostingStatusCounts(): Promise<Record<"pending" | "approved" | "rejected", number>> {
+  await requireAdminAccess();
+  const db = requireDb();
+
+  const rows = await db
+    .select({ status: jobs.status, total: count() })
+    .from(jobs)
+    .where(eq(jobs.source, "posted"))
+    .groupBy(jobs.status);
+
+  const counts = { pending: 0, approved: 0, rejected: 0 };
+  for (const row of rows) {
+    if (row.status in counts) counts[row.status as keyof typeof counts] = row.total;
+  }
+  return counts;
+}
+
+/** Powers the moderation queue's "Load more" button. */
+export async function loadMorePostings(status: "pending" | "approved" | "rejected" | undefined, offset: number) {
+  return listPostingsForAdmin(status, { offset });
 }
 
 export type AdminPostingDetail = AdminPostingRow & {

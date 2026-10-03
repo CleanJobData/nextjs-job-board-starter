@@ -2,6 +2,7 @@ import { pgTable, text, timestamp, boolean, integer, jsonb, index, uniqueIndex }
 import { nanoid } from "nanoid";
 import { users } from "@/features/auth/db/schema";
 import type { CompanyTeamMember, Location } from "@/lib/api/types";
+import type { SyncFilters } from "../job-sync.schema";
 
 /**
  * One row per employer, discriminated by `source` just like `jobs`:
@@ -283,3 +284,19 @@ export const syncRuns = pgTable(
   },
   (t) => [index("syncRunsKindStartedAtIdx").on(t.kind, t.startedAt)]
 );
+
+/**
+ * Single-row (id="global", same pattern as job-alerts' alertSettings)
+ * admin-editable override of job-sync.config.ts's `syncFilters` - a
+ * business decision (which jobs end up in this deployment's catalog) an
+ * operator plausibly wants to change without a code deploy, unlike the
+ * cadence/page-size knobs that stay code-only (see job-sync.config.ts's
+ * own doc comment and docs/ARCHITECTURE.md). `syncFilters: null` means
+ * "no override - use job-sync.config.ts's value", not "sync nothing" -
+ * see features/job-sync/lib/sync.ts's getEffectiveSyncFilters().
+ */
+export const jobSyncSettings = pgTable("jobSyncSettings", {
+  id: text("id").primaryKey().default("global"),
+  syncFilters: jsonb("syncFilters").$type<SyncFilters | null>(),
+  updatedAt: timestamp("updatedAt", { mode: "date", withTimezone: true }).notNull().defaultNow(),
+});

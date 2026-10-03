@@ -4,9 +4,17 @@ import { requireDb } from "@/lib/db/client";
 import type { Job } from "@/lib/api/types";
 import type { ListQuery } from "@/jobs/lib/query-types";
 import jobSyncConfig from "../job-sync.config";
-import { jobs, syncRuns } from "../db/schema";
+import type { SyncFilters } from "../job-sync.schema";
+import { jobs, syncRuns, jobSyncSettings } from "../db/schema";
 import { ensureCompaniesFetched, getEmployerId, refreshStaleCompanies } from "./companies";
 import { pollExpiredJobs, pruneExpiredJobs } from "./expire";
+
+/** The admin-set override (jobSyncSettings) if one exists, else job-sync.config.ts's own value. See jobSyncSettings' doc comment for why this one setting is DB-overridable and the rest of job-sync.config.ts isn't. */
+export async function getEffectiveSyncFilters(): Promise<SyncFilters> {
+  const db = requireDb();
+  const [row] = await db.select().from(jobSyncSettings).limit(1);
+  return row?.syncFilters ?? jobSyncConfig.syncFilters;
+}
 
 /** syncFiltersSchema uses camelCase (config-file convention); ListQuery uses CleanJobData's own snake_case param names. */
 function toListQuery(filters: typeof jobSyncConfig.syncFilters): Partial<ListQuery> {
@@ -93,6 +101,7 @@ async function runIncrementalSync() {
 
   const watermark = lastRun?.watermark ?? null;
   const expiresAt = new Date(Date.now() + jobSyncConfig.staleAfterDays * 24 * 60 * 60 * 1000);
+  const syncFilters = await getEffectiveSyncFilters();
 
   const [run] = await db.insert(syncRuns).values({ kind: "incremental" }).returning();
   if (!run) throw new Error("Failed to create sync_runs row.");
@@ -107,7 +116,7 @@ async function runIncrementalSync() {
         cursor,
         sort_by: "published",
         limit: jobSyncConfig.pageLimit,
-        ...toListQuery(jobSyncConfig.syncFilters),
+        ...toListQuery(syncFilters),
       });
       if (response.data.length === 0) break;
 

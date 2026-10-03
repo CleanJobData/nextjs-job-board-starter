@@ -80,14 +80,26 @@ export async function sendDueJobAlerts(): Promise<{ sent: number; skipped: numbe
       continue;
     }
 
+    // No meaningful preference set at all (no title, location, remote-only,
+    // or salary floor) means this would otherwise be an unfiltered "every
+    // new job on the board" firehose - exactly the kind of digest that
+    // gets an alert immediately turned back off. Withhold until they've
+    // set at least one real filter, rather than sending that firehose as a
+    // "better than nothing" default.
+    const hasAnyPreference = Boolean(
+      prefs?.titles.length || prefs?.remoteOnly || prefs?.minSalary != null || prefs?.locations.length
+    );
+    if (!hasAnyPreference) {
+      skipped++;
+      continue;
+    }
+
     const conditions = [
       eq(jobs.isActive, true),
       eq(jobs.status, "approved" as const),
       gt(jobs.published, alert.watermark),
     ];
 
-    // Preferences are optional - an alert with none is a plain "anything
-    // new" digest rather than an error.
     if (prefs?.titles.length) {
       conditions.push(sql`${jobs.title} ILIKE ${"%" + prefs.titles[0] + "%"}`);
     }
