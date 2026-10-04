@@ -76,7 +76,7 @@ function Column({
     // background/border of its own, so that extra hit area is invisible.
     // The VISIBLE box is the nested div below, sized to its own content
     // only - a 2-card column looks like a 2-card column.
-    <div ref={setNodeRef} className="w-60 shrink-0">
+    <div ref={setNodeRef} className="w-72 shrink-0">
       <div
         className={cn(
           "flex flex-col rounded-lg border transition-colors",
@@ -224,19 +224,18 @@ export function KanbanBoard({ applications: initial, total: initialTotal }: { ap
 
   return (
     <>
-      {/* autoScroll={false}: dnd-kit's default auto-scroll hunts for the
-          nearest scrollable ancestor (here, the board's own
-          horizontally-scrolling row below) and can trigger it mid-drag in
-          ways that feel like the container randomly jumping/scrolling -
-          this board is small enough that scroll-while-dragging isn't
-          needed at all, so it's simplest to turn it off outright rather
-          than fight its heuristics. */}
+      {/* autoScroll on (dnd-kit's default): the board's row is
+          horizontally scrollable (overflow-x-auto below), so dragging a
+          card toward the right edge now auto-scrolls that row to reveal
+          later columns (Rejected/Withdrawn) - the whole reason horizontal
+          scroll exists here. It targets whichever scrollable ancestor it
+          finds, which is just this one row since nothing else in the tree
+          scrolls. */}
       <DndContext
         id="applications-kanban"
         sensors={sensors}
         onDragStart={handleDragStart}
         onDragEnd={handleDragEnd}
-        autoScroll={false}
       >
         {/* No vertical clamp/scroll here anymore - the row is just as tall
             as its content (the page itself scrolls if that's ever a lot).
@@ -262,7 +261,7 @@ export function KanbanBoard({ applications: initial, total: initialTotal }: { ap
             across column boundaries - see ApplicationCard's doc comment. */}
         <DragOverlay>
           {activeApplication && (
-            <Card className="p-3.5 w-60 shadow-lg cursor-grabbing">
+            <Card className="p-3.5 w-72 shadow-lg cursor-grabbing">
               <ApplicationCardContent application={activeApplication} />
             </Card>
           )}
