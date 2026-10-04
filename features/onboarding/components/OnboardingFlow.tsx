@@ -41,7 +41,7 @@ function RoleTile({
       onClick={onClick}
       aria-pressed={selected}
       className={cn(
-        "group relative flex flex-col items-center gap-3 rounded-2xl border-2 px-6 py-10 text-center transition-all",
+        "group relative flex flex-col items-center gap-3 rounded-2xl border-2 px-5 py-7 sm:px-6 sm:py-10 text-center transition-all",
         selected
           ? "border-primary bg-primary/5 shadow-sm"
           : "border-border hover:border-primary/40 hover:bg-muted/40"
@@ -118,7 +118,7 @@ export function OnboardingFlow() {
   };
 
   return (
-    <div className="w-[85%] mx-auto space-y-10">
+    <div className="w-full sm:w-[85%] mx-auto space-y-8 sm:space-y-10">
       <div className="space-y-2">
         <div className="h-1.5 w-full rounded-full bg-muted overflow-hidden">
           <div
@@ -131,16 +131,18 @@ export function OnboardingFlow() {
         </Typography>
       </div>
 
-      <div className="space-y-8">
-        <div className="space-y-2">
-          <Typography variant="h1" className="text-3xl sm:text-4xl font-bold tracking-tight">
+      <div className="space-y-6 sm:space-y-8">
+        <div className="space-y-1.5 sm:space-y-2">
+          <Typography variant="h1" className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight">
             {titleByStep[step]}
           </Typography>
-          <Typography className="text-muted-foreground text-lg">{subtitleByStep[step]}</Typography>
+          <Typography className="text-muted-foreground text-base sm:text-lg">
+            {subtitleByStep[step]}
+          </Typography>
         </div>
 
         {step === 1 && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
             <RoleTile
               selected={accountType === "seeker"}
               onClick={() => setAccountType("seeker")}
@@ -176,17 +178,23 @@ export function OnboardingFlow() {
         {error && <p className="text-sm text-destructive">{error}</p>}
       </div>
 
-      <div className="flex items-center justify-between gap-3 pt-2">
+      <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-2">
         {step > 1 ? (
-          <Button variant="ghost" onClick={() => setStep(step - 1)} disabled={pending}>
+          <Button
+            variant="ghost"
+            className="w-full sm:w-auto"
+            onClick={() => setStep(step - 1)}
+            disabled={pending}
+          >
             Back
           </Button>
         ) : (
-          <span />
+          <span className="hidden sm:block" />
         )}
         {step === 1 && (
           <Button
             size="lg"
+            className="w-full sm:w-auto"
             disabled={!accountType || pending}
             onClick={() => {
               if (accountType === "employer") finish("employer");
@@ -197,17 +205,27 @@ export function OnboardingFlow() {
           </Button>
         )}
         {step === 2 && (
-          <Button size="lg" disabled={!rolesEntered || pending} onClick={() => setStep(3)}>
+          <Button
+            size="lg"
+            className="w-full sm:w-auto"
+            disabled={!rolesEntered || pending}
+            onClick={() => setStep(3)}
+          >
             Continue
           </Button>
         )}
         {step === 3 && (
-          <Button size="lg" disabled={pending} onClick={() => setStep(4)}>
+          <Button size="lg" className="w-full sm:w-auto" disabled={pending} onClick={() => setStep(4)}>
             Continue
           </Button>
         )}
         {step === 4 && (
-          <Button size="lg" disabled={pending} onClick={() => finish("seeker")}>
+          <Button
+            size="lg"
+            className="w-full sm:w-auto"
+            disabled={pending}
+            onClick={() => finish("seeker")}
+          >
             {pending ? "Saving..." : "Finish"}
           </Button>
         )}
