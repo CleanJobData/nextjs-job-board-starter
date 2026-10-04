@@ -64,7 +64,7 @@ export function JobList({ initialData, query }: JobListProps) {
             size="lg"
             onClick={handleLoadMore}
             disabled={isLoadingMore}
-            className="min-w-[200px]"
+            className="w-full sm:w-auto sm:min-w-[200px]"
           >
             {isLoadingMore ? (
               <>

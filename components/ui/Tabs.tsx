@@ -19,7 +19,7 @@ const TabsList = React.forwardRef<
     ref={ref}
     role="tablist"
     className={cn(
-      "inline-flex h-12 items-center justify-start rounded-xl bg-muted p-1.5 text-muted-foreground backdrop-blur-sm gap-1.5",
+      "flex h-12 items-center justify-start rounded-xl bg-muted p-1.5 text-muted-foreground backdrop-blur-sm gap-1.5 overflow-x-auto scrollbar-none max-w-full",
       className
     )}
     {...props}
@@ -46,7 +46,7 @@ const TabsTrigger = React.forwardRef<HTMLButtonElement, TabsTriggerProps>(
         aria-selected={isActive}
         onClick={() => onValueChange?.(value)}
         className={cn(
-          "inline-flex items-center justify-center whitespace-nowrap rounded-lg px-6 py-2 text-sm font-semibold transition-all duration-200 ease-in-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-transparent active:scale-[0.98]",
+          "inline-flex items-center justify-center whitespace-nowrap shrink-0 rounded-lg px-4 sm:px-6 py-2 text-sm font-semibold transition-all duration-200 ease-in-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-transparent active:scale-[0.98]",
           isActive
             ? "bg-card text-foreground border-border"
             : "text-muted-foreground hover:bg-muted/40 hover:text-foreground",

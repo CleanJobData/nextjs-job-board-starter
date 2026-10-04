@@ -117,7 +117,7 @@ export function JobDetailView({ job, extraActions }: JobDetailViewProps) {
           </div>
         </div>
 
-        <div className="flex flex-col gap-3 min-w-[160px]">
+        <div className="flex flex-col gap-3 md:min-w-[160px]">
           {job.application_url && (
             <Button size="lg" className="w-full shadow-lg shadow-primary/20 py-6 md:py-2" asChild>
               <a

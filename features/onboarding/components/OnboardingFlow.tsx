@@ -182,6 +182,7 @@ export function OnboardingFlow() {
         {step > 1 ? (
           <Button
             variant="ghost"
+            size="sm"
             className="w-full sm:w-auto"
             onClick={() => setStep(step - 1)}
             disabled={pending}
@@ -193,7 +194,7 @@ export function OnboardingFlow() {
         )}
         {step === 1 && (
           <Button
-            size="lg"
+            size="sm"
             className="w-full sm:w-auto"
             disabled={!accountType || pending}
             onClick={() => {
@@ -206,7 +207,7 @@ export function OnboardingFlow() {
         )}
         {step === 2 && (
           <Button
-            size="lg"
+            size="sm"
             className="w-full sm:w-auto"
             disabled={!rolesEntered || pending}
             onClick={() => setStep(3)}
@@ -215,13 +216,13 @@ export function OnboardingFlow() {
           </Button>
         )}
         {step === 3 && (
-          <Button size="lg" className="w-full sm:w-auto" disabled={pending} onClick={() => setStep(4)}>
+          <Button size="sm" className="w-full sm:w-auto" disabled={pending} onClick={() => setStep(4)}>
             Continue
           </Button>
         )}
         {step === 4 && (
           <Button
-            size="lg"
+            size="sm"
             className="w-full sm:w-auto"
             disabled={pending}
             onClick={() => finish("seeker")}

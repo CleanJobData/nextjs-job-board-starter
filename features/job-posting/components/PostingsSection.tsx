@@ -33,9 +33,9 @@ export function PostingsSection({
 
   return (
     <section className="space-y-4">
-      <div className="flex items-center justify-between gap-4">
-        <Typography variant="h4">Your postings</Typography>
-        <Button size="sm" onClick={() => setOpen(true)}>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <Typography variant="h4" className="min-w-0 truncate">Your postings</Typography>
+        <Button size="sm" className="shrink-0" onClick={() => setOpen(true)}>
           {hasCompany ? "New posting" : "Create a company"}
         </Button>
       </div>

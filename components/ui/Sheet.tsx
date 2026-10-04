@@ -37,7 +37,7 @@ export function Sheet({ isOpen, onClose, children, className, title = "Job Detai
 
         <div className="fixed inset-0 overflow-hidden">
           <div className="absolute inset-0 overflow-hidden">
-            <div className="pointer-events-none fixed inset-y-0 right-0 flex max-w-full pl-10">
+            <div className="pointer-events-none fixed inset-y-0 right-0 flex max-w-full pl-4 sm:pl-10">
               <TransitionChild
                 as={React.Fragment}
                 enter="transform transition ease-in-out duration-500 sm:duration-700"
@@ -54,7 +54,7 @@ export function Sheet({ isOpen, onClose, children, className, title = "Job Detai
                   )}
                 >
                   <div className="flex h-full flex-col overflow-y-auto">
-                    <div className="sticky top-0 z-10 flex items-center justify-between bg-card/80 backdrop-blur-md px-6 py-4 border-b border-border/50">
+                    <div className="sticky top-0 z-10 flex items-center justify-between bg-card/80 backdrop-blur-md px-4 sm:px-6 py-4 border-b border-border/50">
                       <h2 className="text-lg font-bold">{title}</h2>
                       <button
                         type="button"
@@ -64,7 +64,7 @@ export function Sheet({ isOpen, onClose, children, className, title = "Job Detai
                         <FaXmark className="h-5 w-5" />
                       </button>
                     </div>
-                    <div className="relative flex-1 px-6 py-8">
+                    <div className="relative flex-1 px-4 sm:px-6 py-5 sm:py-8">
                       {children}
                     </div>
                   </div>

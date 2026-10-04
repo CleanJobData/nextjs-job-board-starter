@@ -44,9 +44,9 @@ export function CompaniesManager({ companies }: CompaniesManagerProps) {
       {/* Title lives in this row, not above it in the page: the "Add
           company" CTA belongs on the same baseline as the section heading
           it acts on, rather than floating on its own line underneath. */}
-      <div className="flex items-center justify-between gap-4">
-        <Typography variant="h4">Your companies</Typography>
-        <Button variant="secondary" size="sm" onClick={() => setCreating(true)}>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <Typography variant="h4" className="min-w-0 truncate">Your companies</Typography>
+        <Button variant="secondary" size="sm" className="shrink-0" onClick={() => setCreating(true)}>
           Add company
         </Button>
       </div>

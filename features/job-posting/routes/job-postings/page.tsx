@@ -43,7 +43,7 @@ export default async function JobPostingsPage() {
           public.
         </Typography>
         {postings.length > 0 && (
-          <div className="flex flex-wrap items-baseline gap-x-8 gap-y-2 border-t border-border pt-5">
+          <div className="flex flex-wrap items-baseline gap-x-5 sm:gap-x-8 gap-y-2 border-t border-border pt-5">
             <div className="flex items-baseline gap-2">
               <Typography className="text-2xl font-semibold tabular-nums">{postings.length}</Typography>
               <Typography variant="small" className="text-muted-foreground">total postings</Typography>
