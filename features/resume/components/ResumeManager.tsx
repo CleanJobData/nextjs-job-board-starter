@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { FaFileLines, FaStar, FaArrowUpRightFromSquare, FaWandMagicSparkles, FaDownload, FaEye } from "react-icons/fa6";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
@@ -37,11 +37,27 @@ export type ResumeRow = {
 
 export function ResumeManager({ resumes }: { resumes: ResumeRow[] }) {
   const router = useRouter();
-  const [creating, setCreating] = React.useState(false);
+  const searchParams = useSearchParams();
+  // Lets the footer's "Create Resume"/"ATS Checker" tool links drop a
+  // visitor straight into the relevant action instead of a bare list page
+  // they'd have to figure out themselves - ?action=create opens the
+  // create dialog on first render (a lazy initializer, not an effect
+  // setState, to avoid the cascading-render lint rule), ?action=upload
+  // opens the file picker imperatively below.
+  const [creating, setCreating] = React.useState(() => searchParams.get("action") === "create");
   const [newTitle, setNewTitle] = React.useState("");
   const [pending, startTransition] = React.useTransition();
   const [error, setError] = React.useState<string | null>(null);
   const fileRef = React.useRef<HTMLInputElement>(null);
+
+  // Cleared from the URL right after so refreshing/navigating back doesn't
+  // re-trigger it.
+  React.useEffect(() => {
+    const action = searchParams.get("action");
+    if (action === "upload") fileRef.current?.click();
+    if (action) router.replace("/resume");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   function onUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
