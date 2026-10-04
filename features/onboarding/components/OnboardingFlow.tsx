@@ -118,7 +118,7 @@ export function OnboardingFlow() {
   };
 
   return (
-    <div className="w-[85%] space-y-10">
+    <div className="w-[85%] mx-auto space-y-10">
       <div className="space-y-2">
         <div className="h-1.5 w-full rounded-full bg-muted overflow-hidden">
           <div
