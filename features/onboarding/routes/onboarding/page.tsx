@@ -18,7 +18,7 @@ export default async function OnboardingPage() {
   if (!session?.user?.id) redirect("/sign-in");
 
   return (
-    <PageContainer size="sm">
+    <PageContainer size="md" className="pb-24 sm:pb-32">
       <OnboardingFlow />
     </PageContainer>
   );

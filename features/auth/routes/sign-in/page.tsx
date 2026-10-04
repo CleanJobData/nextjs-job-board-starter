@@ -5,7 +5,7 @@ import { SignInForm } from "../../components/SignInForm";
 
 export default function SignInPage() {
   return (
-    <PageContainer size="sm">
+    <PageContainer size="sm" className="py-16 sm:py-24">
       <Card>
         <CardHeader>
           <CardTitle>Sign in</CardTitle>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useActionState } from "react";
 import { useRouter } from "next/navigation";
 import { registerUser, type RegisterState } from "../actions/register";
@@ -14,6 +14,18 @@ const initialState: RegisterState = {};
 export function SignUpForm() {
   const router = useRouter();
   const [state, formAction, pending] = useActionState(registerUser, initialState);
+  // Controlled, not left to the native <input>s: React resets a <form
+  // action={...}> to its initial (empty) values once the action settles,
+  // even when it "fails" by returning a fieldErrors/error state rather
+  // than throwing - that's React's own documented form-reset-on-action-
+  // completion behavior, not a bug in registerUser(). A validation error
+  // (e.g. "Password must be at least 8 characters") was wiping every
+  // field the person had already typed, including name/email that were
+  // perfectly valid. Keeping our own copies here means the displayed
+  // value survives that reset regardless of what the DOM node does.
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
   // Sign-up now signs the account in, so the only thing left to do on
   // success is move the user along to the real /onboarding route. The
@@ -52,7 +64,15 @@ export function SignUpForm() {
         <label htmlFor="name" className="text-sm font-medium text-foreground">
           Name
         </label>
-        <Input id="name" name="name" type="text" autoComplete="name" required />
+        <Input
+          id="name"
+          name="name"
+          type="text"
+          autoComplete="name"
+          required
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+        />
         {state.fieldErrors?.name && (
           <Typography variant="small" className="text-destructive">
             {state.fieldErrors.name}
@@ -63,7 +83,15 @@ export function SignUpForm() {
         <label htmlFor="email" className="text-sm font-medium text-foreground">
           Email
         </label>
-        <Input id="email" name="email" type="email" autoComplete="email" required />
+        <Input
+          id="email"
+          name="email"
+          type="email"
+          autoComplete="email"
+          required
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+        />
         {state.fieldErrors?.email && (
           <Typography variant="small" className="text-destructive">
             {state.fieldErrors.email}
@@ -74,7 +102,15 @@ export function SignUpForm() {
         <label htmlFor="password" className="text-sm font-medium text-foreground">
           Password
         </label>
-        <Input id="password" name="password" type="password" autoComplete="new-password" required />
+        <Input
+          id="password"
+          name="password"
+          type="password"
+          autoComplete="new-password"
+          required
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+        />
         {state.fieldErrors?.password && (
           <Typography variant="small" className="text-destructive">
             {state.fieldErrors.password}
