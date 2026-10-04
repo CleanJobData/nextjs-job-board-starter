@@ -118,7 +118,7 @@ export function OnboardingFlow() {
   };
 
   return (
-    <div className="mx-auto max-w-2xl space-y-10">
+    <div className="w-[85%] space-y-10">
       <div className="space-y-2">
         <div className="h-1.5 w-full rounded-full bg-muted overflow-hidden">
           <div
@@ -132,7 +132,7 @@ export function OnboardingFlow() {
       </div>
 
       <div className="space-y-8">
-        <div className={cn("space-y-2", step === 1 && "text-center")}>
+        <div className="space-y-2">
           <Typography variant="h1" className="text-3xl sm:text-4xl font-bold tracking-tight">
             {titleByStep[step]}
           </Typography>
