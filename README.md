@@ -1,87 +1,47 @@
 # CleanJobData Next.js Job Board Starter
 
-A production-ready job board template built with **Next.js 16**,
-**Tailwind CSS v4**, and the **CleanJobData API** - job listings out of
-the box, plus optional accounts, resumes, applications tracking,
-self-service job posting, an admin dashboard, and email alerts, each
-independently switched on or off.
+A ready-to-deploy job board. Real job listings from the CleanJobData API, plus optional user accounts, resume builder, application tracking, job posting, admin tools, and email alerts.
 
-## Tech Stack
+**Every feature is a single on/off switch.** You can go live with just the jobs listing in minutes, then turn on more features whenever you're ready.
 
-- **Framework**: Next.js 16 (App Router), React 19, TypeScript.
-- **Styling**: Tailwind CSS v4, a token/preset theming system (see
-  "Styling/theming" below), Headless UI for accessible unstyled
-  primitives (dialogs, comboboxes, tabs).
-- **Database/ORM**: Postgres + Drizzle ORM (only needed once a
-  DB-backed feature is enabled - see the feature table below).
-- **Auth**: NextAuth.js (email/password, optional Google/LinkedIn OAuth).
-- **Email**: Resend (optional - only needed for email verification and
-  `jobAlerts`).
-- **File storage**: local disk or S3-compatible storage (optional -
-  only needed for `resume`/`jobPosting` uploads).
-- **AI**: Anthropic's API (optional - only used as a fallback for
-  resume parsing in the `resume` feature).
-- **Jobs data**: the [CleanJobData API](https://cleanjobdata.com) -
-  the one dependency every deployment needs.
+---
 
-## 🚀 Quick Start (jobs listing only)
+## 🧱 How it works (the simple version)
 
-The fastest way to get a *jobs-listing-only* board live is to fork this
-repo and deploy it with just the CleanJobData API key configured - no
-database required for this path.
+1. You get the code (clone or deploy with one click)
+2. You add your CleanJobData API key
+3. You pick which features you want
+4. You run it — or deploy it to Vercel / Netlify
 
-1. **Fork this repo** to your own GitHub account.
-2. **Deploy** using one of the platforms below.
-3. **Configure** your API key from the [CleanJobData Dashboard](https://cleanjobdata.com/dashboard).
+That's it.
 
-For every other feature (accounts, resumes, applications, job posting,
-admin, alerts, onboarding), see "Full setup" below - each needs
-Postgres, and some need one more service on top of that.
+---
 
-## 🛠 Deployment
+## 🚀 Option A — Deploy in one click (easiest)
 
-Deploy your forked repository in seconds:
+No local setup needed.
 
-- **Vercel**: The recommended platform for Next.js. [Deploy Now](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FCleanJobData%2Fnextjs-job-board-starter&repository-name=nextjs-job-board-starter&project-name=cleanjobdata-job-board&env=CLEANJOBDATA_API_URL,CLEANJOBDATA_API_KEY,NEXT_PUBLIC_SITE_NAME&envDescription=API_URL,API_KEY,SITE_NAME)
-- **Netlify**: Great for static and serverless sites. [Deploy Now](https://app.netlify.com/start/deploy?repository=https://github.com/CleanJobData/nextjs-job-board-starter)
+1. Go to [cleanjobdata.com](https://cleanjobdata.com/dashboard) and create a free account
+2. Copy your API key from the dashboard
+3. Click one of these:
 
-## Core jobs-listing features
+[![Deploy to Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FCleanJobData%2Fnextjs-job-board-starter&repository-name=nextjs-job-board-starter&project-name=cleanjobdata-job-board&env=CLEANJOBDATA_API_URL,CLEANJOBDATA_API_KEY,NEXT_PUBLIC_SITE_NAME&envDescription=API_URL,API_KEY,SITE_NAME)
+[![Deploy to Netlify](https://www.netlify.com/img/deploy/button.svg)](https://app.netlify.com/start/deploy?repository=https://github.com/CleanJobData/nextjs-job-board-starter)
 
-- **Modern Stack**: Next.js 16 (App Router), React 19, Tailwind CSS v4.
-- **Fast & Scannable**: Optimized job grid with server-side rendering and cursor-based pagination.
-- **Advanced Filtering**: Search by title, location (with geo-suggestions), remote, seniority, salary, and more.
-- **URL Synchronization**: All filter states are synced to the URL for easy bookmarking and sharing.
-- **Side Panel View**: Intercepting routes for a seamless "side view" of job details without losing your place in the list.
-- **Responsive Design**: Mobile-first approach with a dedicated filter drawer for smaller screens.
-- **Theme Support**: Built-in light and dark mode with zero flash on load, plus a token-based theming system - see "Styling/theming" below.
-- **Type Safe**: Strict TypeScript implementation for all API responses and application state.
+4. Fill in the variables it asks for:
+   - `CLEANJOBDATA_API_URL` → `https://api.cleanjobdata.com`
+   - `CLEANJOBDATA_API_KEY` → your key from the dashboard
+   - `NEXT_PUBLIC_SITE_NAME` → whatever you want to call your board
 
-## Optional features
+Your job board is live. ✅
 
-Everything below lives under `features/<name>/`, is switched on/off in
-one place (`features.config.ts`), and has its own README with the full
-setup detail - env vars, DB tables, routes, known limitations, and how to
-remove it cleanly if you don't want it. This list is a map, not the
-setup guide itself.
+> **Want more features?** Keep reading — accounts, resumes, etc. need a database (Postgres). You can add those later.
 
-| Feature | What it adds | Needs beyond Postgres | README |
-|---|---|---|---|
-| `auth` | Email/password + optional Google/LinkedIn sign-in | Nothing required; email verification needs Resend | [features/auth](features/auth/README.md) |
-| `jobSync` | The CleanJobData ingestion pipeline itself, plus a scheduler hitting `/api/cron` | Nothing extra | [features/job-sync](features/job-sync/README.md), [docs/CRON.md](docs/CRON.md) |
-| `resume` | Upload/parse a PDF resume or build one from scratch, ATS check, PDF export in 4 templates | File storage (local disk or S3); optionally Anthropic for AI parsing | [features/resume](features/resume/README.md) |
-| `applications` | A kanban board tracking jobs a user has saved/applied to | Nothing extra | [features/applications](features/applications/README.md) |
-| `jobPosting` | Self-service company profiles + job postings | File storage (company logos) | [features/job-posting](features/job-posting/README.md) |
-| `admin` | Moderation queue, alert-sending controls, sync status, user roles | Nothing extra (needs `auth` + a `users.role = "admin"` account) | [features/admin](features/admin/README.md) |
-| `jobAlerts` | Scheduled email digests of new matching jobs | Resend (email) + the same cron scheduler as `jobSync` | [features/job-alerts](features/job-alerts/README.md) |
-| `onboarding` | One-step "Job Seeker / Employer" flow right after sign-up | Nothing extra | [features/onboarding](features/onboarding/README.md) |
+---
 
-Real dependencies exist between a few of these (e.g. `applications` reads
-`jobSync`'s data, `jobAlerts` reuses `onboarding`'s preferences UI) - each
-feature's own README calls out what it actually needs.
+## 🛠 Option B — Run it locally (for developers)
 
-## Full setup (local development, everything enabled)
-
-### 1. Clone the repository
+### Step 1 — Get the code
 
 ```bash
 git clone https://github.com/CleanJobData/nextjs-job-board-starter.git
@@ -89,87 +49,153 @@ cd nextjs-job-board-starter
 npm install
 ```
 
-**Prefer not to install Node/Postgres locally?** This repo includes a
-[dev container](.devcontainer) (VS Code "Dev Containers" extension, or
-GitHub Codespaces) that boots the app alongside a Postgres instance with
-zero local setup - open the folder, "Reopen in Container", then skip to
-step 5 once it finishes installing and migrating.
+> **No Node.js on your machine?** Open the folder in VS Code and click "Reopen in Container" — the dev container sets everything up automatically including Postgres. Then skip to Step 4.
 
-### 2. Configure environment variables
+---
+
+### Step 2 — Set up your environment file
 
 ```bash
 cp .env.example .env.local
 ```
 
-`.env.example` is fully commented with every variable any feature might
-need, and which features need it - fill in what's relevant to the
-features you're enabling. At minimum: `CLEANJOBDATA_API_URL`/
-`CLEANJOBDATA_API_KEY` (jobs data) and, once any DB-backed feature is on,
-`DATABASE_URL`.
+Open `.env.local` and fill in at minimum:
 
-### 3. Choose your features
-
-Edit `features.config.ts` - set `enabled: true`/`false` per feature (see
-the table above). All eight currently default to `true` in this repo;
-turn off what you don't need.
-
-### 4. Set up the database (once any DB-backed feature is enabled)
-
-```bash
-npm run db:generate   # generate a migration from the current schema
-npm run db:migrate    # apply it
-npm run db:studio     # optional: browse the DB in Drizzle Studio
+```env
+CLEANJOBDATA_API_URL=https://api.cleanjobdata.com
+CLEANJOBDATA_API_KEY=your_api_key_here
+NEXT_PUBLIC_SITE_NAME=My Job Board
 ```
 
-If you enabled `auth` and want an admin account for the `admin` feature,
-sign up normally in the app, then:
+The `.env.example` file lists every other variable and which feature needs it — read the comments there.
 
-```bash
-npm run promote-admin -- you@example.com
+---
+
+### Step 3 — Choose your features
+
+Open `features.config.ts`. It looks like this:
+
+```ts
+export const featuresConfig = {
+  jobSync:      { enabled: true },   // caches jobs in your DB — recommended
+  auth:         { enabled: true },   // user accounts
+  resume:       { enabled: true },   // resume builder
+  applications: { enabled: true },   // job application tracker
+  jobPosting:   { enabled: true },   // let employers post jobs
+  admin:        { enabled: true },   // admin moderation dashboard
+  jobAlerts:    { enabled: true },   // email digests of new jobs
+  onboarding:   { enabled: true },   // setup wizard for new users
+};
 ```
 
-### 5. Run it
+**Just want a simple jobs listing?** Set everything except `jobSync` to `false` and skip Step 4.
+
+**Want the full experience?** Leave everything `true` and do Step 4.
+
+---
+
+### Step 4 — Set up the database (skip if all features are off)
+
+You need a Postgres database. Any provider works — [Neon](https://neon.tech) and [Supabase](https://supabase.com) both have free tiers.
+
+Once you have a connection string, add it to `.env.local`:
+
+```env
+DATABASE_URL=postgresql://user:password@host:5432/dbname
+```
+
+Then run:
+
+```bash
+npm run db:generate   # creates the database tables
+npm run db:migrate    # applies them
+```
+
+That's it — your database is ready.
+
+> **Want to browse your database visually?** Run `npm run db:studio` and open the link it gives you.
+
+---
+
+### Step 5 — Start it up
 
 ```bash
 npm run dev
 ```
 
-Open [http://localhost:3450](http://localhost:3450).
+Open [http://localhost:3450](http://localhost:3450) — your job board is running. 🎉
 
-### 6. Styling/theming
+---
 
-Edit `theme.config.ts` (preset, font, corner radius, spacing density,
-default light/dark mode) - one file, same "edit values, don't add logic"
-shape as `features.config.ts`. For a full custom palette, use
-`preset: "custom"` and edit `app/globals.css`'s token values directly.
-See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the full token list,
-how presets/fonts/dark-mode actually wire together, and the "always use
-design tokens, never a raw color" rule the shared UI library
-(`components/ui/*`) already follows.
+### Step 6 — (Optional) Make yourself an admin
 
-### 7. Scheduled tasks
+If you turned on the `admin` feature, sign up normally in the app first, then run:
 
-`jobSync` and `jobAlerts` both need something calling `POST /api/cron`
-on a schedule (Vercel Cron, GitHub Actions, or a plain crontab all work)
-- see [docs/CRON.md](docs/CRON.md).
+```bash
+npm run promote-admin -- you@youremail.com
+```
 
-## API Reference
+Now you can access `/admin` with moderation tools, sync status, and user management.
 
-This template connects to the [CleanJobData Jobs API](https://api.cleanjobdata.com/docs).
+---
 
-| Filter | API Parameter | Description |
-|--------|---------------|-------------|
-| Keywords | `title` | Search job titles (supports `;` for OR) |
-| Location | `city_id`, `state_id`, `country_id` | Geographic filtering via IDs |
-| Remote | `remote=true` | Filter for remote-only positions |
-| Seniority | `experience_level` | EN, MI, SE, EX |
-| Salary | `salary` | Min salary (e.g., `50000`) |
-| Posted | `max_age` | Filter by days since published |
+## ✨ What each feature does
+
+| Feature | What it adds | What it needs |
+|---|---|---|
+| `jobSync` | Caches jobs from CleanJobData into your own DB. Fast filters, no rate-limit risk. **Recommended.** | Postgres + a cron job hitting `/api/cron` |
+| `auth` | User accounts (email/password). Optional Google/LinkedIn OAuth. | Postgres. Resend for email verification (optional) |
+| `resume` | Resume builder, PDF upload, ATS check, PDF export in 4 templates | Postgres + file storage (local disk or S3). Optional: Anthropic key for AI parsing |
+| `applications` | Kanban board — Saved → Applied → Interviewing → Offer → Rejected | Postgres |
+| `jobPosting` | Employers can create company profiles and post jobs | Postgres + file storage (for logos) |
+| `admin` | Moderation queue, user management, sync dashboard | Postgres + `auth` + an admin account |
+| `jobAlerts` | Email digests of new jobs matching a user's saved preferences | Postgres + Resend + cron |
+| `onboarding` | A short setup wizard for new users (role, location, preferences) | Postgres + `auth` |
+
+Each feature has its own README in `features/<name>/README.md` with the full details.
+
+---
+
+## 🎨 Changing the look
+
+Edit `theme.config.ts`:
+
+```ts
+export const themeConfig = {
+  preset: "default",    // "default" | "warm" | "minimal-mono" | "custom"
+  font: "sans",         // "sans" | "mono"
+  radius: "md",         // "none" | "sm" | "md" | "lg"
+  density: "default",   // "compact" | "default" | "comfortable"
+  defaultMode: "system" // "light" | "dark" | "system"
+};
+```
+
+For a fully custom color palette, set `preset: "custom"` and edit the token values in `app/globals.css`.
+
+See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for how the theme system works in depth.
+
+---
+
+## ⏰ Scheduled tasks
+
+`jobSync` and `jobAlerts` need something calling `POST /api/cron` on a schedule (every hour is a good default).
+
+See [docs/CRON.md](docs/CRON.md) for how to set this up on Vercel, GitHub Actions, or a plain crontab.
+
+---
+
+## 🏗 Want us to build your job board for you?
+
+If you'd rather skip the setup and get a fully branded, hosted job board built for you — we offer that as a service.
+
+**[Contact us at cleanjobdata.com/services](https://cleanjobdata.com/services)**
+
+We handle everything: custom design, your domain, ongoing hosting, and API access included.
+
+---
 
 ## License
 
-MIT License - feel free to use this for your own projects!
-
----
+MIT — use it for anything.
 
 Built by [CleanJobData](https://cleanjobdata.com)

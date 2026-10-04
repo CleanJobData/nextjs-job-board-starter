@@ -1,72 +1,82 @@
-# Getting Started with CleanJobData Next.js Starter
+# Getting Started
 
-Follow these steps to get your job board up and running in less than 5 minutes.
+> **New here?** Start with the [README](../README.md) — it has the full step-by-step setup guide.
+> This page is a quick reference once you've got the basics running.
 
-## 1. Create a CleanJobData Account
-If you haven't already, sign up for a free account at [cleanjobdata.com/signup](https://cleanjobdata.com/signup).
+---
 
-## 2. Generate an API Key
-Go to your [Dashboard](https://cleanjobdata.com/dashboard#api-keys) and create a new API key. You'll need this to fetch job data.
+## Checklist — bare minimum (jobs listing only)
 
-## 3. Deploy to Your Favorite Platform
+- [ ] CleanJobData account + API key → [cleanjobdata.com/dashboard](https://cleanjobdata.com/dashboard)
+- [ ] `CLEANJOBDATA_API_URL` and `CLEANJOBDATA_API_KEY` set in `.env.local`
+- [ ] `NEXT_PUBLIC_SITE_NAME` set
+- [ ] `npm run dev` (or deployed to Vercel/Netlify)
 
-### One-Click Deploy (Recommended)
-The fastest way to get started is using our one-click deploy buttons on the [Template Detail Page](https://cleanjobdata.com/templates/frameworks/nextjs-starter).
+That's enough for a working jobs listing with search and filters.
 
-- **Vercel**: Click the "Deploy to Vercel" button. It will prompt you for your API key and site name.
-- **Netlify**: Click the "Deploy to Netlify" button to clone and deploy instantly.
+---
 
-### Manual Setup (Local Development)
-1. **Clone the repo**:
-   ```bash
-   git clone https://github.com/CleanJobData/nextjs-job-board-starter.git
-   cd nextjs-job-board-starter
-   ```
-2. **Install dependencies**:
-   ```bash
-   npm install
-   ```
-3. **Set up environment variables**:
-   Create a `.env.local` file and add:
-   ```bash
-   CLEANJOBDATA_API_URL=https://api.cleanjobdata.com
-   CLEANJOBDATA_API_KEY=your_api_key_here
-   NEXT_PUBLIC_SITE_NAME="My Job Board"
-   ```
-4. **Run the app**:
-   ```bash
-   npm run dev
-   ```
+## Checklist — adding user accounts + more features
 
-## 4. Turn On More Than Job Listings (optional)
+- [ ] Postgres database set up (free tier: [Neon](https://neon.tech) or [Supabase](https://supabase.com))
+- [ ] `DATABASE_URL` set in `.env.local`
+- [ ] Features enabled in `features.config.ts`
+- [ ] `npm run db:generate && npm run db:migrate` run
+- [ ] If using email features: `RESEND_API_KEY` + `EMAIL_FROM` set
+- [ ] If using resume AI parsing: `ANTHROPIC_API_KEY` set
+- [ ] If using file uploads: storage configured (see [features/resume/README.md](../features/resume/README.md))
+- [ ] If using `admin`: ran `npm run promote-admin -- you@email.com`
+- [ ] If using `jobSync` or `jobAlerts`: cron set up → see [CRON.md](CRON.md)
 
-The steps above get you a jobs-listing-only board with no database. This
-template also has accounts, resumes, applications tracking, self-service
-job posting, an admin dashboard, and email alerts - each is its own
-switch in `features.config.ts` and needs Postgres (some need one more
-service on top, like file storage or an email provider). See the main
-[README](../README.md)'s "Optional features" table and "Full setup"
-section for the complete walkthrough, or jump straight to a feature's own
-README under `features/<name>/README.md`.
+---
 
-## 5. Customize Your Board
+## Common environment variables
 
-### Branding
-- **Logo**: Replace `public/logo.svg` with your own logo.
-- **Icon**: Update `app/icon.svg` for the favicon.
-- **Site Name**: Change `NEXT_PUBLIC_SITE_NAME` in your environment variables.
+| Variable | What it's for | Required? |
+|---|---|---|
+| `CLEANJOBDATA_API_URL` | Base URL for the jobs API | ✅ Always |
+| `CLEANJOBDATA_API_KEY` | Your API key | ✅ Always |
+| `NEXT_PUBLIC_SITE_NAME` | Your board's name | ✅ Always |
+| `DATABASE_URL` | Postgres connection string | Once any DB feature is on |
+| `NEXTAUTH_SECRET` | Random secret for auth sessions | Once `auth` is on |
+| `NEXTAUTH_URL` | Your site's full URL | Once `auth` is on |
+| `RESEND_API_KEY` | Resend email service key | For email verify + `jobAlerts` |
+| `EMAIL_FROM` | From address for emails | For email verify + `jobAlerts` |
+| `ANTHROPIC_API_KEY` | AI resume parsing | Optional — `resume` falls back gracefully |
+| `CRON_SECRET` | Secures the `/api/cron` endpoint | Once `jobSync` or `jobAlerts` is on |
 
-### Styling
-The template uses **Tailwind CSS v4** with a token-based theming system.
-Edit `theme.config.ts` first (color preset, font, corner radius, spacing
-density, default light/dark mode) - it's designed to be the one file you
-touch for most rebranding. For a fully custom palette beyond the built-in
-presets, set `preset: "custom"` there and edit the token values directly
-in `app/globals.css`. See [docs/ARCHITECTURE.md](ARCHITECTURE.md) for how
-it all fits together.
+The full list with comments is in `.env.example`.
 
-### SEO
-Update the metadata in `app/layout.tsx` to match your brand. Make sure to set `NEXT_PUBLIC_APP_URL` in production for correct social previews.
+---
 
-## 6. Need Help?
-Check out our [API Documentation](https://api.cleanjobdata.com/docs) or reach out to us at [cleanjobdata.com/support](https://cleanjobdata.com/support).
+## Useful commands
+
+```bash
+npm run dev              # start local dev server on port 3450
+npm run build            # production build
+npm run db:generate      # generate a new migration from schema changes
+npm run db:migrate       # apply pending migrations
+npm run db:studio        # open Drizzle Studio (visual DB browser)
+npm run promote-admin -- you@email.com  # give an account admin access
+```
+
+---
+
+## Where to find things
+
+| What | Where |
+|---|---|
+| Turn features on/off | `features.config.ts` |
+| Change the look/theme | `theme.config.ts` |
+| All env vars explained | `.env.example` |
+| Per-feature setup detail | `features/<name>/README.md` |
+| Cron / scheduled jobs | [docs/CRON.md](CRON.md) |
+| Theme system internals | [docs/ARCHITECTURE.md](ARCHITECTURE.md) |
+
+---
+
+## Need help or want it done for you?
+
+- **Docs & API reference**: [api.cleanjobdata.com/docs](https://api.cleanjobdata.com/docs)
+- **Support**: [cleanjobdata.com/support](https://cleanjobdata.com/support)
+- **Want a fully built, hosted job board?** We build custom boards as a service → [cleanjobdata.com/services](https://cleanjobdata.com/services)
