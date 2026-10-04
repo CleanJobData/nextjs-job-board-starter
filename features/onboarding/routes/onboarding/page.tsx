@@ -18,7 +18,7 @@ export default async function OnboardingPage() {
   if (!session?.user?.id) redirect("/sign-in");
 
   return (
-    <PageContainer size="md" className="pb-24 sm:pb-32">
+    <PageContainer size="md" className="min-h-[70vh] flex flex-col justify-center py-16">
       <OnboardingFlow />
     </PageContainer>
   );

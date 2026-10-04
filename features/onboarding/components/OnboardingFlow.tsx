@@ -8,14 +8,19 @@ import { Card, CardContent } from "@/components/ui/Card";
 import { Typography } from "@/components/ui/Typography";
 import { cn } from "@/lib/utils";
 import {
-  PreferenceFields,
+  RolesField,
+  LocationFields,
+  ExperienceFields,
   draftToPreferences,
   emptyPreferenceDraft,
   type PreferenceDraft,
 } from "./PreferenceFields";
-import { completeOnboarding, skipOnboarding } from "../actions/onboarding";
+import { completeOnboarding } from "../actions/onboarding";
 
 type AccountType = "seeker" | "employer";
+
+/** Seekers step through role -> location -> experience one at a time; employers finish at step 1. */
+const SEEKER_STEP_COUNT = 4;
 
 /** Local copy of the shared Choice tile, used for the role step. */
 function Choice({
@@ -54,12 +59,15 @@ function Choice({
  */
 export function OnboardingFlow() {
   const router = useRouter();
-  const [step, setStep] = React.useState<1 | 2>(1);
+  const [step, setStep] = React.useState(1);
   const [accountType, setAccountType] = React.useState<AccountType | null>(null);
   const [pending, startTransition] = React.useTransition();
   const [error, setError] = React.useState<string | null>(null);
 
   const [draft, setDraft] = React.useState<PreferenceDraft>(emptyPreferenceDraft);
+
+  const totalSteps = accountType === "employer" ? 1 : SEEKER_STEP_COUNT;
+  const rolesEntered = draft.titles.trim().length > 0;
 
   function finish(type: AccountType) {
     setError(null);
@@ -77,35 +85,32 @@ export function OnboardingFlow() {
     });
   }
 
-  function skip() {
-    startTransition(async () => {
-      try {
-        await skipOnboarding();
-        router.push("/jobs");
-        router.refresh();
-      } catch {
-        router.push("/jobs");
-      }
-    });
-  }
+  const titleByStep: Record<number, string> = {
+    1: "Welcome - what brings you here?",
+    2: "What roles are you looking for?",
+    3: "Where would you like to work?",
+    4: "Any other preferences?",
+  };
+  const subtitleByStep: Record<number, string> = {
+    1: "This tailors what you see. You can change it later.",
+    2: "We'll use this to pre-filter your job feed.",
+    3: "Pick as many locations as you like, or go remote-only.",
+    4: "Nothing here is permanent - adjust it anytime from Preferences.",
+  };
 
   return (
     <div className="space-y-6">
       <div>
-        <Typography variant="overline">Step {step} of {accountType === "employer" ? 1 : 2}</Typography>
+        <Typography variant="overline">Step {step} of {totalSteps}</Typography>
         <Typography variant="h1" className="text-3xl font-bold tracking-tight mt-1 mb-1">
-          {step === 1 ? "Welcome - what brings you here?" : "What are you looking for?"}
+          {titleByStep[step]}
         </Typography>
-        <Typography className="text-muted-foreground">
-          {step === 1
-            ? "This tailors what you see. You can change it later."
-            : "We'll use these to pre-filter your job feed. Nothing here is permanent."}
-        </Typography>
+        <Typography className="text-muted-foreground">{subtitleByStep[step]}</Typography>
       </div>
 
       <Card>
         <CardContent className="p-5 space-y-6">
-          {step === 1 ? (
+          {step === 1 && (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <Choice
                 selected={accountType === "seeker"}
@@ -134,40 +139,47 @@ export function OnboardingFlow() {
                 </span>
               </Choice>
             </div>
-          ) : (
-            <PreferenceFields draft={draft} onChange={setDraft} disabled={pending} />
           )}
+          {step === 2 && <RolesField draft={draft} onChange={setDraft} disabled={pending} />}
+          {step === 3 && <LocationFields draft={draft} onChange={setDraft} disabled={pending} />}
+          {step === 4 && <ExperienceFields draft={draft} onChange={setDraft} disabled={pending} />}
 
           {error && <p className="text-sm text-destructive">{error}</p>}
         </CardContent>
       </Card>
 
-      <div className="flex items-center justify-between gap-3">
-        <Button variant="ghost" onClick={skip} disabled={pending}>
-          Skip for now
-        </Button>
-        <div className="flex items-center gap-2">
-          {step === 2 && (
-            <Button variant="outline" onClick={() => setStep(1)} disabled={pending}>
-              Back
-            </Button>
-          )}
-          {step === 1 ? (
-            <Button
-              disabled={!accountType || pending}
-              onClick={() => {
-                if (accountType === "employer") finish("employer");
-                else setStep(2);
-              }}
-            >
-              Continue
-            </Button>
-          ) : (
-            <Button disabled={pending} onClick={() => finish("seeker")}>
-              {pending ? "Saving..." : "Finish"}
-            </Button>
-          )}
-        </div>
+      <div className="flex items-center justify-end gap-2">
+        {step > 1 && (
+          <Button variant="outline" onClick={() => setStep(step - 1)} disabled={pending}>
+            Back
+          </Button>
+        )}
+        {step === 1 && (
+          <Button
+            disabled={!accountType || pending}
+            onClick={() => {
+              if (accountType === "employer") finish("employer");
+              else setStep(2);
+            }}
+          >
+            Continue
+          </Button>
+        )}
+        {step === 2 && (
+          <Button disabled={!rolesEntered || pending} onClick={() => setStep(3)}>
+            Continue
+          </Button>
+        )}
+        {step === 3 && (
+          <Button disabled={pending} onClick={() => setStep(4)}>
+            Continue
+          </Button>
+        )}
+        {step === 4 && (
+          <Button disabled={pending} onClick={() => finish("seeker")}>
+            {pending ? "Saving..." : "Finish"}
+          </Button>
+        )}
       </div>
     </div>
   );

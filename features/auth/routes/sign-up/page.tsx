@@ -5,7 +5,7 @@ import { SignUpForm } from "../../components/SignUpForm";
 
 export default function SignUpPage() {
   return (
-    <PageContainer size="sm" className="py-16 sm:py-24">
+    <PageContainer size="sm" className="min-h-[65vh] flex flex-col justify-center py-16">
       <Card>
         <CardHeader>
           <CardTitle>Create your account</CardTitle>

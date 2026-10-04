@@ -72,47 +72,41 @@ export function Choice({
   );
 }
 
-/**
- * The search-preference fields, shared by /onboarding's second step and
- * the /preferences editor - extracted so the two can't drift into asking
- * the same question two different ways.
- */
-export function PreferenceFields({
-  draft,
-  onChange,
-  disabled,
-}: {
+type FieldGroupProps = {
   draft: PreferenceDraft;
   onChange: (next: PreferenceDraft) => void;
   disabled?: boolean;
-}) {
-  const set = <K extends keyof PreferenceDraft>(key: K, value: PreferenceDraft[K]) =>
+};
+
+function useSetter({ draft, onChange }: FieldGroupProps) {
+  return <K extends keyof PreferenceDraft>(key: K, value: PreferenceDraft[K]) =>
     onChange({ ...draft, [key]: value });
+}
 
-  function toggleLevel(value: string) {
-    set(
-      "levels",
-      draft.levels.includes(value)
-        ? draft.levels.filter((v) => v !== value)
-        : [...draft.levels, value]
-    );
-  }
+/** Roles-only group - also used standalone as onboarding's first preference step. */
+export function RolesField({ draft, onChange, disabled }: FieldGroupProps) {
+  const set = useSetter({ draft, onChange, disabled });
+  return (
+    <div className="space-y-1">
+      <label className="text-sm font-medium">Roles you&apos;re interested in</label>
+      <Input
+        value={draft.titles}
+        onChange={(e) => set("titles", e.target.value)}
+        placeholder="Data engineer, product designer"
+        disabled={disabled}
+      />
+      <Typography variant="small" className="text-muted-foreground">
+        Separate with commas.
+      </Typography>
+    </div>
+  );
+}
 
+/** Location + remote-only group - also used standalone as onboarding's second preference step. */
+export function LocationFields({ draft, onChange }: FieldGroupProps) {
+  const set = useSetter({ draft, onChange });
   return (
     <>
-      <div className="space-y-1">
-        <label className="text-sm font-medium">Roles you&apos;re interested in</label>
-        <Input
-          value={draft.titles}
-          onChange={(e) => set("titles", e.target.value)}
-          placeholder="Data engineer, product designer"
-          disabled={disabled}
-        />
-        <Typography variant="small" className="text-muted-foreground">
-          Separate with commas.
-        </Typography>
-      </div>
-
       <div className="space-y-1">
         <label className="text-sm font-medium">Preferred locations</label>
         <GeoSuggest
@@ -126,7 +120,25 @@ export function PreferenceFields({
         onChange={(v) => set("remoteOnly", v)}
         label="Only show remote roles"
       />
+    </>
+  );
+}
 
+/** Experience level + minimum salary group - also used standalone as onboarding's third preference step. */
+export function ExperienceFields({ draft, onChange, disabled }: FieldGroupProps) {
+  const set = useSetter({ draft, onChange });
+
+  function toggleLevel(value: string) {
+    set(
+      "levels",
+      draft.levels.includes(value)
+        ? draft.levels.filter((v) => v !== value)
+        : [...draft.levels, value]
+    );
+  }
+
+  return (
+    <>
       <div className="space-y-2">
         <label className="text-sm font-medium">Experience level</label>
         <div className="flex flex-wrap gap-2">
@@ -153,6 +165,23 @@ export function PreferenceFields({
           disabled={disabled}
         />
       </div>
+    </>
+  );
+}
+
+/**
+ * The full search-preference form, used by the /preferences editor as one
+ * page. /onboarding instead renders RolesField/LocationFields/
+ * ExperienceFields one at a time across its own steps - same underlying
+ * fields, so the two can't drift into asking the same question two
+ * different ways, just presented densely here vs. spread out there.
+ */
+export function PreferenceFields({ draft, onChange, disabled }: FieldGroupProps) {
+  return (
+    <>
+      <RolesField draft={draft} onChange={onChange} disabled={disabled} />
+      <LocationFields draft={draft} onChange={onChange} disabled={disabled} />
+      <ExperienceFields draft={draft} onChange={onChange} disabled={disabled} />
     </>
   );
 }

@@ -62,13 +62,6 @@ export async function completeOnboarding(input: {
   revalidatePath("/jobs");
 }
 
-/** Marks onboarding seen without recording anything - the "Skip" path. */
-export async function skipOnboarding() {
-  const userId = await requireUserId();
-  const db = requireDb();
-  await db.update(users).set({ onboardedAt: new Date() }).where(eq(users.id, userId));
-}
-
 /**
  * Lets a user change the preferences they set during onboarding.
  *
