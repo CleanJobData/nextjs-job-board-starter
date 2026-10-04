@@ -6,6 +6,24 @@ the box, plus optional accounts, resumes, applications tracking,
 self-service job posting, an admin dashboard, and email alerts, each
 independently switched on or off.
 
+## Tech Stack
+
+- **Framework**: Next.js 16 (App Router), React 19, TypeScript.
+- **Styling**: Tailwind CSS v4, a token/preset theming system (see
+  "Styling/theming" below), Headless UI for accessible unstyled
+  primitives (dialogs, comboboxes, tabs).
+- **Database/ORM**: Postgres + Drizzle ORM (only needed once a
+  DB-backed feature is enabled - see the feature table below).
+- **Auth**: NextAuth.js (email/password, optional Google/LinkedIn OAuth).
+- **Email**: Resend (optional - only needed for email verification and
+  `jobAlerts`).
+- **File storage**: local disk or S3-compatible storage (optional -
+  only needed for `resume`/`jobPosting` uploads).
+- **AI**: Anthropic's API (optional - only used as a fallback for
+  resume parsing in the `resume` feature).
+- **Jobs data**: the [CleanJobData API](https://cleanjobdata.com) -
+  the one dependency every deployment needs.
+
 ## 🚀 Quick Start (jobs listing only)
 
 The fastest way to get a *jobs-listing-only* board live is to fork this
@@ -70,6 +88,12 @@ git clone https://github.com/CleanJobData/nextjs-job-board-starter.git
 cd nextjs-job-board-starter
 npm install
 ```
+
+**Prefer not to install Node/Postgres locally?** This repo includes a
+[dev container](.devcontainer) (VS Code "Dev Containers" extension, or
+GitHub Codespaces) that boots the app alongside a Postgres instance with
+zero local setup - open the folder, "Reopen in Container", then skip to
+step 5 once it finishes installing and migrating.
 
 ### 2. Configure environment variables
 

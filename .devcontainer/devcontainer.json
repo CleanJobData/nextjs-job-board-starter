@@ -4,9 +4,9 @@
   "service": "app",
   "workspaceFolder": "/workspace",
   "postCreateCommand": "npm install && npm run db:migrate",
-  "forwardPorts": [3000, 5432],
+  "forwardPorts": [3450, 5432],
   "portsAttributes": {
-    "3000": { "label": "App" },
+    "3450": { "label": "App" },
     "5432": { "label": "Postgres" }
   },
   "customizations": {
