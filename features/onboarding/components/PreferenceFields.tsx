@@ -1,6 +1,8 @@
 "use client";
 
 import * as React from "react";
+import { FaMagnifyingGlass, FaXmark } from "react-icons/fa6";
+import { Badge } from "@/components/ui/Badge";
 import { Input } from "@/components/ui/Input";
 import { Switch } from "@/components/ui/Switch";
 import { Typography } from "@/components/ui/Typography";
@@ -83,20 +85,88 @@ function useSetter({ draft, onChange }: FieldGroupProps) {
     onChange({ ...draft, [key]: value });
 }
 
+function titlesToTags(titles: string): string[] {
+  return titles
+    .split(",")
+    .map((t) => t.trim())
+    .filter(Boolean);
+}
+
+/**
+ * Role titles are freeform (no fixed list to pick from), so this is a
+ * combobox-styled tag input rather than components/ui/Combobox.tsx's
+ * select-from-options variant: typing + Enter/comma adds whatever was
+ * typed as a tag, same draft.titles comma-joined string underneath.
+ */
+function RoleTagInput({ draft, onChange, disabled }: FieldGroupProps) {
+  const set = useSetter({ draft, onChange });
+  const [query, setQuery] = React.useState("");
+  const tags = titlesToTags(draft.titles);
+
+  function addTag(raw: string) {
+    const value = raw.trim();
+    if (!value || tags.includes(value)) return;
+    set("titles", [...tags, value].join(", "));
+    setQuery("");
+  }
+
+  function removeTag(value: string) {
+    set("titles", tags.filter((t) => t !== value).join(", "));
+  }
+
+  function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
+    if (e.key === "Enter" || e.key === ",") {
+      e.preventDefault();
+      addTag(query);
+    } else if (e.key === "Backspace" && query === "" && tags.length > 0) {
+      const last = tags[tags.length - 1];
+      if (last) removeTag(last);
+    }
+  }
+
+  return (
+    <div className="w-full">
+      <div className="flex h-11 w-full items-center gap-2 rounded-lg border border-input bg-input-background px-3 text-sm transition-all focus-within:ring-2 focus-within:ring-ring/50">
+        <FaMagnifyingGlass className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+        <input
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          onKeyDown={handleKeyDown}
+          onBlur={() => addTag(query)}
+          placeholder={tags.length === 0 ? "Data engineer, product designer..." : "Add another"}
+          disabled={disabled}
+          className="w-full border-none bg-transparent text-sm leading-5 text-foreground outline-none placeholder:text-muted-foreground"
+        />
+      </div>
+      {tags.length > 0 && (
+        <div className="mt-2 flex flex-wrap gap-1.5">
+          {tags.map((tag) => (
+            <Badge key={tag} variant="accent" className="gap-1 pr-1 text-xs h-6">
+              {tag}
+              <button
+                type="button"
+                onClick={() => removeTag(tag)}
+                disabled={disabled}
+                className="hover:text-accent-foreground/80 transition-colors"
+              >
+                <FaXmark className="h-3 w-3" />
+              </button>
+            </Badge>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 /** Roles-only group - also used standalone as onboarding's first preference step. */
 export function RolesField({ draft, onChange, disabled }: FieldGroupProps) {
-  const set = useSetter({ draft, onChange, disabled });
   return (
     <div className="space-y-1">
       <label className="text-sm font-medium">Roles you&apos;re interested in</label>
-      <Input
-        value={draft.titles}
-        onChange={(e) => set("titles", e.target.value)}
-        placeholder="Data engineer, product designer"
-        disabled={disabled}
-      />
+      <RoleTagInput draft={draft} onChange={onChange} disabled={disabled} />
       <Typography variant="small" className="text-muted-foreground">
-        Separate with commas.
+        Press Enter to add each one.
       </Typography>
     </div>
   );
