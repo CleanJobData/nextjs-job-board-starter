@@ -54,6 +54,33 @@ const allFeaturePlugins: Partial<Record<FeatureKey, FeaturePlugin>> = {
   resume: resumeFeature,
 };
 
+// ---------------------------------------------------------------------------
+// Dependency validation
+// If a feature is enabled but one of its required features is not, throw a
+// clear error at boot time instead of letting the app break silently at
+// runtime when a user session or DB table doesn't exist.
+// ---------------------------------------------------------------------------
+const FEATURE_DEPS: Partial<Record<FeatureKey, FeatureKey[]>> = {
+  applications: ["auth", "jobSync"],
+  resume:       ["auth"],
+  jobPosting:   ["auth"],
+  admin:        ["auth"],
+  jobAlerts:    ["auth", "jobSync", "onboarding"],
+  onboarding:   ["auth"],
+};
+
+for (const [feature, deps] of Object.entries(FEATURE_DEPS) as [FeatureKey, FeatureKey[]][]) {
+  if (!config[feature].enabled) continue;
+  for (const dep of deps) {
+    if (!config[dep].enabled) {
+      throw new Error(
+        `[features.config.ts] "${feature}" requires "${dep}" to be enabled. ` +
+        `Either set ${dep}.enabled = true or set ${feature}.enabled = false.`
+      );
+    }
+  }
+}
+
 /** Plugins for every feature that is both registered above AND enabled in features.config.ts. */
 export const activeFeatures: FeaturePlugin[] = Object.values(allFeaturePlugins).filter(
   (plugin): plugin is FeaturePlugin => plugin !== undefined && config[plugin.key].enabled
