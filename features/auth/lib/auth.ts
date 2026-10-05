@@ -7,7 +7,7 @@ import LinkedIn from "next-auth/providers/linkedin";
 import { DrizzleAdapter } from "@auth/drizzle-adapter";
 import bcrypt from "bcryptjs";
 import { eq } from "drizzle-orm";
-import { requireDb } from "@/lib/db/client";
+import { db, requireDb } from "@/lib/db/client";
 import { users } from "../db/schema";
 import * as schema from "@/lib/db/schema";
 import authConfig from "@/features.config";
@@ -67,7 +67,7 @@ if (authConfig.auth.oauthProviders.includes("linkedin")) {
 }
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
-  adapter: DrizzleAdapter(requireDb(), schema as any),
+  adapter: db ? DrizzleAdapter(db, schema as any) : undefined,
   session: { strategy: "jwt" },
   pages: {
     signIn: "/sign-in",

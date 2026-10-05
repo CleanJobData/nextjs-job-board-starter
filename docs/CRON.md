@@ -11,33 +11,7 @@ to call it**. It's secret-header-authenticated and safe to call as often
 as you like; each registered task self-throttles on its own cadence and
 just no-ops if it isn't due yet.
 
-**`job-sync.config.ts` (`incrementalSyncIntervalHours` etc.) is the only
-place you ever hand-edit sync/task frequency.** GitHub Actions' schedule
-has to be a static cron expression GitHub itself evaluates - it can't
-read a TypeScript file at trigger time - so instead of hand-picking a
-second number and hoping it stays in sync, `.github/workflows/cron.yml`'s
-schedule is **generated from `job-sync.config.ts`** by
-`scripts/sync-cron-schedule.ts`. There is exactly one place you type an
-interval; the workflow file is a build artifact of it, not a second
-decision.
-
-## 0. Already shipped: `.github/workflows/cron.yml`
-
-This repo includes a working GitHub Actions workflow out of the box,
-its schedule already generated to match `job-sync.config.ts`'s current
-defaults (every 1h, the fastest of the three registered tasks). You only
-need to add the two secrets below for it to start working.
-
-**Whenever you change `job-sync.config.ts`'s `*IntervalHours` fields**,
-regenerate the workflow and commit the result:
-
-```
-npm run cron:sync
-```
-
-Don't hand-edit the `cron:` line in `.github/workflows/cron.yml` - the
-next `npm run cron:sync` would just overwrite it, and until then it'd be
-a second, wrong number sitting next to the real one.
+**A cron workflow is NOT included in this template.** It was removed because a pre-wired workflow would run against this repo's GitHub Actions on every fork — failing immediately since `APP_URL` and `CRON_SECRET` secrets don't exist yet. Instead, copy one of the options below into your own repo once you've deployed.
 
 ## 1. Set `CRON_SECRET`
 
@@ -54,10 +28,31 @@ a 401.
 
 ## 2. Pick a scheduler
 
-`.github/workflows/cron.yml` (shipped, see step 0) is the default and
-the recommended path for most deployments - you likely don't need
-anything below this. The alternatives exist for cases GitHub Actions
-doesn't fit (no GitHub repo, want everything on one platform, etc).
+### GitHub Actions (recommended)
+
+Create `.github/workflows/cron.yml` in your repo:
+
+```yaml
+name: Scheduled sync
+
+on:
+  schedule:
+    - cron: "0 * * * *"   # every hour — match your job-sync.config.ts interval
+  workflow_dispatch:       # lets you trigger manually from the Actions tab
+
+jobs:
+  trigger-cron:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call /api/cron
+        run: |
+          curl -sf -X POST "${{ secrets.APP_URL }}/api/cron" \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}"
+```
+
+Then add two secrets in your GitHub repo's **Settings → Secrets → Actions**:
+- `APP_URL` → your deployed site URL (e.g. `https://yourboard.com`)
+- `CRON_SECRET` → same value as in your deployment's env vars
 
 ### Vercel Cron
 
